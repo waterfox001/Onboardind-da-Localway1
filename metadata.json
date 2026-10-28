@@ -1,0 +1,6 @@
+{
+  "name": "Sistema de Onboarding Localway",
+  "description": "Sistema oficial de onboarding para coleta estruturada de dados e serviços contratados de clientes da Localway.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
