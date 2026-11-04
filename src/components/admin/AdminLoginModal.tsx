@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { X, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import { LocalwayLogo } from '../LocalwayLogo';
 
 interface AdminLoginModalProps {
@@ -13,7 +13,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const [email, setEmail] = useState('localway01@gmail.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -29,7 +29,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanPassword = (password || '').trim();
 
-    // Check admin credentials requested by user
+    // Check admin credentials
     if (cleanEmail === 'localway01@gmail.com' && cleanPassword === '1706300710') {
       localStorage.setItem('localway_admin_auth', 'true');
       setIsSubmitting(false);
@@ -38,12 +38,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
       setIsSubmitting(false);
       setError('E-mail ou senha incorretos. Verifique suas credenciais de administrador.');
     }
-  };
-
-  const handleQuickFill = () => {
-    setEmail('localway01@gmail.com');
-    setPassword('1706300710');
-    setError('');
   };
 
   return (
@@ -77,9 +71,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
             <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
               Acesso Administrativo
             </h3>
-            <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
-              Área restrita para gerenciar perguntas dos segmentos, campos e empresas cadastradas.
-            </p>
           </div>
 
           {/* Error notice */}
@@ -103,30 +94,22 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                 <input
                   type="email"
                   required
+                  autoFocus
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
                     if (error) setError('');
                   }}
-                  placeholder="localway01@gmail.com"
+                  placeholder="Seu e-mail"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-slate-400/20 focus:border-slate-600 outline-none transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold text-slate-700">
-                  Senha
-                </label>
-                <button
-                  type="button"
-                  onClick={handleQuickFill}
-                  className="text-[11px] font-medium text-slate-500 hover:text-slate-800 underline underline-offset-2 cursor-pointer"
-                >
-                  Preencher dados
-                </button>
-              </div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Senha
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <Lock className="w-4 h-4" />
@@ -134,13 +117,12 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  autoFocus
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
                     if (error) setError('');
                   }}
-                  placeholder="Digite sua senha (1706300710)"
+                  placeholder="Digite sua senha"
                   className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-300 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-slate-400/20 focus:border-slate-600 outline-none transition-all"
                 />
                 <button
