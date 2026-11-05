@@ -584,6 +584,156 @@ Regras obrigatórias:
     }
   });
 
+  // API: Test Google Sheets integration with full sample rowData
+  app.post('/api/admin/test-sheets-integration', async (req: Request, res: Response) => {
+    try {
+      let targetScriptUrl = req.body?.googleScriptUrl || GOOGLE_SCRIPT_URL;
+      if (!req.body?.googleScriptUrl && fs.existsSync(SETTINGS_FILE)) {
+        try {
+          const cfg = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'));
+          if (cfg.googleScriptUrl) targetScriptUrl = cfg.googleScriptUrl;
+        } catch {
+          // ignore
+        }
+      }
+
+      if (!targetScriptUrl || !targetScriptUrl.startsWith('http')) {
+        return res.status(400).json({
+          success: false,
+          error: 'URL do Google Apps Script não configurada ou inválida.',
+        });
+      }
+
+      const now = new Date();
+      const dataHora = now.toLocaleString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        dateStyle: 'short',
+        timeStyle: 'medium',
+      });
+
+      const sampleRowData: Record<string, string> = {
+        'Código do cliente': 'LW-01',
+        'Data e hora': dataHora,
+        'Nome fantasia': 'Empresa Exemplo Localway',
+        'Razão social': 'Empresa Exemplo Ltda',
+        'CNPJ': '12.345.678/0001-90',
+        'Segmento': 'Fotografia',
+        'Outro segmento': '',
+        'Descrição da empresa': 'Estúdio de fotografia especializado em casamentos e eventos corporativos.',
+        'Data de abertura': '2019-05-10',
+        'Telefone': '(11) 3333-4444',
+        'WhatsApp': '(11) 99999-8888',
+        'E-mail': 'contato@empresaexemplo.com.br',
+        'Site': 'https://www.empresaexemplo.com.br',
+        'Instagram': '@empresaexemplo',
+        'Facebook / outras redes': 'facebook.com/empresaexemplo',
+        'Rua / Avenida': 'Av. Paulista',
+        'Número': '1000',
+        'Complemento': 'Sala 502',
+        'Bairro': 'Bela Vista',
+        'Cidade': 'São Paulo',
+        'Estado': 'SP',
+        'Horário segunda a sexta': '08:00 às 18:00',
+        'Segunda': '08:00 às 18:00',
+        'Terça': '08:00 às 18:00',
+        'Quarta': '08:00 às 18:00',
+        'Quinta': '08:00 às 18:00',
+        'Sexta': '08:00 às 18:00',
+        'Sábado': '08:00 às 12:00',
+        'Domingo': 'Fechado',
+        'Trabalha com agendamento': 'Sim',
+        'Formas de agendamento': 'WhatsApp, Telefone, Site',
+        'Contato / link de agendamento': 'https://wa.me/5511999998888',
+        'Estacionamento': 'Estacionamento próprio gratuito para clientes',
+        'Outro estacionamento': '',
+        'Idiomas': 'Português, Inglês',
+        'Formas de pagamento': 'Cartão de Crédito, Pix, Dinheiro',
+        'Outro pagamento': '',
+        'Responsável': 'Carlos Alberto da Silva',
+        'Cargo / função': 'Proprietário & Diretor',
+        'WhatsApp responsável': '(11) 98888-1111',
+        'E-mail responsável': 'carlos@empresaexemplo.com.br',
+        'Serviços contratados': 'Google Meu Negócio, Mini Site, Tráfego Pago',
+        'Detalhes dos serviços': '[GOOGLE MEU NEGÓCIO]: Otimização completa de perfil, fotos em alta resolução e catálogo de ensaios.\n\n[MINI SITE]: Mini site rápido com botões de WhatsApp, galeria e endereço no Google Maps.\n\n[TRÁFEGO PAGO]: Campanhas focadas em noivas e empresas na região metropolitana de SP.',
+        'Detalhes específicos do segmento': 'Quais tipos de ensaios: Casamentos, Ensaios de Família, Eventos Corporativos | Prazo de entrega: 10 dias úteis.',
+        'Possui materiais': 'Sim',
+        'Tipos de materiais': 'Logotipo em vetor, Fotos em alta resolução',
+        'Link TransferNow': 'https://www.transfernow.net/exemplo-localway',
+        'Observações dos materiais': 'Arquivos organizados por pastas.',
+        'Observações finais': 'Teste de integração realizado com sucesso.',
+      };
+
+      const postBody = {
+        ...sampleRowData,
+        'Código do cliente': 'LW-01',
+        codigoCliente: 'LW-01',
+      };
+
+      console.log('Sending test payload to Google Apps Script:', targetScriptUrl);
+      const response = await fetch(targetScriptUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(postBody),
+        redirect: 'follow',
+      });
+
+      const responseText = await response.text();
+      let responseJson: any = null;
+      try {
+        responseJson = JSON.parse(responseText);
+      } catch {
+        responseJson = { raw: responseText.slice(0, 300) };
+      }
+
+      // Also ensure it is registered in data/submissions.json as LW-01
+      const list = readLocalSubmissions();
+      const existingIdx = list.findIndex((s) => s.codigoCliente === 'LW-01');
+      const testRecord: StoredSubmission = {
+        timestamp: new Date().toISOString(),
+        codigoCliente: 'LW-01',
+        lastModified: new Date().toISOString(),
+        payload: {
+          rowData: sampleRowData,
+          raw: {
+            nomeFantasia: 'Empresa Exemplo Localway',
+            razaoSocial: 'Empresa Exemplo Ltda',
+            segmento: 'Fotografia',
+            whatsapp: '(11) 99999-8888',
+            email: 'contato@empresaexemplo.com.br',
+            cidade: 'São Paulo',
+            estado: 'SP',
+          },
+          dataHora,
+        },
+      };
+
+      if (existingIdx >= 0) {
+        list[existingIdx] = testRecord;
+      } else {
+        list.unshift(testRecord);
+      }
+      writeLocalSubmissions(list);
+
+      return res.json({
+        success: response.ok,
+        status: response.status,
+        scriptResponse: responseJson,
+        message: response.ok
+          ? 'Teste enviado com sucesso para a planilha do Google!'
+          : `O Google Apps Script retornou status HTTP ${response.status}.`,
+      });
+    } catch (err: any) {
+      console.error('Error testing Google Sheets integration:', err);
+      return res.status(500).json({
+        success: false,
+        error: err?.message || String(err),
+      });
+    }
+  });
+
   // Serve static assets from public folder
   const publicPath = path.join(process.cwd(), 'public');
   app.use(express.static(publicPath));

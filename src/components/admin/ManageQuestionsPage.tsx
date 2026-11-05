@@ -78,6 +78,12 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
   const [editingSubmissionIndex, setEditingSubmissionIndex] = useState<number | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
   const [syncStatus, setSyncStatus] = useState<string>('');
+  const [isTestingSheets, setIsTestingSheets] = useState(false);
+  const [sheetsTestResult, setSheetsTestResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: string;
+  } | null>(null);
 
   // Selected segment for editing
   const segmentKeys = Object.keys(editableSegments);
@@ -268,6 +274,47 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
       setSyncStatus('Erro de conexão ao sincronizar.');
     } finally {
       setTimeout(() => setSyncStatus(''), 4000);
+    }
+  };
+
+  const handleTestSheetsIntegration = async () => {
+    setIsTestingSheets(true);
+    setSheetsTestResult(null);
+    try {
+      const res = await fetch('/api/admin/test-sheets-integration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          googleScriptUrl: editableSettings?.googleScriptUrl,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSheetsTestResult({
+          success: true,
+          message: data.message || 'Teste enviado com sucesso para a planilha!',
+          details: 'Aba Dashboard e aba individual LW-01 atualizadas com dados de exemplo.',
+        });
+        showToast('Planilha testada com sucesso!');
+        fetchSubmissions();
+      } else {
+        setSheetsTestResult({
+          success: false,
+          message: data.error || data.message || 'Erro ao comunicar com a planilha',
+          details:
+            typeof data.scriptResponse === 'object'
+              ? JSON.stringify(data.scriptResponse)
+              : data.scriptResponse || 'Verifique se a URL da implantação do Apps Script está correta.',
+        });
+      }
+    } catch (err: any) {
+      setSheetsTestResult({
+        success: false,
+        message: 'Falha de conexão com o servidor ao testar a planilha.',
+        details: err?.message || String(err),
+      });
+    } finally {
+      setIsTestingSheets(false);
     }
   };
 
@@ -1784,18 +1831,55 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
                 <label className="block text-xs font-bold text-slate-800 mb-1">
                   Google Apps Script Web App URL (Google Sheets)
                 </label>
-                <input
-                  type="url"
-                  value={editableSettings?.googleScriptUrl || ''}
-                  onChange={(e) =>
-                    setEditableSettings((prev: any) => ({ ...prev, googleScriptUrl: e.target.value }))
-                  }
-                  placeholder="https://script.google.com/macros/s/.../exec"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono bg-slate-50 focus:bg-white focus:border-blue-600 outline-none"
-                />
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="url"
+                    value={editableSettings?.googleScriptUrl || ''}
+                    onChange={(e) =>
+                      setEditableSettings((prev: any) => ({ ...prev, googleScriptUrl: e.target.value }))
+                    }
+                    placeholder="https://script.google.com/macros/s/.../exec"
+                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono bg-slate-50 focus:bg-white focus:border-blue-600 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleTestSheetsIntegration}
+                    disabled={isTestingSheets}
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 shrink-0 shadow-xs"
+                    title="Envia dados reais de teste para validar a gravação na planilha do Google"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isTestingSheets ? 'animate-spin' : ''}`} />
+                    <span>{isTestingSheets ? 'Enviando teste...' : 'Testar na Planilha Agora'}</span>
+                  </button>
+                </div>
                 <span className="text-[11px] text-slate-400 mt-1 block">
-                  Endpoint para envio automático de cada onboarding submetido.
+                  Endpoint do seu Web App no Google Drive. Use o botão acima para enviar dados de exemplo e confirmar a conexão.
                 </span>
+
+                {/* Sheets Test Feedback Result */}
+                {sheetsTestResult && (
+                  <div
+                    className={`mt-3 p-3.5 rounded-2xl border text-xs animate-fadeIn ${
+                      sheetsTestResult.success
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                        : 'bg-rose-50 border-rose-200 text-rose-900'
+                    }`}
+                  >
+                    <div className="font-bold flex items-center gap-1.5">
+                      {sheetsTestResult.success ? (
+                        <Check className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-rose-600" />
+                      )}
+                      <span>{sheetsTestResult.message}</span>
+                    </div>
+                    {sheetsTestResult.details && (
+                      <p className="mt-1 text-[11px] opacity-90 leading-relaxed font-mono">
+                        {sheetsTestResult.details}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -1852,7 +1936,7 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
                     </h4>
                   </div>
                   <p className="text-xs text-slate-500 mt-1">
-                    Script pronto que cria a aba Dashboard e gera uma aba individual para cada cliente (LW-01, LW-02...) sem duplicações.
+                    Script completo com proteção contra envios vazios, aba Dashboard geral e aba individual por cliente (LW-01, LW-02...).
                   </p>
                 </div>
 
@@ -1864,14 +1948,43 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
  * Sistema Oficial com Dashboard Geral + Aba Individual por Cliente (LW-01, LW-02...)
  */
 
+// Resposta amigável quando abre a URL no navegador
+function doGet(e) {
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'ok',
+    message: 'Localway Google Apps Script está ativo e pronto para receber dados via POST!',
+    timestamp: new Date().toISOString()
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Endpoint de recebimento automático de cada formulário
 function doPost(e) {
   try {
-    var rawData = e && e.postData && e.postData.contents ? JSON.parse(e.postData.contents) : {};
+    var rawData = {};
+    if (e && e.postData && e.postData.contents) {
+      try {
+        rawData = JSON.parse(e.postData.contents);
+      } catch (parseErr) {
+        rawData = e.parameter || {};
+      }
+    } else if (e && e.parameter && Object.keys(e.parameter).length > 0) {
+      rawData = e.parameter;
+    }
+
+    // Proteção: se o script for executado sem parâmetros (ex: clicando em 'Executar' no doPost)
+    var nome = rawData['Nome fantasia'] || rawData.nomeFantasia || '';
+    var whats = rawData['WhatsApp'] || rawData.whatsapp || '';
+    if (!nome && !whats) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: 'Nenhum dado recebido. Se estiver testando direto no editor do Google Apps Script, selecione a função testarEnvio() e clique em Executar.'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     
     // 1. Extrair código do cliente (LW-01, LW-02...)
     var clientCode = rawData['Código do cliente'] || rawData.codigoCliente;
-    var nomeFantasia = rawData['Nome fantasia'] || 'Cliente Sem Nome';
     
     // 2. Registrar no Dashboard Geral
     var dashSheet = getOrCreateDashboard(ss);
@@ -1892,6 +2005,51 @@ function doPost(e) {
       error: err.toString()
     })).setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+// Função de teste pronta para executar diretamente no editor do Apps Script
+function testarEnvio() {
+  var dadosExemplo = {
+    'Código do cliente': 'LW-01',
+    'Data e hora': new Date().toLocaleString('pt-BR'),
+    'Nome fantasia': 'Empresa Exemplo Localway',
+    'Razão social': 'Empresa Exemplo Serviços Ltda',
+    'CNPJ': '12.345.678/0001-90',
+    'Segmento': 'Fotografia',
+    'WhatsApp': '(11) 99999-8888',
+    'Telefone': '(11) 3333-4444',
+    'E-mail': 'contato@empresaexemplo.com.br',
+    'Cidade': 'São Paulo',
+    'Estado': 'SP',
+    'Rua / Avenida': 'Av. Paulista',
+    'Número': '1000',
+    'Complemento': 'Sala 502',
+    'Bairro': 'Bela Vista',
+    'Horário segunda a sexta': '08:00 às 18:00',
+    'Sábado': '08:00 às 12:00',
+    'Domingo': 'Fechado',
+    'Trabalha com agendamento': 'Sim',
+    'Formas de agendamento': 'WhatsApp, Telefone',
+    'Estacionamento': 'Estacionamento próprio no local',
+    'Formas de pagamento': 'Cartão de Crédito, Pix, Dinheiro',
+    'Responsável': 'Carlos Alberto da Silva',
+    'Cargo / função': 'Diretor Comercial',
+    'WhatsApp responsável': '(11) 98888-1111',
+    'E-mail responsável': 'carlos@empresaexemplo.com.br',
+    'Serviços contratados': 'Google Meu Negócio, Mini Site, Tráfego Pago',
+    'Detalhes dos serviços': '[GOOGLE MEU NEGÓCIO]: Perfil com fotos, horários e endereço completo.\\n\\n[MINI SITE]: Mini-site de alta conversão.',
+    'Detalhes específicos do segmento': 'Especialidades: Casamentos, Eventos e Ensaios Corporativos.',
+    'Possui materiais': 'Sim',
+    'Tipos de materiais': 'Logotipo em vetor, Fotos em alta resolução',
+    'Link TransferNow': 'https://www.transfernow.net/exemplo',
+    'Observações finais': 'Projeto prioritário.'
+  };
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var dashSheet = getOrCreateDashboard(ss);
+  var code = recordInDashboard(dashSheet, dadosExemplo, 'LW-01');
+  recordInClientTab(ss, dadosExemplo, code);
+  Logger.log('Teste concluído com sucesso! Verifique a aba Dashboard e a aba LW-01.');
 }
 
 function getOrCreateDashboard(ss) {
@@ -2042,6 +2200,18 @@ function recordInClientTab(ss, data, clientCode) {
   sheet.getRange('A40:B40').setBackground('#f1f5f9').setFontWeight('bold');
   sheet.getRange('A43:B43').setBackground('#f1f5f9').setFontWeight('bold');
   
+  sheet.setColumnWidth(1, 260);
+  sheet.setColumnWidth(2, 600);
+  
+  sheet.getRange('A1:B1').setBackground('#0f172a').setFontColor('#ffffff').setFontWeight('bold');
+  sheet.getRange('A1').setFontSize(12);
+  sheet.getRange('A5:B5').setBackground('#f1f5f9').setFontWeight('bold');
+  sheet.getRange('A21:B21').setBackground('#f1f5f9').setFontWeight('bold');
+  sheet.getRange('A30:B30').setBackground('#f1f5f9').setFontWeight('bold');
+  sheet.getRange('A36:B36').setBackground('#f1f5f9').setFontWeight('bold');
+  sheet.getRange('A40:B40').setBackground('#f1f5f9').setFontWeight('bold');
+  sheet.getRange('A43:B43').setBackground('#f1f5f9').setFontWeight('bold');
+  
   sheet.getRange(1, 1, content.length, 2).setWrap(true);
 }`;
                     navigator.clipboard.writeText(scriptCode);
@@ -2057,7 +2227,7 @@ function recordInClientTab(ss, data, clientCode) {
               </div>
 
               {/* Instructions Steps */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-600">
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
                   <div className="font-bold text-slate-800 flex items-center gap-1.5">
                     <span className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[11px]">1</span>
@@ -2079,8 +2249,21 @@ function recordInClientTab(ss, data, clientCode) {
                     <li>Clique no botão azul <strong>Implantar</strong> &gt; <strong>Nova implantação</strong>.</li>
                     <li>Clique na engrenagem no canto esquerdo e selecione <strong>App da Web</strong>.</li>
                     <li>Em <em>Executar como</em>: <strong>Eu</strong>; em <em>Quem pode acessar</em>: <strong>Qualquer pessoa</strong>.</li>
-                    <li>Clique em <strong>Implantar</strong>, autorize o acesso do Google e copie a <strong>URL do app da web</strong> gerada para o campo acima.</li>
+                    <li>Clique em <strong>Implantar</strong>, autorize o Google e copie a <strong>URL do app da web</strong> gerada para o campo no topo desta tela.</li>
                   </ol>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-emerald-950 space-y-2">
+                  <div className="font-bold flex items-center gap-1.5 text-emerald-900">
+                    <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[11px]">3</span>
+                    <span>Como testar sem erro:</span>
+                  </div>
+                  <p className="text-xs text-emerald-800 leading-relaxed">
+                    Para testar direto no editor do Google Apps Script, escolha a função <strong>testarEnvio</strong> ao lado do botão Executar.
+                  </p>
+                  <p className="text-xs text-emerald-800 leading-relaxed">
+                    Ou, após colar a URL no campo acima, basta clicar no botão <strong>Testar na Planilha Agora</strong> para enviar dados completos de teste e preencher sua planilha na hora!
+                  </p>
                 </div>
               </div>
             </div>

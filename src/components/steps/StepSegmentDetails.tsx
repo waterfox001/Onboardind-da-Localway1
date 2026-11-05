@@ -16,13 +16,22 @@ export const StepSegmentDetails: React.FC<StepSegmentDetailsProps> = ({
   onChange,
   segmentsConfig,
 }) => {
-  const allConfigs = segmentsConfig || SEGMENTS_CONFIG;
+  const allConfigs = segmentsConfig || SEGMENTS_CONFIG || {};
   const currentSegment = data.segmento || 'Fotografia';
-  const config = allConfigs[currentSegment] || allConfigs['Fotografia'] || SEGMENTS_CONFIG['Fotografia'];
+  const config =
+    allConfigs[currentSegment] ||
+    allConfigs['Fotografia'] ||
+    SEGMENTS_CONFIG['Fotografia'] || {
+      name: currentSegment || 'Geral',
+      description: 'Informações específicas da área de atuação.',
+      questions: [],
+    };
+
+  const questions = Array.isArray(config.questions) ? config.questions : [];
 
   const handleResponseChange = (questionId: string, val: any) => {
     onChange('segmentoRespostas', {
-      ...data.segmentoRespostas,
+      ...(data.segmentoRespostas || {}),
       [questionId]: val,
     });
   };
@@ -36,17 +45,27 @@ export const StepSegmentDetails: React.FC<StepSegmentDetailsProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-lg sm:text-xl font-bold text-slate-900">
-              Detalhes de Atuação: {config.name}
+              Detalhes de Atuação: {config.name || currentSegment}
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-slate-500">
-            {config.description}
+            {config.description || 'Preencha os detalhes da sua atuação para personalizarmos os serviços.'}
           </p>
         </div>
       </div>
 
       <div className="space-y-6">
-        {config.questions.map((q) => {
+        {questions.length === 0 ? (
+          <div className="p-5 rounded-2xl bg-blue-50/60 border border-blue-200/80 text-center space-y-2">
+            <p className="text-sm font-semibold text-slate-800">
+              Segmento selecionado: <strong>{currentSegment}</strong>
+            </p>
+            <p className="text-xs text-slate-600 max-w-md mx-auto">
+              Não há perguntas adicionais obrigatórias para este segmento. Você já pode clicar em <strong>Continuar</strong> abaixo para prosseguir com o endereço da empresa.
+            </p>
+          </div>
+        ) : (
+          questions.map((q) => {
           const val = data.segmentoRespostas[q.id];
 
           if (q.type === 'checkbox') {
@@ -146,8 +165,9 @@ export const StepSegmentDetails: React.FC<StepSegmentDetailsProps> = ({
               helper={q.helper}
             />
           );
-        })}
-      </div>
+        })
+      )}
     </div>
+  </div>
   );
 };

@@ -22,11 +22,15 @@ import {
   FileText,
 } from 'lucide-react';
 
-interface CompanyDataEditorProps {
+export interface CompanyDataEditorProps {
   submissionIndex: number;
-  submission: any;
-  onSaveSuccess: (updatedSubmission: any) => void;
-  onCancel: () => void;
+  submission?: any;
+  submissionData?: any;
+  isOpen?: boolean;
+  onSaveSuccess?: (updatedSubmission: any) => void;
+  onSaved?: (updatedSubmission: any) => void;
+  onCancel?: () => void;
+  onClose?: () => void;
 }
 
 const ESTADOS_BRASIL = [
@@ -47,12 +51,22 @@ const DAYS_LABELS: { key: DayOfWeek; label: string }[] = [
 
 export const CompanyDataEditor: React.FC<CompanyDataEditorProps> = ({
   submissionIndex,
-  submission,
+  submission: propSubmission,
+  submissionData,
+  isOpen = true,
   onSaveSuccess,
+  onSaved,
   onCancel,
+  onClose,
 }) => {
+  const submission = propSubmission || submissionData || {};
+  const handleClose = onClose || onCancel || (() => {});
+  const handleSaveSuccess = onSaved || onSaveSuccess || (() => {});
+
+  if (!isOpen) return null;
+
   // Extract initial raw form data or fallback from rowData
-  const row = submission.payload?.rowData || {};
+  const row = submission.payload?.rowData || submission.rowData || {};
   const raw: Partial<OnboardingData> = submission.payload?.raw || {};
 
   // Active section tab
@@ -246,7 +260,7 @@ export const CompanyDataEditor: React.FC<CompanyDataEditorProps> = ({
       if (resJson.success) {
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
-        onSaveSuccess(resJson.submission || { ...submission, payload: updatedPayload });
+        handleSaveSuccess(resJson.submission || { ...submission, payload: updatedPayload });
       } else {
         setSaveError(resJson.error || 'Falha ao salvar dados no servidor');
       }
@@ -279,7 +293,7 @@ export const CompanyDataEditor: React.FC<CompanyDataEditorProps> = ({
         <div className="flex items-center gap-2 self-end sm:self-center">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleClose}
             className="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             Voltar
@@ -1054,7 +1068,7 @@ export const CompanyDataEditor: React.FC<CompanyDataEditorProps> = ({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleClose}
             className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
           >
             Cancelar

@@ -218,6 +218,7 @@ interface RadioGroupProps {
   onChange: (value: string) => void;
   required?: boolean;
   error?: string;
+  helper?: string;
   horizontal?: boolean;
 }
 
@@ -229,6 +230,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
   onChange,
   required,
   error,
+  helper,
   horizontal = false,
 }) => {
   return (
@@ -237,6 +239,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
         {label}
         {required && <span className="text-blue-600 ml-1">*</span>}
       </span>
+      {helper && <span className="text-xs text-slate-500 -mt-1">{helper}</span>}
       <div className={`grid gap-2.5 ${horizontal ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-1'}`}>
         {options.map((opt) => {
           const optVal = typeof opt === 'string' ? opt : opt.value;

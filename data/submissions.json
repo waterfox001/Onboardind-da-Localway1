@@ -2,18 +2,171 @@
   {
     "timestamp": "2026-11-05T11:27:54.445Z",
     "codigoCliente": "LW-01",
-    "lastModified": "2026-11-05T11:27:54.445Z",
+    "lastModified": "2026-11-05T12:15:00.000Z",
     "payload": {
       "rowData": {
-        "Nome fantasia": "Estudio Foto Bella Teste",
+        "Código do cliente": "LW-01",
+        "Data e hora": "05/11/2026, 09:15:00",
+        "Nome fantasia": "Estúdio Foto Bella",
+        "Razão social": "Foto Bella Produções Fotográficas Ltda",
+        "CNPJ": "28.491.503/0001-82",
         "Segmento": "Fotografia",
+        "Outro segmento": "",
+        "Descrição da empresa": "Estúdio fotográfico especializado em casamentos, ensaios de gestante, família e eventos corporativos de alto padrão.",
+        "Data de abertura": "2018-03-15",
+        "Telefone": "(11) 3456-7890",
         "WhatsApp": "(11) 99999-8888",
         "E-mail": "contato@fotobella.com.br",
+        "Site": "https://www.fotobella.com.br",
+        "Instagram": "@estudiofotobella",
+        "Facebook / outras redes": "facebook.com/estudiofotobella",
+        "Rua / Avenida": "Rua Oscar Freire",
+        "Número": "1250",
+        "Complemento": "Conjunto 42",
+        "Bairro": "Cerqueira César",
         "Cidade": "São Paulo",
         "Estado": "SP",
+        "Horário segunda a sexta": "09:00 às 18:00",
+        "Segunda": "09:00 às 18:00",
+        "Terça": "09:00 às 18:00",
+        "Quarta": "09:00 às 18:00",
+        "Quinta": "09:00 às 18:00",
+        "Sexta": "09:00 às 18:00",
+        "Sábado": "09:00 às 13:00",
+        "Domingo": "Fechado",
+        "Trabalha com agendamento": "Sim",
+        "Formas de agendamento": "WhatsApp, Telefone Comercial",
+        "Contato / link de agendamento": "https://wa.me/5511999998888",
+        "Estacionamento": "Estacionamento com manobrista conveniado ao lado",
+        "Outro estacionamento": "",
+        "Idiomas": "Português, Inglês",
+        "Formas de pagamento": "Cartão de Crédito, Pix, Boleto Bancário",
+        "Outro pagamento": "",
+        "Responsável": "Isabella Cristina Santos",
+        "Cargo / função": "Sócia-Fundadora & Diretora Criativa",
+        "WhatsApp responsável": "(11) 98888-2233",
+        "E-mail responsável": "isabella@fotobella.com.br",
         "Serviços contratados": "Google Meu Negócio, Mini Site, Tráfego Pago",
-        "Detalhes específicos do segmento": "Quais tipos de ensaios: Casamentos, Eventos | Outro: Ensaio Pet",
-        "Código do cliente": "LW-01"
+        "Detalhes dos serviços": "[GOOGLE MEU NEGÓCIO]:\n- Categoria Principal: Estúdio de Fotografia\n- Principais Serviços: Ensaios de Casamento, Book Gestante, Eventos Corporativos\n\n[MINI SITE]:\n- Botões de ação rápida para WhatsApp, Instagram e Mapa do estúdio\n\n[TRÁFEGO PAGO]:\n- Foco em noivas e gestantes na capital de São Paulo",
+        "Detalhes específicos do segmento": "Quais tipos de ensaios ou serviços você mais realiza: Casamentos, Ensaios de Gestante e Família, Eventos Corporativos | Qual o prazo médio de entrega: 10 a 15 dias úteis com galeria online.",
+        "Possui materiais": "Sim",
+        "Tipos de materiais": "Logotipo vetorizado (SVG), Fotos de ensaios em alta resolução",
+        "Link TransferNow": "https://www.transfernow.net/localway-fotobella",
+        "Observações dos materiais": "Pastas separadas por categoria de ensaio.",
+        "Observações finais": "Queremos priorizar o agendamento de ensaios de casamento para a próxima temporada."
+      },
+      "raw": {
+        "nomeFantasia": "Estúdio Foto Bella",
+        "razaoSocial": "Foto Bella Produções Fotográficas Ltda",
+        "cnpj": "28.491.503/0001-82",
+        "segmento": "Fotografia",
+        "descricaoEmpresa": "Estúdio fotográfico especializado em casamentos e ensaios de família.",
+        "dataAbertura": "2018-03-15",
+        "telefone": "(11) 3456-7890",
+        "whatsapp": "(11) 99999-8888",
+        "email": "contato@fotobella.com.br",
+        "site": "https://www.fotobella.com.br",
+        "instagram": "@estudiofotobella",
+        "facebookOutras": "facebook.com/estudiofotobella",
+        "ruaAvenida": "Rua Oscar Freire",
+        "numero": "1250",
+        "complemento": "Conjunto 42",
+        "bairro": "Cerqueira César",
+        "cidade": "São Paulo",
+        "estado": "SP",
+        "horarios": {
+          "segunda": {
+            "status": "aberto",
+            "abertura1": "09:00",
+            "fechamento1": "18:00",
+            "temIntervalo": false
+          },
+          "terca": {
+            "status": "aberto",
+            "abertura1": "09:00",
+            "fechamento1": "18:00",
+            "temIntervalo": false
+          },
+          "quarta": {
+            "status": "aberto",
+            "abertura1": "09:00",
+            "fechamento1": "18:00",
+            "temIntervalo": false
+          },
+          "quinta": {
+            "status": "aberto",
+            "abertura1": "09:00",
+            "fechamento1": "18:00",
+            "temIntervalo": false
+          },
+          "sexta": {
+            "status": "aberto",
+            "abertura1": "09:00",
+            "fechamento1": "18:00",
+            "temIntervalo": false
+          },
+          "sabado": {
+            "status": "aberto",
+            "abertura1": "09:00",
+            "fechamento1": "13:00",
+            "temIntervalo": false
+          },
+          "domingo": {
+            "status": "fechado",
+            "abertura1": "",
+            "fechamento1": "",
+            "temIntervalo": false
+          }
+        },
+        "trabalhaAgendamento": "Sim",
+        "formasAgendamento": [
+          "WhatsApp",
+          "Telefone Comercial"
+        ],
+        "contatoLinkAgendamento": "https://wa.me/5511999998888",
+        "estacionamento": "Estacionamento com manobrista conveniado ao lado",
+        "idiomas": [
+          "Português",
+          "Inglês"
+        ],
+        "formasPagamento": [
+          "Cartão de Crédito",
+          "Pix",
+          "Boleto Bancário"
+        ],
+        "responsavelNome": "Isabella Cristina Santos",
+        "responsavelCargo": "Sócia-Fundadora & Diretora Criativa",
+        "responsavelWhatsapp": "(11) 98888-2233",
+        "responsavelEmail": "isabella@fotobella.com.br",
+        "servicosContratados": [
+          "google",
+          "minisite",
+          "trafego"
+        ],
+        "possuiMateriais": "Sim",
+        "tiposMateriais": [
+          "Logotipo em alta resolução",
+          "Fotos dos trabalhos"
+        ],
+        "linkTransferNow": "https://www.transfernow.net/localway-fotobella",
+        "observacoesFinais": "Queremos priorizar o agendamento de ensaios de casamento para a próxima temporada."
+      }
+    }
+  },
+  {
+    "timestamp": "2026-11-05T12:18:23.293Z",
+    "codigoCliente": "LW-02",
+    "lastModified": "2026-11-05T12:18:23.293Z",
+    "payload": {
+      "rowData": {
+        "Nome fantasia": "Padaria Pão Dourado",
+        "Segmento": "Comércio",
+        "WhatsApp": "(11) 97777-6666",
+        "E-mail": "contato@paodourado.com.br",
+        "Cidade": "Campinas",
+        "Estado": "SP",
+        "Serviços contratados": "Mini Site",
+        "Código do cliente": "LW-02"
       }
     }
   }
