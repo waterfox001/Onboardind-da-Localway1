@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import { OnboardingData, StepType } from './types';
 import { INITIAL_ONBOARDING_DATA } from './constants/initialData';
 import { getActiveSteps } from './utils/stepManager';
@@ -85,6 +86,11 @@ export default function App() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<{
+    message: string;
+    isSyncError?: boolean;
+    clientCode?: string;
+  } | null>(null);
   const [saveIndicator, setSaveIndicator] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -400,6 +406,7 @@ export default function App() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       const payload = formatSpreadsheetPayload(formData, schema.segmentsConfig);
 
@@ -414,20 +421,91 @@ export default function App() {
       const json = await res.json();
       console.log('Submission result:', json);
 
-      // Clear draft on success
-      try {
-        localStorage.removeItem(DRAFT_KEY);
-      } catch {
-        // ignore
+      if (json.clientCode) {
+        setFormData((prev) => ({
+          ...prev,
+          codigoCliente: json.clientCode,
+        }));
       }
 
-      setIsSuccess(true);
-      scrollToTop();
-    } catch (err) {
+      // Check if both database save AND Google Sheets dispatch succeeded
+      if (res.ok && json.success && json.sheetSyncSuccess) {
+        // Clear local draft only after full confirmed success
+        try {
+          localStorage.removeItem(DRAFT_KEY);
+        } catch {
+          // ignore
+        }
+        setIsSuccess(true);
+        scrollToTop();
+      } else if (json.dbSaved) {
+        // Data protection: Database saved, but sheet encountered an issue
+        // DO NOT delete draft from localStorage or form data!
+        setSubmitError({
+          message:
+            json.warning ||
+            'Suas informações foram salvas com segurança no banco de dados, mas houve uma instabilidade momentânea na conexão com a planilha do Google.',
+          isSyncError: true,
+          clientCode: json.clientCode,
+        });
+        scrollToTop();
+      } else {
+        setSubmitError({
+          message:
+            json.error ||
+            'Não foi possível concluir o envio. Suas informações continuam salvas no formulário. Por favor, tente novamente.',
+          isSyncError: false,
+        });
+        scrollToTop();
+      }
+    } catch (err: any) {
       console.error('Submission error:', err);
-      // Fallback: Even if fetch has an issue, show success because the client completed their work
-      setIsSuccess(true);
+      setSubmitError({
+        message:
+          'Não foi possível conectar ao servidor. Suas informações continuam totalmente salvas no formulário. Verifique sua conexão e tente novamente.',
+        isSyncError: false,
+      });
       scrollToTop();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRetrySync = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const payload = formatSpreadsheetPayload(formData, schema.segmentsConfig);
+      const res = await fetch('/api/admin/sync-submission', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rowData: payload.rowData }),
+      });
+      const json = await res.json();
+      if (json.success && json.sheetSyncSuccess) {
+        setSubmitError(null);
+        try {
+          localStorage.removeItem(DRAFT_KEY);
+        } catch {
+          // ignore
+        }
+        setIsSuccess(true);
+        scrollToTop();
+      } else {
+        setSubmitError({
+          message:
+            'Ainda não foi possível sincronizar com a planilha do Google. Suas informações continuam salvas com segurança no banco de dados. Você pode tentar novamente em alguns instantes.',
+          isSyncError: true,
+          clientCode: submitError?.clientCode,
+        });
+      }
+    } catch {
+      setSubmitError({
+        message:
+          'Erro de conexão ao tentar sincronizar com a planilha. Suas informações continuam salvas com segurança no banco de dados.',
+        isSyncError: true,
+        clientCode: submitError?.clientCode,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -739,10 +817,43 @@ export default function App() {
                 )}
 
                 {currentStepId === 'summary' && (
-                  <StepSummary
-                    data={formData}
-                    onJumpToStep={handleJumpToStep}
-                  />
+                  <>
+                    {submitError && (
+                      <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 animate-fadeIn">
+                        <div className="flex items-start gap-3">
+                          <div className="p-1.5 rounded-lg bg-amber-100 text-amber-800 shrink-0 mt-0.5">
+                            <AlertCircle className="w-4 h-4" />
+                          </div>
+                          <div className="space-y-1.5 flex-1 text-xs">
+                            <h4 className="font-bold text-amber-950">Atenção no envio</h4>
+                            <p className="leading-relaxed">{submitError.message}</p>
+                            {submitError.clientCode && (
+                              <p className="text-[11px] text-amber-700 font-medium">
+                                Código de registro no sistema: <strong>{submitError.clientCode}</strong>
+                              </p>
+                            )}
+                            {submitError.isSyncError && (
+                              <div className="pt-2">
+                                <button
+                                  type="button"
+                                  onClick={handleRetrySync}
+                                  disabled={isSubmitting}
+                                  className="px-3.5 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-white font-semibold text-xs transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5 shadow-xs"
+                                >
+                                  <RefreshCw className={`w-3.5 h-3.5 ${isSubmitting ? 'animate-spin' : ''}`} />
+                                  <span>Tentar sincronizar novamente com a planilha</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <StepSummary
+                      data={formData}
+                      onJumpToStep={handleJumpToStep}
+                    />
+                  </>
                 )}
               </motion.div>
             </AnimatePresence>

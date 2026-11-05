@@ -14,7 +14,7 @@ export const StepSuccess: React.FC<StepSuccessProps> = ({
   data,
   onNewOnboarding,
 }) => {
-  const protocolNumber = `LW-${Math.floor(100000 + Math.random() * 900000)}`;
+  const protocolNumber = data.codigoCliente || `LW-${Math.floor(100000 + Math.random() * 900000)}`;
 
   const handlePrint = () => {
     window.print();

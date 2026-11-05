@@ -36,6 +36,10 @@ interface StoredSubmission {
   timestamp: string;
   codigoCliente?: string;
   lastModified?: string;
+  finalized?: boolean;
+  status?: string;
+  sheetSyncStatus?: 'synced' | 'pending' | 'error';
+  sheetSyncError?: string;
   payload: {
     rowData: Record<string, string>;
     raw?: unknown;
@@ -149,13 +153,17 @@ async function startServer() {
     // 1. Determine unique client code (LW-01, LW-02, ...)
     const { clientCode, isExistingClient, existingIndex } = getOrCreateClientCode(payload.rowData);
     payload.rowData['Código do cliente'] = clientCode;
+    payload.rowData['Status do Onboarding'] = 'Finalizado';
 
-    // 2. Save local persistent backup
+    // 2. Save local persistent backup FIRST (Requirement 2 & 6: Data Protection)
     const list = readLocalSubmissions();
     const newRecord: StoredSubmission = {
       timestamp: new Date().toISOString(),
       codigoCliente: clientCode,
       lastModified: new Date().toISOString(),
+      finalized: true,
+      status: 'Finalizado',
+      sheetSyncStatus: 'pending',
       payload,
     };
 
@@ -166,26 +174,33 @@ async function startServer() {
     }
     writeLocalSubmissions(list);
 
-    // 3. Dispatch to Google Apps Script Web App
-    try {
-      console.log(`Forwarding onboarding [${clientCode}] to Google Sheets Web App...`);
-      let targetScriptUrl = GOOGLE_SCRIPT_URL;
-
-      if (fs.existsSync(SETTINGS_FILE)) {
-        try {
-          const cfg = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'));
-          if (cfg.googleScriptUrl) targetScriptUrl = cfg.googleScriptUrl;
-        } catch {
-          // ignore
-        }
+    // 3. Dispatch to Google Apps Script Web App (Requirement 3)
+    let targetScriptUrl = GOOGLE_SCRIPT_URL;
+    if (fs.existsSync(SETTINGS_FILE)) {
+      try {
+        const cfg = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'));
+        if (cfg.googleScriptUrl) targetScriptUrl = cfg.googleScriptUrl;
+      } catch {
+        // ignore
       }
+    }
 
-      // Payload includes rowData plus client code for Google Sheets multi-tab dispatcher
-      const postBody = {
-        ...payload.rowData,
-        'Código do cliente': clientCode,
-        codigoCliente: clientCode,
-      };
+    // Comprehensive payload:
+    // 'respostas' is required by deployed Google Apps Script
+    // Root keys are also spread for maximum compatibility with any custom scripts
+    const postBody = {
+      respostas: payload.rowData,
+      dados: payload.rowData,
+      ...payload.rowData,
+      'Código do cliente': clientCode,
+      codigoCliente: clientCode,
+      'Status do Onboarding': 'Finalizado',
+      finalizado: true,
+      timestamp: newRecord.timestamp,
+    };
+
+    try {
+      console.log(`Forwarding onboarding [${clientCode}] to Google Sheets Web App: ${targetScriptUrl}`);
 
       const response = await fetch(targetScriptUrl, {
         method: 'POST',
@@ -198,30 +213,73 @@ async function startServer() {
       });
 
       const responseText = await response.text();
-      let responseJson: Record<string, unknown> = {};
+      let responseJson: any = null;
 
       try {
         responseJson = JSON.parse(responseText);
       } catch {
-        responseJson = { raw: responseText };
+        responseJson = { raw: responseText.slice(0, 500) };
       }
 
       console.log('Google Apps Script response:', response.status, responseText.slice(0, 200));
 
-      return res.json({
-        success: true,
-        message: 'Onboarding enviado e registrado com sucesso!',
-        clientCode,
-        status: response.status,
-        scriptResponse: responseJson,
-      });
+      const isSheetsSuccess = response.ok && (
+        responseJson?.sucesso === true ||
+        responseJson?.success === true ||
+        (typeof responseJson?.mensagem === 'string' && responseJson.mensagem.toLowerCase().includes('sucesso')) ||
+        (typeof responseJson?.message === 'string' && responseJson.message.toLowerCase().includes('sucesso')) ||
+        (typeof responseText === 'string' && responseText.toLowerCase().includes('sucesso'))
+      );
+
+      // Update stored record in database with sync status
+      const updatedList = readLocalSubmissions();
+      const recIdx = updatedList.findIndex((s) => s.codigoCliente === clientCode);
+      if (recIdx >= 0) {
+        updatedList[recIdx].sheetSyncStatus = isSheetsSuccess ? 'synced' : 'error';
+        updatedList[recIdx].sheetSyncError = isSheetsSuccess
+          ? undefined
+          : (responseJson?.mensagem || responseJson?.error || `HTTP ${response.status}`);
+        writeLocalSubmissions(updatedList);
+      }
+
+      if (isSheetsSuccess) {
+        return res.json({
+          success: true,
+          dbSaved: true,
+          sheetSyncSuccess: true,
+          clientCode,
+          message: 'Informações recebidas com sucesso!',
+          status: response.status,
+          scriptResponse: responseJson,
+        });
+      } else {
+        return res.json({
+          success: true,
+          dbSaved: true,
+          sheetSyncSuccess: false,
+          clientCode,
+          warning: 'Salvo em banco de dados seguro. A sincronização com o Google Sheets retornou uma pendência.',
+          error: responseJson?.mensagem || responseJson?.error || `HTTP ${response.status}`,
+          scriptResponse: responseJson,
+        });
+      }
     } catch (err: unknown) {
       console.error('Error forwarding to Google Apps Script:', err);
       // Safe fallback: data is 100% saved in submissions.json
+      const updatedList = readLocalSubmissions();
+      const recIdx = updatedList.findIndex((s) => s.codigoCliente === clientCode);
+      if (recIdx >= 0) {
+        updatedList[recIdx].sheetSyncStatus = 'error';
+        updatedList[recIdx].sheetSyncError = err instanceof Error ? err.message : String(err);
+        writeLocalSubmissions(updatedList);
+      }
+
       return res.json({
         success: true,
+        dbSaved: true,
+        sheetSyncSuccess: false,
         clientCode,
-        warning: 'Salvo em backup seguro. O envio para o Google Sheets será sincronizado.',
+        warning: 'Salvo em banco de dados seguro. O envio para o Google Sheets será sincronizado.',
         error: err instanceof Error ? err.message : String(err),
       });
     }
@@ -558,9 +616,12 @@ Regras obrigatórias:
 
       const clientCode = rowData['Código do cliente'] || 'LW-01';
       const postBody = {
+        respostas: rowData,
+        dados: rowData,
         ...rowData,
         'Código do cliente': clientCode,
         codigoCliente: clientCode,
+        finalizado: true,
       };
 
       const response = await fetch(targetScriptUrl, {
@@ -574,10 +635,41 @@ Regras obrigatórias:
       });
 
       const responseText = await response.text();
+      let responseJson: any = null;
+      try {
+        responseJson = JSON.parse(responseText);
+      } catch {
+        responseJson = { raw: responseText.slice(0, 500) };
+      }
+
+      const isSheetsSuccess = response.ok && (
+        responseJson?.sucesso === true ||
+        responseJson?.success === true ||
+        (typeof responseJson?.mensagem === 'string' && responseJson.mensagem.toLowerCase().includes('sucesso')) ||
+        (typeof responseJson?.message === 'string' && responseJson.message.toLowerCase().includes('sucesso')) ||
+        (typeof responseText === 'string' && responseText.toLowerCase().includes('sucesso'))
+      );
+
+      // Update database status
+      const list = readLocalSubmissions();
+      const idx = list.findIndex(
+        (s) => s.codigoCliente === clientCode || s.payload?.rowData?.['Código do cliente'] === clientCode
+      );
+      if (idx >= 0) {
+        list[idx].sheetSyncStatus = isSheetsSuccess ? 'synced' : 'error';
+        list[idx].sheetSyncError = isSheetsSuccess
+          ? undefined
+          : (responseJson?.mensagem || responseJson?.error || `HTTP ${response.status}`);
+        list[idx].lastModified = new Date().toISOString();
+        writeLocalSubmissions(list);
+      }
+
       return res.json({
-        success: true,
+        success: isSheetsSuccess,
+        sheetSyncSuccess: isSheetsSuccess,
         status: response.status,
-        scriptResponse: responseText,
+        scriptResponse: responseJson || responseText,
+        message: isSheetsSuccess ? 'Sincronizado com sucesso!' : 'Falha ao sincronizar com a planilha.',
       });
     } catch (err) {
       return res.status(500).json({ success: false, error: String(err) });
@@ -664,9 +756,12 @@ Regras obrigatórias:
       };
 
       const postBody = {
+        respostas: sampleRowData,
+        dados: sampleRowData,
         ...sampleRowData,
         'Código do cliente': 'LW-01',
         codigoCliente: 'LW-01',
+        finalizado: true,
       };
 
       console.log('Sending test payload to Google Apps Script:', targetScriptUrl);

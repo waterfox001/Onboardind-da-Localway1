@@ -65,6 +65,7 @@ export interface EmailSignaturePerson {
 }
 
 export interface OnboardingData {
+  codigoCliente?: string;
   // 1. Dados da Empresa
   nomeFantasia: string;
   razaoSocial: string;

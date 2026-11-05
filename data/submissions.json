@@ -1,156 +1,70 @@
 [
   {
-    "timestamp": "2026-11-05T11:27:54.445Z",
+    "timestamp": "2026-11-05T13:21:08.359Z",
     "codigoCliente": "LW-01",
-    "lastModified": "2026-11-05T12:15:00.000Z",
+    "lastModified": "2026-11-05T13:21:08.359Z",
     "payload": {
       "rowData": {
         "Código do cliente": "LW-01",
-        "Data e hora": "05/11/2026, 09:15:00",
-        "Nome fantasia": "Estúdio Foto Bella",
-        "Razão social": "Foto Bella Produções Fotográficas Ltda",
-        "CNPJ": "28.491.503/0001-82",
+        "Data e hora": "05/11/2026, 10:21:05",
+        "Nome fantasia": "Empresa Exemplo Localway",
+        "Razão social": "Empresa Exemplo Ltda",
+        "CNPJ": "12.345.678/0001-90",
         "Segmento": "Fotografia",
         "Outro segmento": "",
-        "Descrição da empresa": "Estúdio fotográfico especializado em casamentos, ensaios de gestante, família e eventos corporativos de alto padrão.",
-        "Data de abertura": "2018-03-15",
-        "Telefone": "(11) 3456-7890",
+        "Descrição da empresa": "Estúdio de fotografia especializado em casamentos e eventos corporativos.",
+        "Data de abertura": "2019-05-10",
+        "Telefone": "(11) 3333-4444",
         "WhatsApp": "(11) 99999-8888",
-        "E-mail": "contato@fotobella.com.br",
-        "Site": "https://www.fotobella.com.br",
-        "Instagram": "@estudiofotobella",
-        "Facebook / outras redes": "facebook.com/estudiofotobella",
-        "Rua / Avenida": "Rua Oscar Freire",
-        "Número": "1250",
-        "Complemento": "Conjunto 42",
-        "Bairro": "Cerqueira César",
+        "E-mail": "contato@empresaexemplo.com.br",
+        "Site": "https://www.empresaexemplo.com.br",
+        "Instagram": "@empresaexemplo",
+        "Facebook / outras redes": "facebook.com/empresaexemplo",
+        "Rua / Avenida": "Av. Paulista",
+        "Número": "1000",
+        "Complemento": "Sala 502",
+        "Bairro": "Bela Vista",
         "Cidade": "São Paulo",
         "Estado": "SP",
-        "Horário segunda a sexta": "09:00 às 18:00",
-        "Segunda": "09:00 às 18:00",
-        "Terça": "09:00 às 18:00",
-        "Quarta": "09:00 às 18:00",
-        "Quinta": "09:00 às 18:00",
-        "Sexta": "09:00 às 18:00",
-        "Sábado": "09:00 às 13:00",
+        "Horário segunda a sexta": "08:00 às 18:00",
+        "Segunda": "08:00 às 18:00",
+        "Terça": "08:00 às 18:00",
+        "Quarta": "08:00 às 18:00",
+        "Quinta": "08:00 às 18:00",
+        "Sexta": "08:00 às 18:00",
+        "Sábado": "08:00 às 12:00",
         "Domingo": "Fechado",
         "Trabalha com agendamento": "Sim",
-        "Formas de agendamento": "WhatsApp, Telefone Comercial",
+        "Formas de agendamento": "WhatsApp, Telefone, Site",
         "Contato / link de agendamento": "https://wa.me/5511999998888",
-        "Estacionamento": "Estacionamento com manobrista conveniado ao lado",
+        "Estacionamento": "Estacionamento próprio gratuito para clientes",
         "Outro estacionamento": "",
         "Idiomas": "Português, Inglês",
-        "Formas de pagamento": "Cartão de Crédito, Pix, Boleto Bancário",
+        "Formas de pagamento": "Cartão de Crédito, Pix, Dinheiro",
         "Outro pagamento": "",
-        "Responsável": "Isabella Cristina Santos",
-        "Cargo / função": "Sócia-Fundadora & Diretora Criativa",
-        "WhatsApp responsável": "(11) 98888-2233",
-        "E-mail responsável": "isabella@fotobella.com.br",
+        "Responsável": "Carlos Alberto da Silva",
+        "Cargo / função": "Proprietário & Diretor",
+        "WhatsApp responsável": "(11) 98888-1111",
+        "E-mail responsável": "carlos@empresaexemplo.com.br",
         "Serviços contratados": "Google Meu Negócio, Mini Site, Tráfego Pago",
-        "Detalhes dos serviços": "[GOOGLE MEU NEGÓCIO]:\n- Categoria Principal: Estúdio de Fotografia\n- Principais Serviços: Ensaios de Casamento, Book Gestante, Eventos Corporativos\n\n[MINI SITE]:\n- Botões de ação rápida para WhatsApp, Instagram e Mapa do estúdio\n\n[TRÁFEGO PAGO]:\n- Foco em noivas e gestantes na capital de São Paulo",
-        "Detalhes específicos do segmento": "Quais tipos de ensaios ou serviços você mais realiza: Casamentos, Ensaios de Gestante e Família, Eventos Corporativos | Qual o prazo médio de entrega: 10 a 15 dias úteis com galeria online.",
+        "Detalhes dos serviços": "[GOOGLE MEU NEGÓCIO]: Otimização completa de perfil, fotos em alta resolução e catálogo de ensaios.\n\n[MINI SITE]: Mini site rápido com botões de WhatsApp, galeria e endereço no Google Maps.\n\n[TRÁFEGO PAGO]: Campanhas focadas em noivas e empresas na região metropolitana de SP.",
+        "Detalhes específicos do segmento": "Quais tipos de ensaios: Casamentos, Ensaios de Família, Eventos Corporativos | Prazo de entrega: 10 dias úteis.",
         "Possui materiais": "Sim",
-        "Tipos de materiais": "Logotipo vetorizado (SVG), Fotos de ensaios em alta resolução",
-        "Link TransferNow": "https://www.transfernow.net/localway-fotobella",
-        "Observações dos materiais": "Pastas separadas por categoria de ensaio.",
-        "Observações finais": "Queremos priorizar o agendamento de ensaios de casamento para a próxima temporada."
+        "Tipos de materiais": "Logotipo em vetor, Fotos em alta resolução",
+        "Link TransferNow": "https://www.transfernow.net/exemplo-localway",
+        "Observações dos materiais": "Arquivos organizados por pastas.",
+        "Observações finais": "Teste de integração realizado com sucesso."
       },
       "raw": {
-        "nomeFantasia": "Estúdio Foto Bella",
-        "razaoSocial": "Foto Bella Produções Fotográficas Ltda",
-        "cnpj": "28.491.503/0001-82",
+        "nomeFantasia": "Empresa Exemplo Localway",
+        "razaoSocial": "Empresa Exemplo Ltda",
         "segmento": "Fotografia",
-        "descricaoEmpresa": "Estúdio fotográfico especializado em casamentos e ensaios de família.",
-        "dataAbertura": "2018-03-15",
-        "telefone": "(11) 3456-7890",
         "whatsapp": "(11) 99999-8888",
-        "email": "contato@fotobella.com.br",
-        "site": "https://www.fotobella.com.br",
-        "instagram": "@estudiofotobella",
-        "facebookOutras": "facebook.com/estudiofotobella",
-        "ruaAvenida": "Rua Oscar Freire",
-        "numero": "1250",
-        "complemento": "Conjunto 42",
-        "bairro": "Cerqueira César",
+        "email": "contato@empresaexemplo.com.br",
         "cidade": "São Paulo",
-        "estado": "SP",
-        "horarios": {
-          "segunda": {
-            "status": "aberto",
-            "abertura1": "09:00",
-            "fechamento1": "18:00",
-            "temIntervalo": false
-          },
-          "terca": {
-            "status": "aberto",
-            "abertura1": "09:00",
-            "fechamento1": "18:00",
-            "temIntervalo": false
-          },
-          "quarta": {
-            "status": "aberto",
-            "abertura1": "09:00",
-            "fechamento1": "18:00",
-            "temIntervalo": false
-          },
-          "quinta": {
-            "status": "aberto",
-            "abertura1": "09:00",
-            "fechamento1": "18:00",
-            "temIntervalo": false
-          },
-          "sexta": {
-            "status": "aberto",
-            "abertura1": "09:00",
-            "fechamento1": "18:00",
-            "temIntervalo": false
-          },
-          "sabado": {
-            "status": "aberto",
-            "abertura1": "09:00",
-            "fechamento1": "13:00",
-            "temIntervalo": false
-          },
-          "domingo": {
-            "status": "fechado",
-            "abertura1": "",
-            "fechamento1": "",
-            "temIntervalo": false
-          }
-        },
-        "trabalhaAgendamento": "Sim",
-        "formasAgendamento": [
-          "WhatsApp",
-          "Telefone Comercial"
-        ],
-        "contatoLinkAgendamento": "https://wa.me/5511999998888",
-        "estacionamento": "Estacionamento com manobrista conveniado ao lado",
-        "idiomas": [
-          "Português",
-          "Inglês"
-        ],
-        "formasPagamento": [
-          "Cartão de Crédito",
-          "Pix",
-          "Boleto Bancário"
-        ],
-        "responsavelNome": "Isabella Cristina Santos",
-        "responsavelCargo": "Sócia-Fundadora & Diretora Criativa",
-        "responsavelWhatsapp": "(11) 98888-2233",
-        "responsavelEmail": "isabella@fotobella.com.br",
-        "servicosContratados": [
-          "google",
-          "minisite",
-          "trafego"
-        ],
-        "possuiMateriais": "Sim",
-        "tiposMateriais": [
-          "Logotipo em alta resolução",
-          "Fotos dos trabalhos"
-        ],
-        "linkTransferNow": "https://www.transfernow.net/localway-fotobella",
-        "observacoesFinais": "Queremos priorizar o agendamento de ensaios de casamento para a próxima temporada."
-      }
+        "estado": "SP"
+      },
+      "dataHora": "05/11/2026, 10:21:05"
     }
   },
   {
@@ -168,6 +82,237 @@
         "Serviços contratados": "Mini Site",
         "Código do cliente": "LW-02"
       }
+    }
+  },
+  {
+    "timestamp": "2026-11-05T13:20:48.029Z",
+    "codigoCliente": "LW-03",
+    "lastModified": "2026-11-05T13:21:00.877Z",
+    "finalized": true,
+    "status": "Finalizado",
+    "sheetSyncStatus": "synced",
+    "payload": {
+      "rowData": {
+        "Código do cliente": "LW-03",
+        "Data e hora": "05/11/2026, 10:20:47",
+        "Status do Onboarding": "Finalizado",
+        "Data de finalização": "05/11/2026, 10:20:47",
+        "Nome fantasia": "Clínica Odonto Vida",
+        "Razão social": "Odonto Vida Serviços Odontológicos Ltda",
+        "CNPJ": "34.567.890/0001-12",
+        "Segmento": "Odontologia",
+        "Outro segmento": "",
+        "Descrição da empresa": "Clínica odontológica completa com foco em implantes, ortodontia e estética dental.",
+        "Data de abertura": "2016-08-20",
+        "Telefone": "(11) 3210-9876",
+        "WhatsApp": "(11) 98765-4321",
+        "E-mail": "contato@odontovida.com.br",
+        "Site": "https://www.odontovida.com.br",
+        "Instagram": "@odontovida_oficial",
+        "Facebook / outras redes": "facebook.com/odontovida",
+        "Rua / Avenida": "Avenida Rebouças",
+        "Número": "1500",
+        "Complemento": "8º Andar",
+        "Bairro": "Pinheiros",
+        "Cidade": "São Paulo",
+        "Estado": "SP",
+        "Horário segunda a sexta": "08:00 às 19:00",
+        "Segunda": "08:00 às 19:00",
+        "Terça": "08:00 às 19:00",
+        "Quarta": "08:00 às 19:00",
+        "Quinta": "08:00 às 19:00",
+        "Sexta": "08:00 às 19:00",
+        "Sábado": "08:00 às 13:00",
+        "Domingo": "Fechado",
+        "Trabalha com agendamento": "Sim",
+        "Formas de agendamento": "WhatsApp, Telefone, Site",
+        "Contato / link de agendamento": "https://wa.me/5511987654321",
+        "Estacionamento": "Estacionamento conveniado pago pelo cliente",
+        "Outro estacionamento": "",
+        "Idiomas": "Português, Inglês",
+        "Formas de pagamento": "Cartão de Crédito, Cartão de Débito, Pix, Boleto Bancário [Bandeiras: Visa, Mastercard, Elo]",
+        "Outro pagamento": "",
+        "Responsável": "Dra. Mariana Albuquerque",
+        "WhatsApp responsável": "(11) 98765-4321",
+        "E-mail responsável": "mariana@odontovida.com.br",
+        "Cargo / função": "Diretora Clínica & Cirurgiã-Dentista",
+        "Serviços contratados": "Perfil da Empresa no Google, Site Profissional, Tráfego Pago",
+        "Detalhes dos serviços": "[GOOGLE MEU NEGÓCIO]:\n- Nome Comercial: Clínica Odonto Vida - Implantes e Ortodontia\n- Categoria Principal: Clínica Odontológica\n- Categorias Secundárias: Ortodontista, Cirurgião-dentista\n- Principais Serviços: Implantes Dentários, Alinhadores Invisíveis, Facetas de Resina\n- Descrição: Atendimento humanizado e equipamentos modernos em Pinheiros.\n- Área de Atendimento: São Paulo - Capital\n- Horários/Endereço: Avenida Rebouças, 1500, Pinheiros - São Paulo/SP\n- Já possui perfil: Sim (https://maps.google.com/?cid=123456)\n- Correções necessárias: Atualizar horário de sábado e fotos do consultório.\n\n[SITE PROFISSIONAL]:\n- Já possui site: Sim (https://www.odontovida.com.br)\n- O que manter: Depoimentos de pacientes e artigos do blog\n- O que mudar: Design moderno, velocidade e botões de agendamento por WhatsApp\n- Objetivos: Atrair novos pacientes, Fortalecer a autoridade médica \n- Páginas: Início, Sobre, Especialidades, Equipe, Contato \n- Referência: https://www.referenciaexemplo.com.br\n- Informação obrigatória: CRO-SP do responsável técnico\n\n[TRÁFEGO PAGO]:\n- Objetivo principal: Gerar agendamentos e avaliações pelo WhatsApp \n- Produto/Serviço inicial: Implantes Dentários e Alinhadores Ortodônticos\n- Região: Cidade São Paulo, Bairros: Pinheiros, Jardins, Vila Madalena, Itaim Bibi\n- Público-alvo: Homens e mulheres de 28 a 60 anos, classe A/B\n- Já anuncia: Sim\n- Plataformas: Google Ads, Meta Ads (Instagram e Facebook) \n- Campanhas ativas: Anúncios esporádicos no botão Impulsionar\n- WhatsApp para contatos: (11) 98765-4321\n- Promoções/Período: Campanha contínua",
+        "Detalhes específicos do segmento": "especialidades: Implantes, Ortodontia, Prótese Dentária, Clareamento\natendimento_convenio: Particular e reembolso\ndiferenciais: Scanner 3D intraoral e sedação consciente para pacientes com fobia.",
+        "[Segmento] especialidades": "Implantes, Ortodontia, Prótese Dentária, Clareamento",
+        "[Segmento] atendimento_convenio": "Particular e reembolso",
+        "[Segmento] diferenciais": "Scanner 3D intraoral e sedação consciente para pacientes com fobia.",
+        "Possui materiais": "Sim",
+        "Tipos de materiais": "Logotipo em alta resolução (PNG e PDF), Fotos profissionais da clínica e da equipe",
+        "Link TransferNow": "https://www.transfernow.net/odontovida-localway | Links: https://drive.google.com/drive/folders/odontovida",
+        "Observações dos materiais": "Pastas separadas com fotos da recepção e consultórios.",
+        "Observações finais": "Gostaríamos de priorizar a campanha de implantes no primeiro mês."
+      },
+      "raw": {
+        "nomeFantasia": "Clínica Odonto Vida",
+        "razaoSocial": "Odonto Vida Serviços Odontológicos Ltda",
+        "cnpj": "34.567.890/0001-12",
+        "segmento": "Odontologia",
+        "outroSegmento": "",
+        "descricaoEmpresa": "Clínica odontológica completa com foco em implantes, ortodontia e estética dental.",
+        "dataAbertura": "2016-08-20",
+        "telefone": "(11) 3210-9876",
+        "whatsapp": "(11) 98765-4321",
+        "email": "contato@odontovida.com.br",
+        "site": "https://www.odontovida.com.br",
+        "instagram": "@odontovida_oficial",
+        "facebookOutras": "facebook.com/odontovida",
+        "ruaAvenida": "Avenida Rebouças",
+        "numero": "1500",
+        "complemento": "8º Andar",
+        "bairro": "Pinheiros",
+        "cidade": "São Paulo",
+        "estado": "SP",
+        "horarios": {
+          "segunda": {
+            "status": "aberto",
+            "abertura1": "08:00",
+            "fechamento1": "19:00",
+            "temIntervalo": false
+          },
+          "terca": {
+            "status": "aberto",
+            "abertura1": "08:00",
+            "fechamento1": "19:00",
+            "temIntervalo": false
+          },
+          "quarta": {
+            "status": "aberto",
+            "abertura1": "08:00",
+            "fechamento1": "19:00",
+            "temIntervalo": false
+          },
+          "quinta": {
+            "status": "aberto",
+            "abertura1": "08:00",
+            "fechamento1": "19:00",
+            "temIntervalo": false
+          },
+          "sexta": {
+            "status": "aberto",
+            "abertura1": "08:00",
+            "fechamento1": "19:00",
+            "temIntervalo": false
+          },
+          "sabado": {
+            "status": "aberto",
+            "abertura1": "08:00",
+            "fechamento1": "13:00",
+            "temIntervalo": false
+          },
+          "domingo": {
+            "status": "fechado",
+            "abertura1": "",
+            "fechamento1": "",
+            "temIntervalo": false
+          }
+        },
+        "trabalhaAgendamento": "Sim",
+        "formasAgendamento": [
+          "WhatsApp",
+          "Telefone",
+          "Site"
+        ],
+        "outroAgendamento": "",
+        "contatoLinkAgendamento": "https://wa.me/5511987654321",
+        "estacionamento": "Estacionamento conveniado pago pelo cliente",
+        "outroEstacionamento": "",
+        "idiomas": [
+          "Português",
+          "Inglês"
+        ],
+        "formasPagamento": [
+          "Cartão de Crédito",
+          "Cartão de Débito",
+          "Pix",
+          "Boleto Bancário"
+        ],
+        "outroPagamento": "",
+        "bandeirasCartao": [
+          "Visa",
+          "Mastercard",
+          "Elo"
+        ],
+        "outraBandeiraCartao": "",
+        "responsavelNome": "Dra. Mariana Albuquerque",
+        "responsavelCargo": "Diretora Clínica & Cirurgiã-Dentista",
+        "responsavelWhatsapp": "(11) 98765-4321",
+        "responsavelEmail": "mariana@odontovida.com.br",
+        "servicosContratados": [
+          "google",
+          "site",
+          "trafego"
+        ],
+        "googleNomeComercial": "Clínica Odonto Vida - Implantes e Ortodontia",
+        "googleCategoriaPrincipal": "Clínica Odontológica",
+        "googleCategoriasSecundarias": "Ortodontista, Cirurgião-dentista",
+        "googlePrincipaisServicos": "Implantes Dentários, Alinhadores Invisíveis, Facetas de Resina",
+        "googleDescricaoServicos": "Atendimento humanizado e equipamentos modernos em Pinheiros.",
+        "googleAreaAtendimento": "São Paulo - Capital",
+        "googleEndereco": "Avenida Rebouças, 1500, Pinheiros - São Paulo/SP",
+        "googleJaPossuiPerfil": "Sim",
+        "googleLinkPerfil": "https://maps.google.com/?cid=123456",
+        "googleCorrecoesPerfil": "Atualizar horário de sábado e fotos do consultório.",
+        "siteJaPossui": "Sim",
+        "siteLinkAtual": "https://www.odontovida.com.br",
+        "siteManterAtual": "Depoimentos de pacientes e artigos do blog",
+        "siteMudarAtual": "Design moderno, velocidade e botões de agendamento por WhatsApp",
+        "siteObjetivos": [
+          "Atrair novos pacientes",
+          "Fortalecer a autoridade médica"
+        ],
+        "siteOutroObjetivo": "",
+        "sitePaginasNecessarias": [
+          "Início",
+          "Sobre",
+          "Especialidades",
+          "Equipe",
+          "Contato"
+        ],
+        "siteOutraPagina": "",
+        "siteReferencia": "https://www.referenciaexemplo.com.br",
+        "siteInfoObrigatoria": "CRO-SP do responsável técnico",
+        "trafegoObjetivo": "Gerar agendamentos e avaliações pelo WhatsApp",
+        "trafegoOutroObjetivo": "",
+        "trafegoProdutoServicoPrimeiro": "Implantes Dentários e Alinhadores Ortodônticos",
+        "trafegoCidade": "São Paulo",
+        "trafegoBairrosRegioes": "Pinheiros, Jardins, Vila Madalena, Itaim Bibi",
+        "trafegoPublicoAlvo": "Homens e mulheres de 28 a 60 anos, classe A/B",
+        "trafegoJaAnuncia": "Sim",
+        "trafegoPlataformas": [
+          "Google Ads",
+          "Meta Ads (Instagram e Facebook)"
+        ],
+        "trafegoOutraPlataforma": "",
+        "trafegoCampanhasAtuais": "Anúncios esporádicos no botão Impulsionar",
+        "trafegoWhatsappContatos": "(11) 98765-4321",
+        "trafegoPeriodoPromocao": "Campanha contínua",
+        "segmentoRespostas": {
+          "especialidades": [
+            "Implantes",
+            "Ortodontia",
+            "Prótese Dentária",
+            "Clareamento"
+          ],
+          "atendimento_convenio": "Particular e reembolso",
+          "diferenciais": "Scanner 3D intraoral e sedação consciente para pacientes com fobia."
+        },
+        "possuiMateriais": "Sim",
+        "tiposMateriais": [
+          "Logotipo em alta resolução (PNG e PDF)",
+          "Fotos profissionais da clínica e da equipe"
+        ],
+        "linkTransferNow": "https://www.transfernow.net/odontovida-localway",
+        "linksMateriais": "https://drive.google.com/drive/folders/odontovida",
+        "observacoesMateriais": "Pastas separadas com fotos da recepção e consultórios.",
+        "observacoesFinais": "Gostaríamos de priorizar a campanha de implantes no primeiro mês."
+      },
+      "dataHora": "05/11/2026, 10:20:47"
     }
   }
 ]

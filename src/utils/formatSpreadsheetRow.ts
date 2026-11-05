@@ -158,12 +158,16 @@ export function formatSpreadsheetPayload(
   const detalhesServicosStr = servicosDetalhesArray.join('\n\n');
 
   const activeSegmentsMap = customSegmentsConfig || SEGMENTS_CONFIG;
-  const segConfig = activeSegmentsMap[data.segmento] || activeSegmentsMap['Fotografia'];
+  const segConfig = data.segmento ? activeSegmentsMap[data.segmento] : null;
   const detalhesSegmentoArray: string[] = [];
-  if (segConfig) {
+  const individualSegmentQuestions: Record<string, string> = {};
+  const handledQuestions = new Set<string>();
+
+  if (segConfig && Array.isArray(segConfig.questions)) {
     segConfig.questions.forEach((q) => {
-      const resp = data.segmentoRespostas[q.id];
-      const outroText = data.segmentoRespostas[`${q.id}_outro`];
+      handledQuestions.add(q.id);
+      const resp = data.segmentoRespostas?.[q.id];
+      const outroText = data.segmentoRespostas?.[`${q.id}_outro`];
       if (resp && (!Array.isArray(resp) || resp.length > 0)) {
         let formattedResp = '';
         if (Array.isArray(resp)) {
@@ -185,19 +189,41 @@ export function formatSpreadsheetPayload(
           formattedResp = String(resp);
         }
         detalhesSegmentoArray.push(`${q.label}: ${formattedResp}`);
+        individualSegmentQuestions[`[Segmento] ${q.label}`] = formattedResp;
       }
     });
   }
-  const detalhesSegmentoStr = detalhesSegmentoArray.join('\n') || 'Nenhum detalhe específico preenchido';
+
+  // Also include any dynamically added or custom segment answers not in standard config
+  if (data.segmentoRespostas && typeof data.segmentoRespostas === 'object') {
+    Object.entries(data.segmentoRespostas).forEach(([key, val]) => {
+      if (handledQuestions.has(key) || key.endsWith('_outro')) return;
+      if (val && (!Array.isArray(val) || val.length > 0)) {
+        const outroVal = data.segmentoRespostas[`${key}_outro`];
+        const displayVal = Array.isArray(val)
+          ? val.join(', ') + (outroVal ? ` (${outroVal})` : '')
+          : String(val) + (outroVal ? ` (${outroVal})` : '');
+        detalhesSegmentoArray.push(`${key}: ${displayVal}`);
+        individualSegmentQuestions[`[Segmento] ${key}`] = displayVal;
+      }
+    });
+  }
+
+  const detalhesSegmentoStr =
+    detalhesSegmentoArray.length > 0
+      ? detalhesSegmentoArray.join('\n')
+      : 'Nenhum detalhe específico preenchido';
 
   // Objeto com as colunas completas da planilha
   const rowData: Record<string, string> = {
     'Código do cliente': (data as any).codigoCliente || '',
     'Data e hora': dataHora,
+    'Status do Onboarding': 'Finalizado',
+    'Data de finalização': dataHora,
     'Nome fantasia': data.nomeFantasia,
     'Razão social': data.razaoSocial,
     'CNPJ': data.cnpj,
-    'Segmento': data.segmento,
+    'Segmento': data.segmento === 'Outro' && data.outroSegmento ? `Outro (${data.outroSegmento})` : (data.segmento || ''),
     'Outro segmento': data.outroSegmento,
     'Descrição da empresa': data.descricaoEmpresa,
     'Data de abertura': data.dataAbertura,
@@ -241,6 +267,7 @@ export function formatSpreadsheetPayload(
     'Serviços contratados': servicosContratadosNomes,
     'Detalhes dos serviços': detalhesServicosStr,
     'Detalhes específicos do segmento': detalhesSegmentoStr,
+    ...individualSegmentQuestions,
     'Possui materiais': data.possuiMateriais,
     'Tipos de materiais': data.tiposMateriais.join(', '),
     'Link TransferNow': data.linkTransferNow + (data.linksMateriais ? ` | Links: ${data.linksMateriais}` : ''),
