@@ -401,7 +401,7 @@ export default function App() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const payload = formatSpreadsheetPayload(formData);
+      const payload = formatSpreadsheetPayload(formData, schema.segmentsConfig);
 
       const res = await fetch('/api/submit-onboarding', {
         method: 'POST',

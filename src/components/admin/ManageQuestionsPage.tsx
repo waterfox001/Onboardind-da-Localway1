@@ -645,8 +645,8 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Building className="w-4 h-4" />
-              <span>Empresas & Envios ({submissions.length})</span>
+              <FileText className="w-4 h-4" />
+              <span>Respostas ({submissions.length})</span>
             </button>
 
             <button
@@ -1559,16 +1559,16 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
           </div>
         )}
 
-        {/* ================= TAB 3: SUBMISSIONS & COMPANIES ================= */}
+        {/* ================= TAB 3: RESPOSTAS DOS CLIENTES ================= */}
         {activeTab === 'submissions' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">
-                  Empresas Cadastradas ({submissions.length})
+                  Respostas Recebidas ({submissions.length})
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Consulte os cadastros recebidos, edite dados operacionais (horários, agendamentos, facilidades) ou reenvie para a planilha.
+                  Todas as respostas enviadas pelos clientes ficam salvas aqui de forma permanente. Consulte detalhes, edite dados ou reenvie para a planilha.
                 </p>
               </div>
 
@@ -1605,16 +1605,16 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
             {isLoadingSubmissions ? (
               <div className="py-16 text-center text-slate-400 space-y-2">
                 <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-600" />
-                <p className="text-xs">Carregando dados das empresas...</p>
+                <p className="text-xs">Carregando respostas dos clientes...</p>
               </div>
             ) : submissions.length === 0 ? (
               <div className="py-16 text-center bg-white rounded-3xl border border-slate-200/90 p-8 space-y-3">
                 <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                  <Building className="w-6 h-6" />
+                  <FileText className="w-6 h-6" />
                 </div>
-                <h4 className="text-sm font-bold text-slate-800">Nenhum envio recebido ainda</h4>
+                <h4 className="text-sm font-bold text-slate-800">Nenhuma resposta recebida ainda</h4>
                 <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  Assim que um cliente concluir o formulário oficial de onboarding, todos os dados cadastrais, horários e facilidades estarão disponíveis para edição aqui.
+                  Assim que um cliente concluir o formulário oficial de onboarding, todas as respostas, dados cadastrais, horários e detalhes do segmento aparecerão aqui.
                 </p>
                 <button
                   type="button"
@@ -1628,10 +1628,11 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
               <div className="grid grid-cols-1 gap-3.5">
                 {submissions.map((sub, idx) => {
                   const row = sub.payload?.rowData || sub.rowData || {};
+                  const clientCode = sub.codigoCliente || row['Código do cliente'] || `LW-${String(submissions.length - idx).padStart(2, '0')}`;
                   const companyName = row['Nome fantasia'] || row['Razão social'] || 'Empresa sem nome';
                   const segment = row['Segmento'] || 'Geral';
                   const date = sub.timestamp ? new Date(sub.timestamp).toLocaleString('pt-BR') : '-';
-                  const whatsapp = row['WhatsApp principal'] || row['Telefone fixo'] || '-';
+                  const whatsapp = row['WhatsApp'] || row['WhatsApp principal'] || row['Telefone'] || row['Telefone fixo'] || '-';
                   const city = row['Cidade'] ? `${row['Cidade']}/${row['Estado'] || ''}` : '-';
 
                   return (
@@ -1641,6 +1642,9 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
                     >
                       <div className="space-y-1.5 flex-1 min-w-0">
                         <div className="flex items-center gap-2.5 flex-wrap">
+                          <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-900 text-white shadow-xs">
+                            {clientCode}
+                          </span>
                           <span className="font-bold text-base text-slate-900 truncate">
                             {companyName}
                           </span>

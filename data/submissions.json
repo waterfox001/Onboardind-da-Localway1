@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "timestamp": "2026-11-05T11:27:54.445Z",
+    "codigoCliente": "LW-01",
+    "lastModified": "2026-11-05T11:27:54.445Z",
+    "payload": {
+      "rowData": {
+        "Nome fantasia": "Estudio Foto Bella Teste",
+        "Segmento": "Fotografia",
+        "WhatsApp": "(11) 99999-8888",
+        "E-mail": "contato@fotobella.com.br",
+        "Cidade": "São Paulo",
+        "Estado": "SP",
+        "Serviços contratados": "Google Meu Negócio, Mini Site, Tráfego Pago",
+        "Detalhes específicos do segmento": "Quais tipos de ensaios: Casamentos, Eventos | Outro: Ensaio Pet",
+        "Código do cliente": "LW-01"
+      }
+    }
+  }
+]

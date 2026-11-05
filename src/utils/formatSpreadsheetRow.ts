@@ -11,7 +11,10 @@ function formatDaySchedule(s: DaySchedule): string {
   return txt;
 }
 
-export function formatSpreadsheetPayload(data: OnboardingData) {
+export function formatSpreadsheetPayload(
+  data: OnboardingData,
+  customSegmentsConfig?: Record<string, any>
+) {
   const now = new Date();
   const dataHora = now.toLocaleString('pt-BR', {
     timeZone: 'America/Sao_Paulo',
@@ -154,8 +157,8 @@ export function formatSpreadsheetPayload(data: OnboardingData) {
 
   const detalhesServicosStr = servicosDetalhesArray.join('\n\n');
 
-  // Detalhes específicos do segmento
-  const segConfig = SEGMENTS_CONFIG[data.segmento] || SEGMENTS_CONFIG['Fotografia'];
+  const activeSegmentsMap = customSegmentsConfig || SEGMENTS_CONFIG;
+  const segConfig = activeSegmentsMap[data.segmento] || activeSegmentsMap['Fotografia'];
   const detalhesSegmentoArray: string[] = [];
   if (segConfig) {
     segConfig.questions.forEach((q) => {
