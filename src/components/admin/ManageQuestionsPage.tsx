@@ -217,20 +217,51 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
     setAiInstructions('');
   };
 
-  // Load submissions
+  // Load submissions with local cache fallback
   const fetchSubmissions = async () => {
     setIsLoadingSubmissions(true);
+    let apiList: any[] = [];
     try {
       const res = await fetch('/api/submissions');
-      const data = await res.json();
-      if (data.success && Array.isArray(data.submissions)) {
-        setSubmissions(data.submissions.reverse());
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.submissions)) {
+          apiList = data.submissions;
+        }
       }
     } catch (err) {
-      console.error('Erro ao buscar envios:', err);
-    } finally {
-      setIsLoadingSubmissions(false);
+      console.warn('API /api/submissions unavailable, loading local cache:', err);
     }
+
+    let cachedList: any[] = [];
+    try {
+      const raw = localStorage.getItem('localway_admin_submissions_v1');
+      if (raw) cachedList = JSON.parse(raw);
+    } catch {
+      // ignore
+    }
+
+    const map = new Map<string, any>();
+    for (const item of cachedList) {
+      const key = item.codigoCliente || item.payload?.rowData?.['Código do cliente'] || item.timestamp;
+      if (key) map.set(key, item);
+    }
+    for (const item of apiList) {
+      const key = item.codigoCliente || item.payload?.rowData?.['Código do cliente'] || item.timestamp;
+      if (key) map.set(key, item);
+    }
+
+    const merged = Array.from(map.values());
+    merged.sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime());
+
+    try {
+      localStorage.setItem('localway_admin_submissions_v1', JSON.stringify(merged));
+    } catch {
+      // ignore
+    }
+
+    setSubmissions(merged);
+    setIsLoadingSubmissions(false);
   };
 
   React.useEffect(() => {
@@ -1682,6 +1713,9 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
                   const whatsapp = row['WhatsApp'] || row['WhatsApp principal'] || row['Telefone'] || row['Telefone fixo'] || '-';
                   const city = row['Cidade'] ? `${row['Cidade']}/${row['Estado'] || ''}` : '-';
 
+                  const isFinalized = sub.status === 'Finalizado' || sub.finalized || row['Status do Onboarding'] === 'Finalizado';
+                  const syncStatusValue = sub.sheetSyncStatus || (sub.sheetSyncSuccess ? 'synced' : 'pending');
+
                   return (
                     <div
                       key={idx}
@@ -1698,6 +1732,28 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
                           <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/60">
                             {segment}
                           </span>
+                          {isFinalized ? (
+                            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              Finalizado
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                              Rascunho
+                            </span>
+                          )}
+                          {syncStatusValue === 'synced' ? (
+                            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                              <Check className="w-3 h-3" /> Sincronizado
+                            </span>
+                          ) : syncStatusValue === 'error' ? (
+                            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 inline-flex items-center gap-1" title={sub.sheetSyncError}>
+                              <AlertCircle className="w-3 h-3" /> Falha na planilha
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 inline-flex items-center gap-1">
+                              <RefreshCw className="w-3 h-3" /> Pendente de sincronização
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-3 text-xs text-slate-500 flex-wrap">

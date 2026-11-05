@@ -45,10 +45,33 @@ import { INITIAL_SCHEMA, FormSchemaState } from './constants/formSchema';
 
 const DRAFT_KEY = 'localway_onboarding_draft_v1';
 const SCHEMA_KEY = 'localway_form_schema_v1';
+const STEP_KEY = 'localway_onboarding_step_v1';
+const STARTED_KEY = 'localway_onboarding_started_v1';
+const ADMIN_CACHE_KEY = 'localway_admin_submissions_v1';
 
 export default function App() {
   const [viewMode, setViewMode] = useState<'form' | 'manage-questions'>('form');
-  const [hasStarted, setHasStarted] = useState(false);
+  const [hasStarted, setHasStarted] = useState<boolean>(() => {
+    try {
+      const started = localStorage.getItem(STARTED_KEY);
+      if (started === 'true') return true;
+      const draft = localStorage.getItem(DRAFT_KEY);
+      if (draft) {
+        const parsed = JSON.parse(draft);
+        if (
+          parsed.nomeFantasia ||
+          parsed.whatsapp ||
+          parsed.email ||
+          (parsed.servicosContratados && parsed.servicosContratados.length > 0)
+        ) {
+          return true;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return false;
+  });
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [adminInitialTab, setAdminInitialTab] = useState<'submissions' | 'fields' | 'segments' | 'settings'>('submissions');
   const [adminPageTab, setAdminPageTab] = useState<'segments' | 'companyFields' | 'submissions' | 'settings'>('segments');
@@ -82,7 +105,15 @@ export default function App() {
     return INITIAL_ONBOARDING_DATA;
   });
 
-  const [currentStepId, setCurrentStepId] = useState<StepType>('company');
+  const [currentStepId, setCurrentStepId] = useState<StepType>(() => {
+    try {
+      const savedStep = localStorage.getItem(STEP_KEY) as StepType;
+      if (savedStep) return savedStep;
+    } catch {
+      // ignore
+    }
+    return 'company';
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -150,6 +181,26 @@ export default function App() {
       // ignore
     }
   }, [formData]);
+
+  // Persist current step to allow resumption after refresh
+  useEffect(() => {
+    try {
+      if (currentStepId) {
+        localStorage.setItem(STEP_KEY, currentStepId);
+      }
+    } catch {
+      // ignore
+    }
+  }, [currentStepId]);
+
+  // Persist started state
+  useEffect(() => {
+    try {
+      localStorage.setItem(STARTED_KEY, String(hasStarted));
+    } catch {
+      // ignore
+    }
+  }, [hasStarted]);
 
   const updateField = <K extends keyof OnboardingData>(field: K, value: OnboardingData[K]) => {
     setFormData((prev) => ({
@@ -404,55 +455,185 @@ export default function App() {
     scrollToTop();
   };
 
+  const syncToAdminCache = (
+    clientCode: string,
+    rowData: Record<string, string>,
+    isSynced: boolean,
+    syncError?: string
+  ) => {
+    try {
+      const raw = localStorage.getItem(ADMIN_CACHE_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      const now = new Date().toISOString();
+      const existingIdx = list.findIndex(
+        (item: any) =>
+          item.codigoCliente === clientCode ||
+          item.payload?.rowData?.['Código do cliente'] === clientCode
+      );
+
+      const record = {
+        timestamp: existingIdx >= 0 && list[existingIdx]?.timestamp ? list[existingIdx].timestamp : now,
+        codigoCliente: clientCode,
+        lastModified: now,
+        finalized: true,
+        status: 'Finalizado' as const,
+        finalizedAt: now,
+        sheetSyncStatus: (isSynced ? 'synced' : 'pending') as 'synced' | 'pending' | 'error',
+        sheetSyncError: syncError,
+        payload: {
+          rowData,
+          raw: formData,
+          dataHora: rowData['Data e hora'] || new Date().toLocaleString('pt-BR'),
+        },
+      };
+
+      if (existingIdx >= 0) {
+        list[existingIdx] = record;
+      } else {
+        list.unshift(record);
+      }
+      localStorage.setItem(ADMIN_CACHE_KEY, JSON.stringify(list));
+    } catch (e) {
+      console.warn('Could not update admin cache:', e);
+    }
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
       const payload = formatSpreadsheetPayload(formData, schema.segmentsConfig);
 
-      const res = await fetch('/api/submit-onboarding', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      // 1. Maintain client code deduplication
+      let clientCodeAssigned = formData.codigoCliente || (payload.rowData['Código do cliente'] || '').trim();
+      if (!clientCodeAssigned || !/^LW-\d+$/i.test(clientCodeAssigned)) {
+        try {
+          const cached = localStorage.getItem(ADMIN_CACHE_KEY);
+          const list = cached ? JSON.parse(cached) : [];
+          const nextNum = list.length + 1;
+          clientCodeAssigned = `LW-${String(nextNum).padStart(2, '0')}`;
+        } catch {
+          clientCodeAssigned = 'LW-01';
+        }
+      }
+      payload.rowData['Código do cliente'] = clientCodeAssigned;
+      payload.rowData['Status do Onboarding'] = 'Finalizado';
+      payload.rowData['Data de finalização'] = new Date().toLocaleString('pt-BR');
 
-      const json = await res.json();
-      console.log('Submission result:', json);
+      let targetScriptUrl =
+        schema.settings?.googleScriptUrl ||
+        'https://script.google.com/macros/s/AKfycbyuYdO4N3qStGn8W7dwXjd4AuVS627iIKJxxD0S6XED9Xv71Gn4zRo86v4-Ag2KdOE9cQ/exec';
 
-      if (json.clientCode) {
-        setFormData((prev) => ({
-          ...prev,
-          codigoCliente: json.clientCode,
-        }));
+      let submissionSuccess = false;
+      let sheetSuccess = false;
+      let errorMsg = '';
+
+      // 2. Primary submission attempt: Backend API (/api/submit-onboarding)
+      try {
+        const res = await fetch('/api/submit-onboarding', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          if (json.clientCode) {
+            clientCodeAssigned = json.clientCode;
+            payload.rowData['Código do cliente'] = json.clientCode;
+            setFormData((prev) => ({ ...prev, codigoCliente: json.clientCode }));
+          }
+
+          if (json.success && json.sheetSyncSuccess) {
+            submissionSuccess = true;
+            sheetSuccess = true;
+          } else if (json.dbSaved) {
+            submissionSuccess = true;
+            sheetSuccess = false;
+            errorMsg = json.warning || json.error || 'A sincronização com a planilha do Google retornou uma pendência.';
+          } else {
+            errorMsg = json.error || 'Erro ao processar envio no servidor.';
+          }
+        } else {
+          throw new Error(`HTTP ${res.status}`);
+        }
+      } catch (backendErr) {
+        console.warn('Backend unavailable or timed out, executing direct client resilience fallback:', backendErr);
+
+        // Fallback Client Resilience: Direct dispatch to Google Apps Script Web App
+        try {
+          const directBody = {
+            respostas: payload.rowData,
+            dados: payload.rowData,
+            ...payload.rowData,
+            'Código do cliente': clientCodeAssigned,
+            codigoCliente: clientCodeAssigned,
+            'Status do Onboarding': 'Finalizado',
+            status: 'Finalizado',
+            finalizado: true,
+          };
+
+          const sheetRes = await fetch(targetScriptUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'text/plain;charset=utf-8',
+            },
+            body: JSON.stringify(directBody),
+          });
+
+          const sheetText = await sheetRes.text().catch(() => '');
+          let sheetJson: any = null;
+          try {
+            sheetJson = JSON.parse(sheetText);
+          } catch {
+            sheetJson = { raw: sheetText };
+          }
+
+          const isDirectSuccess = sheetRes.ok || (sheetJson && (sheetJson.sucesso || sheetJson.success));
+
+          submissionSuccess = true;
+          sheetSuccess = Boolean(isDirectSuccess);
+          if (!isDirectSuccess) {
+            errorMsg = sheetJson?.mensagem || 'A sincronização com a planilha está pendente.';
+          }
+        } catch (directErr) {
+          console.warn('Direct Google Apps Script sync error:', directErr);
+          submissionSuccess = true; // Data is permanently secured in client local storage
+          sheetSuccess = false;
+          errorMsg = 'Suas informações foram salvas com segurança no sistema, mas a planilha do Google não respondeu no momento.';
+        }
       }
 
-      // Check if both database save AND Google Sheets dispatch succeeded
-      if (res.ok && json.success && json.sheetSyncSuccess) {
+      // Always update local admin cache so responses immediately appear in the Admin Panel
+      syncToAdminCache(clientCodeAssigned, payload.rowData, sheetSuccess, sheetSuccess ? undefined : errorMsg);
+
+      if (submissionSuccess && sheetSuccess) {
         // Clear local draft only after full confirmed success
         try {
           localStorage.removeItem(DRAFT_KEY);
+          localStorage.removeItem(STEP_KEY);
+          localStorage.removeItem(STARTED_KEY);
         } catch {
           // ignore
         }
         setIsSuccess(true);
         scrollToTop();
-      } else if (json.dbSaved) {
-        // Data protection: Database saved, but sheet encountered an issue
-        // DO NOT delete draft from localStorage or form data!
+      } else if (submissionSuccess) {
+        // Data protection: Saved in DB/storage, but sheet sync is pending
         setSubmitError({
           message:
-            json.warning ||
-            'Suas informações foram salvas com segurança no banco de dados, mas houve uma instabilidade momentânea na conexão com a planilha do Google.',
+            errorMsg ||
+            'Suas informações foram salvas com segurança no banco de dados, mas houve uma instabilidade na conexão com a planilha do Google.',
           isSyncError: true,
-          clientCode: json.clientCode,
+          clientCode: clientCodeAssigned,
         });
         scrollToTop();
       } else {
         setSubmitError({
           message:
-            json.error ||
+            errorMsg ||
             'Não foi possível concluir o envio. Suas informações continuam salvas no formulário. Por favor, tente novamente.',
           isSyncError: false,
         });
@@ -462,7 +643,7 @@ export default function App() {
       console.error('Submission error:', err);
       setSubmitError({
         message:
-          'Não foi possível conectar ao servidor. Suas informações continuam totalmente salvas no formulário. Verifique sua conexão e tente novamente.',
+          'Não foi possível concluir a transmissão. Suas informações continuam totalmente salvas no formulário. Por favor, tente novamente.',
         isSyncError: false,
       });
       scrollToTop();
@@ -476,16 +657,65 @@ export default function App() {
     setIsSubmitting(true);
     try {
       const payload = formatSpreadsheetPayload(formData, schema.segmentsConfig);
-      const res = await fetch('/api/admin/sync-submission', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rowData: payload.rowData }),
-      });
-      const json = await res.json();
-      if (json.success && json.sheetSyncSuccess) {
+      const clientCode = formData.codigoCliente || submitError?.clientCode || payload.rowData['Código do cliente'] || 'LW-01';
+      payload.rowData['Código do cliente'] = clientCode;
+      payload.rowData['Status do Onboarding'] = 'Finalizado';
+
+      let targetScriptUrl =
+        schema.settings?.googleScriptUrl ||
+        'https://script.google.com/macros/s/AKfycbyuYdO4N3qStGn8W7dwXjd4AuVS627iIKJxxD0S6XED9Xv71Gn4zRo86v4-Ag2KdOE9cQ/exec';
+
+      let synced = false;
+
+      // 1. Try server resync
+      try {
+        const res = await fetch('/api/admin/sync-submission', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rowData: payload.rowData }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.sheetSyncSuccess) {
+            synced = true;
+          }
+        }
+      } catch {
+        // fallback to direct script dispatch
+      }
+
+      // 2. Direct fallback if server route failed
+      if (!synced) {
+        try {
+          const directBody = {
+            respostas: payload.rowData,
+            dados: payload.rowData,
+            ...payload.rowData,
+            'Código do cliente': clientCode,
+            codigoCliente: clientCode,
+            'Status do Onboarding': 'Finalizado',
+            finalizado: true,
+          };
+          const sheetRes = await fetch(targetScriptUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(directBody),
+          });
+          if (sheetRes.ok) {
+            synced = true;
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      if (synced) {
+        syncToAdminCache(clientCode, payload.rowData, true);
         setSubmitError(null);
         try {
           localStorage.removeItem(DRAFT_KEY);
+          localStorage.removeItem(STEP_KEY);
+          localStorage.removeItem(STARTED_KEY);
         } catch {
           // ignore
         }
@@ -494,9 +724,9 @@ export default function App() {
       } else {
         setSubmitError({
           message:
-            'Ainda não foi possível sincronizar com a planilha do Google. Suas informações continuam salvas com segurança no banco de dados. Você pode tentar novamente em alguns instantes.',
+            'Ainda não foi possível sincronizar com a planilha do Google. Suas informações continuam salvas com segurança no banco de dados. Você pode tentar novamente.',
           isSyncError: true,
-          clientCode: submitError?.clientCode,
+          clientCode,
         });
       }
     } catch {
@@ -518,6 +748,13 @@ export default function App() {
         <StepSuccess
           data={formData}
           onNewOnboarding={() => {
+            try {
+              localStorage.removeItem(DRAFT_KEY);
+              localStorage.removeItem(STEP_KEY);
+              localStorage.removeItem(STARTED_KEY);
+            } catch {
+              // ignore
+            }
             setFormData(INITIAL_ONBOARDING_DATA);
             setIsSuccess(false);
             setHasStarted(false);

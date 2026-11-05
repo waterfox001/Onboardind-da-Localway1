@@ -88,20 +88,54 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setEditableSettings(schema.settings);
   }, [schema]);
 
-  // Fetch submissions from API
+  // Fetch submissions from API with resilient local cache fallback
   const fetchSubmissions = async () => {
     setIsLoadingSubmissions(true);
+    let apiList: any[] = [];
     try {
       const res = await fetch('/api/submissions');
-      const data = await res.json();
-      if (data.success && Array.isArray(data.submissions)) {
-        setSubmissions(data.submissions.reverse()); // most recent first
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.submissions)) {
+          apiList = data.submissions;
+        }
       }
     } catch (err) {
-      console.error('Erro ao carregar submissões:', err);
-    } finally {
-      setIsLoadingSubmissions(false);
+      console.warn('API /api/submissions unavailable, loading from local cache:', err);
     }
+
+    // Merge with local browser cache to guarantee persistence across serverless cold starts
+    let cachedList: any[] = [];
+    try {
+      const raw = localStorage.getItem('localway_admin_submissions_v1');
+      if (raw) cachedList = JSON.parse(raw);
+    } catch {
+      // ignore
+    }
+
+    const map = new Map<string, any>();
+    // 1. Add cached items
+    for (const item of cachedList) {
+      const key = item.codigoCliente || item.payload?.rowData?.['Código do cliente'] || item.timestamp;
+      if (key) map.set(key, item);
+    }
+    // 2. Add / update with API items
+    for (const item of apiList) {
+      const key = item.codigoCliente || item.payload?.rowData?.['Código do cliente'] || item.timestamp;
+      if (key) map.set(key, item);
+    }
+
+    const merged = Array.from(map.values());
+    merged.sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime());
+
+    try {
+      localStorage.setItem('localway_admin_submissions_v1', JSON.stringify(merged));
+    } catch {
+      // ignore
+    }
+
+    setSubmissions(merged);
+    setIsLoadingSubmissions(false);
   };
 
   useEffect(() => {
@@ -560,23 +594,51 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       {submissions.map((sub, index) => {
                         const row = sub.payload?.rowData || {};
                         const raw = sub.payload?.raw || {};
+                        const clientCode = sub.codigoCliente || row['Código do cliente'] || `LW-${String(submissions.length - index).padStart(2, '0')}`;
                         const nome = row['Nome fantasia'] || raw.nomeFantasia || 'Sem nome fantasia';
                         const segmento = row['Segmento'] || raw.segmento || '-';
                         const dataHora = sub.timestamp ? new Date(sub.timestamp).toLocaleString('pt-BR') : '-';
                         const servicos = row['Serviços contratados'] || '-';
                         const whatsapp = row['WhatsApp'] || raw.whatsapp || '-';
+                        const isFinalized = sub.status === 'Finalizado' || sub.finalized || row['Status do Onboarding'] === 'Finalizado';
+                        const syncStatusValue = sub.sheetSyncStatus || (sub.sheetSyncSuccess ? 'synced' : 'pending');
 
                         return (
                           <div
                             key={index}
                             className="p-4 rounded-2xl border border-slate-200/90 hover:border-blue-300 bg-white hover:bg-blue-50/20 transition-all shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                           >
-                            <div className="space-y-1">
+                            <div className="space-y-1.5">
                               <div className="flex items-center gap-2 flex-wrap">
+                                <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-900 text-white shadow-xs">
+                                  {clientCode}
+                                </span>
                                 <span className="font-bold text-sm text-slate-900">{nome}</span>
                                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">
                                   {segmento}
                                 </span>
+                                {isFinalized ? (
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    Finalizado
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
+                                    Rascunho
+                                  </span>
+                                )}
+                                {syncStatusValue === 'synced' ? (
+                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                                    <Check className="w-3 h-3" /> Sincronizado
+                                  </span>
+                                ) : syncStatusValue === 'error' ? (
+                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 inline-flex items-center gap-1" title={sub.sheetSyncError}>
+                                    <AlertCircle className="w-3 h-3" /> Falha na planilha
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 inline-flex items-center gap-1">
+                                    <RefreshCw className="w-3 h-3" /> Pendente de sincronização
+                                  </span>
+                                )}
                               </div>
                               <div className="text-xs text-slate-500 flex flex-wrap gap-x-3 gap-y-1">
                                 <span><strong>Data:</strong> {dataHora}</span>
