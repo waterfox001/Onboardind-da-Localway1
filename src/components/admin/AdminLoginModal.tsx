@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import { LocalwayLogo } from '../LocalwayLogo';
+import { googleSignIn } from '../../services/googleAuth';
+import { GoogleSignInButton } from '../GoogleSignInButton';
 
 interface AdminLoginModalProps {
   isOpen: boolean;
@@ -145,6 +147,33 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               <ArrowRight className="w-4 h-4 stroke-[2]" />
             </button>
           </form>
+
+          {/* Google Sign In option */}
+          <div className="relative flex py-1 items-center">
+            <div className="flex-grow border-t border-slate-200"></div>
+            <span className="flex-shrink mx-3 text-[11px] text-slate-400 font-medium">ou conecte com</span>
+            <div className="flex-grow border-t border-slate-200"></div>
+          </div>
+
+          <GoogleSignInButton
+            onClick={async () => {
+              setError('');
+              setIsSubmitting(true);
+              try {
+                const res = await googleSignIn();
+                if (res) {
+                  localStorage.setItem('localway_admin_auth', 'true');
+                  onSuccess();
+                }
+              } catch (err: any) {
+                setError(err?.message || 'Falha ao conectar com o Google.');
+              } finally {
+                setIsSubmitting(false);
+              }
+            }}
+            disabled={isSubmitting}
+            text="Entrar com Conta Google"
+          />
 
           {/* Footer security note */}
           <div className="pt-3 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-400">

@@ -26,6 +26,10 @@ import {
   Maximize2,
 } from 'lucide-react';
 import { CompanyDataEditor } from './admin/CompanyDataEditor';
+import { GoogleSignInButton } from './GoogleSignInButton';
+import { initGoogleAuth, googleSignIn, googleLogout } from '../services/googleAuth';
+import { createOnboardingSpreadsheet, listUserSpreadsheets, GoogleSheetFile } from '../services/googleSheets';
+import type { User as FirebaseUser } from 'firebase/auth';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -75,6 +79,75 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Success notifications
   const [toastMessage, setToastMessage] = useState<string>('');
+
+  // Google Workspace & Sheets state
+  const [googleUser, setGoogleUser] = useState<FirebaseUser | null>(null);
+  const [isConnectingGoogle, setIsConnectingGoogle] = useState(false);
+  const [userSpreadsheets, setUserSpreadsheets] = useState<GoogleSheetFile[]>([]);
+  const [isLoadingSpreadsheets, setIsLoadingSpreadsheets] = useState(false);
+  const [createdSpreadsheet, setCreatedSpreadsheet] = useState<GoogleSheetFile | null>(null);
+
+  useEffect(() => {
+    const unsub = initGoogleAuth(
+      (user) => setGoogleUser(user),
+      () => setGoogleUser(null)
+    );
+    return () => unsub();
+  }, []);
+
+  const handleGoogleConnect = async () => {
+    setIsConnectingGoogle(true);
+    try {
+      const res = await googleSignIn();
+      if (res?.user) {
+        setGoogleUser(res.user);
+        showToast(`Conectado ao Google como ${res.user.email}!`);
+      }
+    } catch (err: any) {
+      showToast(err?.message || 'Erro ao conectar ao Google.');
+    } finally {
+      setIsConnectingGoogle(false);
+    }
+  };
+
+  const handleGoogleDisconnect = async () => {
+    await googleLogout();
+    setGoogleUser(null);
+    setUserSpreadsheets([]);
+    showToast('Conta Google desconectada.');
+  };
+
+  const handleFetchSpreadsheets = async () => {
+    setIsLoadingSpreadsheets(true);
+    try {
+      const list = await listUserSpreadsheets();
+      setUserSpreadsheets(list);
+      showToast(`${list.length} planilha(s) encontrada(s) no seu Google Drive.`);
+    } catch (err: any) {
+      showToast(err?.message || 'Falha ao buscar planilhas no Google Drive.');
+    } finally {
+      setIsLoadingSpreadsheets(false);
+    }
+  };
+
+  const handleCreateSpreadsheet = async () => {
+    const confirmed = window.confirm(
+      'Deseja criar uma nova planilha oficial "Localway - Respostas do Onboarding" no seu Google Drive com todas as colunas formatadas?'
+    );
+    if (!confirmed) return;
+
+    setIsLoadingSpreadsheets(true);
+    try {
+      const newSheet = await createOnboardingSpreadsheet('Localway - Respostas do Onboarding');
+      setCreatedSpreadsheet(newSheet);
+      setUserSpreadsheets((prev) => [newSheet, ...prev]);
+      showToast('Planilha criada com sucesso no seu Google Sheets!');
+    } catch (err: any) {
+      showToast(err?.message || 'Erro ao criar planilha no Google Sheets.');
+    } finally {
+      setIsLoadingSpreadsheets(false);
+    }
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -1006,6 +1079,145 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <Save className="w-3.5 h-3.5" />
                       <span>Salvar Configurações</span>
                     </button>
+                  </div>
+
+                  {/* Google Workspace & Google Sheets API Direct Connection */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs border border-emerald-200">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-900">Google Workspace (Google Sheets & Drive)</h4>
+                          <p className="text-[11px] text-slate-500">
+                            Integração oficial OAuth com permissão para gerenciar planilhas no Google Drive.
+                          </p>
+                        </div>
+                      </div>
+
+                      {googleUser && (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>Conectado</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {!googleUser ? (
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          Conecte sua conta do Google para visualizar planilhas diretamente no seu Google Drive, criar planilhas com cabeçalhos automáticos e sincronizar dados com o Google Sheets.
+                        </p>
+                        <div className="max-w-xs">
+                          <GoogleSignInButton
+                            onClick={handleGoogleConnect}
+                            disabled={isConnectingGoogle}
+                            text={isConnectingGoogle ? 'Conectando...' : 'Conectar Google Workspace'}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 flex-wrap gap-3">
+                          <div className="flex items-center gap-3">
+                            {googleUser.photoURL ? (
+                              <img
+                                src={googleUser.photoURL}
+                                alt={googleUser.displayName || ''}
+                                className="w-8 h-8 rounded-full border border-slate-300"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">
+                                {googleUser.email?.slice(0, 2).toUpperCase() || 'G'}
+                              </div>
+                            )}
+                            <div>
+                              <div className="text-xs font-bold text-slate-900">
+                                {googleUser.displayName || 'Administrador'}
+                              </div>
+                              <div className="text-[11px] text-slate-500">{googleUser.email}</div>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleGoogleDisconnect}
+                            className="px-3 py-1 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-600 text-xs font-semibold transition-colors cursor-pointer"
+                          >
+                            Desconectar
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={handleCreateSpreadsheet}
+                            disabled={isLoadingSpreadsheets}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Criar Planilha no Sheets</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={handleFetchSpreadsheets}
+                            disabled={isLoadingSpreadsheets}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                          >
+                            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingSpreadsheets ? 'animate-spin' : ''}`} />
+                            <span>Buscar Planilhas no Drive</span>
+                          </button>
+                        </div>
+
+                        {createdSpreadsheet && (
+                          <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between gap-3 animate-fadeIn">
+                            <div>
+                              <strong>Planilha criada:</strong> {createdSpreadsheet.name}
+                            </div>
+                            {createdSpreadsheet.webViewLink && (
+                              <a
+                                href={createdSpreadsheet.webViewLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:underline"
+                              >
+                                <span>Abrir no Google Sheets</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+                          </div>
+                        )}
+
+                        {userSpreadsheets.length > 0 && (
+                          <div className="space-y-2 pt-2 border-t border-slate-100">
+                            <h5 className="text-xs font-bold text-slate-700">Planilhas no seu Google Drive:</h5>
+                            <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
+                              {userSpreadsheets.map((sheet) => (
+                                <div
+                                  key={sheet.id}
+                                  className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-between text-xs transition-colors"
+                                >
+                                  <span className="font-medium text-slate-800 truncate max-w-xs">{sheet.name}</span>
+                                  {sheet.webViewLink && (
+                                    <a
+                                      href={sheet.webViewLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:underline shrink-0"
+                                    >
+                                      <span>Abrir</span>
+                                      <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Google Sheets Apps Script */}
