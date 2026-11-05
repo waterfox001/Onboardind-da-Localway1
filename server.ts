@@ -238,14 +238,26 @@ async function startServer() {
     }
   });
 
-  // API: Delete submission by index
+  // API: Delete submission by index or code
   app.delete('/api/submissions/:index', (req: Request, res: Response) => {
     try {
-      const idx = parseInt(req.params.index, 10);
-      if (isNaN(idx)) {
-        return res.status(400).json({ success: false, error: 'Índice inválido' });
-      }
+      const param = req.params.index;
       const list = readLocalSubmissions();
+      let idx = -1;
+
+      // Try finding by codigoCliente or rowData code
+      idx = list.findIndex(
+        (s) => s.codigoCliente === param || s.payload?.rowData?.['Código do cliente'] === param
+      );
+
+      // If not found by code, try as direct integer index
+      if (idx === -1) {
+        const num = parseInt(param, 10);
+        if (!isNaN(num) && num >= 0 && num < list.length) {
+          idx = num;
+        }
+      }
+
       if (idx >= 0 && idx < list.length) {
         list.splice(idx, 1);
         writeLocalSubmissions(list);
@@ -257,18 +269,31 @@ async function startServer() {
     }
   });
 
-  // API: Update submission by index (to manage company data, hours, structure, etc.)
+  // API: Update submission by index or client code (to manage company data, hours, structure, etc.)
   app.put('/api/submissions/:index', (req: Request, res: Response) => {
     try {
-      const idx = parseInt(req.params.index, 10);
-      if (isNaN(idx)) {
-        return res.status(400).json({ success: false, error: 'Índice inválido' });
-      }
+      const param = req.params.index;
       const updatedData = req.body;
       if (!updatedData) {
         return res.status(400).json({ success: false, error: 'Dados ausentes para atualização' });
       }
+
       const list = readLocalSubmissions();
+      let idx = -1;
+
+      // Try finding by codigoCliente or rowData code
+      idx = list.findIndex(
+        (s) => s.codigoCliente === param || s.payload?.rowData?.['Código do cliente'] === param
+      );
+
+      // If not found by code, try as direct integer index
+      if (idx === -1) {
+        const num = parseInt(param, 10);
+        if (!isNaN(num) && num >= 0 && num < list.length) {
+          idx = num;
+        }
+      }
+
       if (idx >= 0 && idx < list.length) {
         list[idx] = {
           ...list[idx],

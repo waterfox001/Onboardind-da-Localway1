@@ -227,7 +227,13 @@ export const CompanyDataEditor: React.FC<CompanyDataEditorProps> = ({
         },
       };
 
-      const res = await fetch(`/api/submissions/${submissionIndex}`, {
+      const targetId = encodeURIComponent(
+        submission.codigoCliente ||
+        submission.payload?.rowData?.['Código do cliente'] ||
+        submissionIndex
+      );
+
+      const res = await fetch(`/api/submissions/${targetId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
