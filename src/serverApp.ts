@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
 import { GoogleGenAI, Type } from '@google/genai';
+import seedSubmissions from '../data/submissions.json';
 
 dotenv.config();
 
@@ -17,14 +18,14 @@ const DATA_DIR = isVercel
   ? path.join('/tmp', 'localway_data')
   : path.join(process.cwd(), 'data');
 
-const BUNDLED_DATA_DIR = path.join(process.cwd(), 'data');
-
 const SUBMISSIONS_FILE = path.join(DATA_DIR, 'submissions.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 const SCHEMA_FILE = path.join(DATA_DIR, 'schema.json');
 
-// In-memory cache to guarantee persistence even if filesystem encounters issues
-let inMemorySubmissions: StoredSubmission[] = [];
+// In-memory cache pre-seeded with bundled submissions to guarantee persistence across cold starts
+let inMemorySubmissions: StoredSubmission[] = Array.isArray(seedSubmissions)
+  ? ((seedSubmissions as unknown) as StoredSubmission[])
+  : [];
 let inMemorySettings: any = null;
 let inMemorySchema: any = null;
 
@@ -67,28 +68,19 @@ function ensureDataDir() {
 function initStorage() {
   ensureDataDir();
 
-  // If in Vercel serverless and file does not exist in /tmp, seed from bundled project data
-  if (isVercel) {
-    try {
-      const bundledSubmissions = path.join(BUNDLED_DATA_DIR, 'submissions.json');
-      if (fs.existsSync(bundledSubmissions) && !fs.existsSync(SUBMISSIONS_FILE)) {
-        const content = fs.readFileSync(bundledSubmissions, 'utf-8');
-        fs.writeFileSync(SUBMISSIONS_FILE, content, 'utf-8');
-        inMemorySubmissions = JSON.parse(content || '[]');
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  // Pre-load submissions into memory
   try {
     if (fs.existsSync(SUBMISSIONS_FILE)) {
       const content = fs.readFileSync(SUBMISSIONS_FILE, 'utf-8');
-      inMemorySubmissions = JSON.parse(content || '[]');
+      const list = JSON.parse(content || '[]');
+      if (Array.isArray(list) && list.length >= inMemorySubmissions.length) {
+        inMemorySubmissions = list;
+      }
+    } else {
+      ensureDataDir();
+      fs.writeFileSync(SUBMISSIONS_FILE, JSON.stringify(inMemorySubmissions, null, 2), 'utf-8');
     }
   } catch (err) {
-    console.warn('Could not read submissions file:', err);
+    console.warn('Storage init fallback:', err);
   }
 }
 
@@ -210,8 +202,9 @@ app.use((req, res, next) => {
   next();
 });
 
+
 // API: Health check
-app.get('/api/health', (req: Request, res: Response) => {
+app.get(['/api/health', '/health'], (req: Request, res: Response) => {
   res.json({
     status: 'ok',
     service: 'Localway Onboarding API',
@@ -221,7 +214,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 });
 
 // API: Submit onboarding to Database & Google Sheets
-app.post('/api/submit-onboarding', async (req: Request, res: Response) => {
+app.post(['/api/submit-onboarding', '/submit-onboarding'], async (req: Request, res: Response) => {
   const payload = req.body;
 
   if (!payload || !payload.rowData) {
@@ -379,7 +372,7 @@ app.post('/api/submit-onboarding', async (req: Request, res: Response) => {
 });
 
 // API: Get all submissions for Admin Panel
-app.get('/api/submissions', (req: Request, res: Response) => {
+app.get(['/api/submissions', '/submissions'], (req: Request, res: Response) => {
   try {
     const list = readLocalSubmissions();
     return res.json({ success: true, submissions: list });
@@ -390,7 +383,7 @@ app.get('/api/submissions', (req: Request, res: Response) => {
 });
 
 // API: Delete submission by index or code
-app.delete('/api/submissions/:index', (req: Request, res: Response) => {
+app.delete(['/api/submissions/:index', '/submissions/:index'], (req: Request, res: Response) => {
   try {
     const param = req.params.index;
     const list = readLocalSubmissions();
@@ -419,7 +412,7 @@ app.delete('/api/submissions/:index', (req: Request, res: Response) => {
 });
 
 // API: Update submission by index or client code
-app.put('/api/submissions/:index', (req: Request, res: Response) => {
+app.put(['/api/submissions/:index', '/submissions/:index'], (req: Request, res: Response) => {
   try {
     const param = req.params.index;
     const updatedData = req.body;
@@ -461,7 +454,7 @@ app.put('/api/submissions/:index', (req: Request, res: Response) => {
 });
 
 // API: AI Question Generator (Server-Side Gemini Integration)
-app.post('/api/admin/generate-questions', async (req: Request, res: Response) => {
+app.post(['/api/admin/generate-questions', '/admin/generate-questions'], async (req: Request, res: Response) => {
   try {
     const { segmentName, instructions, count = 5, existingQuestions = [] } = req.body;
 
@@ -592,7 +585,7 @@ Regras obrigatórias:
 });
 
 // API: Admin Settings
-app.get('/api/admin/settings', (req: Request, res: Response) => {
+app.get(['/api/admin/settings', '/admin/settings'], (req: Request, res: Response) => {
   try {
     if (fs.existsSync(SETTINGS_FILE)) {
       const content = fs.readFileSync(SETTINGS_FILE, 'utf-8');
@@ -616,7 +609,7 @@ app.get('/api/admin/settings', (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/admin/settings', (req: Request, res: Response) => {
+app.post(['/api/admin/settings', '/admin/settings'], (req: Request, res: Response) => {
   try {
     const settings = req.body;
     inMemorySettings = settings;
@@ -633,7 +626,7 @@ app.post('/api/admin/settings', (req: Request, res: Response) => {
 });
 
 // API: Admin Schema
-app.get('/api/admin/schema', (req: Request, res: Response) => {
+app.get(['/api/admin/schema', '/admin/schema'], (req: Request, res: Response) => {
   try {
     if (fs.existsSync(SCHEMA_FILE)) {
       const content = fs.readFileSync(SCHEMA_FILE, 'utf-8');
@@ -649,7 +642,7 @@ app.get('/api/admin/schema', (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/admin/schema', (req: Request, res: Response) => {
+app.post(['/api/admin/schema', '/admin/schema'], (req: Request, res: Response) => {
   try {
     const schema = req.body;
     inMemorySchema = schema;
@@ -666,7 +659,7 @@ app.post('/api/admin/schema', (req: Request, res: Response) => {
 });
 
 // API: Resync single submission to Google Sheets
-app.post('/api/admin/sync-submission', async (req: Request, res: Response) => {
+app.post(['/api/admin/sync-submission', '/admin/sync-submission'], async (req: Request, res: Response) => {
   try {
     const { rowData } = req.body;
     if (!rowData) {
@@ -749,7 +742,7 @@ app.post('/api/admin/sync-submission', async (req: Request, res: Response) => {
 });
 
 // API: Test Google Sheets integration with sample rowData
-app.post('/api/admin/test-sheets-integration', async (req: Request, res: Response) => {
+app.post(['/api/admin/test-sheets-integration', '/admin/test-sheets-integration'], async (req: Request, res: Response) => {
   try {
     let targetScriptUrl = req.body?.googleScriptUrl || GOOGLE_SCRIPT_URL;
     if (!req.body?.googleScriptUrl && fs.existsSync(SETTINGS_FILE)) {

@@ -55,12 +55,15 @@ export default function App() {
     try {
       const started = localStorage.getItem(STARTED_KEY);
       if (started === 'true') return true;
+      const savedStep = localStorage.getItem(STEP_KEY);
+      if (savedStep && savedStep !== 'company') return true;
       const draft = localStorage.getItem(DRAFT_KEY);
       if (draft) {
         const parsed = JSON.parse(draft);
         if (
           parsed.nomeFantasia ||
           parsed.whatsapp ||
+          parsed.razaoSocial ||
           parsed.email ||
           (parsed.servicosContratados && parsed.servicosContratados.length > 0)
         ) {
@@ -812,7 +815,14 @@ export default function App() {
 
   // Cover Screen before form begins
   if (!hasStarted) {
-    const hasExistingDraft = Boolean(formData.nomeFantasia || formData.whatsapp);
+    const hasExistingDraft = Boolean(
+      formData.nomeFantasia ||
+      formData.whatsapp ||
+      formData.razaoSocial ||
+      formData.email ||
+      (formData.servicosContratados && formData.servicosContratados.length > 0) ||
+      currentStepId !== 'company'
+    );
     return (
       <>
         <WelcomeCover

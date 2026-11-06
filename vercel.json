@@ -2,8 +2,24 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/api/submissions/:match*",
+      "destination": "/api/submissions"
+    },
+    {
+      "source": "/api/submissions",
+      "destination": "/api/submissions"
+    },
+    {
+      "source": "/api/submit-onboarding",
+      "destination": "/api/submit-onboarding"
+    },
+    {
+      "source": "/api/health",
+      "destination": "/api/health"
+    },
+    {
       "source": "/api/(.*)",
-      "destination": "/api"
+      "destination": "/api/index"
     },
     {
       "source": "/(.*)",
