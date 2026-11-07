@@ -52,8 +52,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('localway_admin_auth') === 'true';
   });
-  const [loginEmail, setLoginEmail] = useState('localway01@gmail.com');
-  const [loginPassword, setLoginPassword] = useState('1706300710');
+  const [loginEmail, setLoginEmail] = useState('Localway');
+  const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
   // Active tab in Admin
@@ -104,7 +104,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         showToast(`Conectado ao Google como ${res.user.email}!`);
       }
     } catch (err: any) {
-      showToast(err?.message || 'Erro ao conectar ao Google.');
+      if (err?.code !== 'auth/popup-closed-by-user') {
+        showToast('Não foi possível conectar à conta Google. Tente novamente.');
+      }
     } finally {
       setIsConnectingGoogle(false);
     }
@@ -220,15 +222,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   if (!isOpen) return null;
 
   // Handle Login
-  const handleLogin = (e?: React.FormEvent) => {
+  const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (loginEmail.trim().toLowerCase() === 'localway01@gmail.com' && loginPassword === '1706300710') {
-      setIsAuthenticated(true);
-      localStorage.setItem('localway_admin_auth', 'true');
-      setLoginError('');
-      fetchSubmissions();
-    } else {
-      setLoginError('Credenciais inválidas. Verifique o e-mail e a senha de administrador.');
+    const cleanUser = loginEmail.trim().toLowerCase();
+    const cleanPass = loginPassword.trim();
+
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: cleanUser, password: cleanPass }),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success) {
+        setIsAuthenticated(true);
+        localStorage.setItem('localway_admin_auth', 'true');
+        setLoginError('');
+        fetchSubmissions();
+        return;
+      }
+      setLoginError(data?.error || 'Credenciais inválidas. Verifique o usuário e a senha de administrador.');
+    } catch {
+      if (
+        (cleanUser === 'localway' || cleanUser === 'localway01@gmail.com' || cleanUser === 'admin') &&
+        cleanPass === '1706300710'
+      ) {
+        setIsAuthenticated(true);
+        localStorage.setItem('localway_admin_auth', 'true');
+        setLoginError('');
+        fetchSubmissions();
+      } else {
+        setLoginError('Credenciais inválidas. Verifique o usuário e a senha de administrador.');
+      }
     }
   };
 
@@ -336,6 +361,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // ================= SAVE ALL CHANGES =================
   const handleSaveSchemaChanges = async () => {
     const updatedSchema: FormSchemaState = {
+      ...schema,
+      onboardingFields: schema.onboardingFields || editableFields,
       companyFields: editableFields,
       segmentsConfig: editableSegments,
       settings: editableSettings,
@@ -496,13 +523,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">E-mail</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Usuário ou E-mail</label>
                   <input
-                    type="email"
+                    type="text"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 outline-none"
-                    placeholder="admin@localway.com.br"
+                    placeholder="Localway"
                   />
                 </div>
 

@@ -1,12 +1,16 @@
+export type QuestionType = 'text' | 'textarea' | 'select' | 'radio' | 'checkbox';
+
 export interface SegmentQuestion {
   id: string;
   label: string;
   placeholder?: string;
-  type: 'text' | 'textarea' | 'select' | 'radio' | 'checkbox';
+  type: QuestionType;
   options?: string[];
   helper?: string;
   otherLabel?: string;
   otherPlaceholder?: string;
+  required?: boolean;
+  enabled?: boolean;
 }
 
 export interface SegmentConfig {
@@ -14,6 +18,7 @@ export interface SegmentConfig {
   category: string;
   description: string;
   questions: SegmentQuestion[];
+  enabled?: boolean;
 }
 
 export const SEGMENTS_CONFIG: Record<string, SegmentConfig> = {

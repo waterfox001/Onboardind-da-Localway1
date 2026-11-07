@@ -11,7 +11,9 @@ export type ServiceId =
   | 'email'
   | 'assinatura_email'
   | 'registro_marca'
-  | 'registro_dominio';
+  | 'registro_dominio'
+  | 'plaquinha'
+  | 'catalogo';
 
 export interface ServiceOption {
   id: ServiceId;
@@ -150,6 +152,8 @@ export interface OnboardingData {
   ecommerceQuantidadeProdutos: string;
   ecommercePossuiFotos: string; // 'Sim' | 'Não' | ''
   ecommercePossuiCadastro: string; // 'Sim' | 'Não' | ''
+  ecommercePossuiVariacoes: string; // 'Sim' | 'Não' | ''
+  ecommerceControleEstoque: string;
   ecommerceFormasPagamento: string[];
   ecommerceEntrega: string;
   ecommerceRegioesAtendidas: string;
@@ -243,6 +247,17 @@ export interface OnboardingData {
   marcaNomeRegistrar: string;
   marcaVariacoesNome: string;
 
+  // Módulo: Plaquinha Inteligente QR Code / NFC
+  plaquinhaDestino: string; // 'google' | 'instagram' | 'whatsapp' | 'minisite' | string
+  plaquinhaQuantidade: string;
+  plaquinhaLocalInstalacao: string;
+  plaquinhaObservacoes: string;
+
+  // Módulo: Catálogo de Produtos e Serviços
+  catalogoTipoItens: string;
+  catalogoQuantidadeItens: string;
+  catalogoPossuiPrecos: string;
+
   // 22. Detalhes Específicos do Segmento
   segmentoRespostas: Record<string, any>;
 
@@ -278,6 +293,8 @@ export type StepType =
   | 'module_assinatura_email'
   | 'module_registro_marca'
   | 'module_registro_dominio'
+  | 'module_plaquinha'
+  | 'module_catalogo'
   | 'materials'
   | 'final_notes'
   | 'summary'

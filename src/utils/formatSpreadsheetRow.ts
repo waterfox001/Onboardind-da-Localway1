@@ -149,9 +149,15 @@ export function formatSpreadsheetPayload(
     );
   }
 
-  if (data.servicosContratados.includes('registro_marca')) {
+  if (data.servicosContratados.includes('plaquinha')) {
     servicosDetalhesArray.push(
-      `[REGISTRO DE MARCA]:\n- Possui registro no INPI: ${data.marcaJaPossuiRegistro}\n- Nome exato a registrar: ${data.marcaNomeRegistrar}\n- Variações ou expressões: ${data.marcaVariacoesNome || 'Nenhuma'}`
+      `[PLAQUINHA INTELIGENTE]:\n- Destino do QR/NFC: ${data.plaquinhaDestino || 'N/A'}\n- Quantidade de plaquinhas: ${data.plaquinhaQuantidade || '1'}\n- Local de instalação: ${data.plaquinhaLocalInstalacao || 'N/A'}\n- Observações: ${data.plaquinhaObservacoes || 'N/A'}`
+    );
+  }
+
+  if (data.servicosContratados.includes('catalogo')) {
+    servicosDetalhesArray.push(
+      `[CATÁLOGO DIGITAL]:\n- Tipo de itens: ${data.catalogoTipoItens || 'N/A'}\n- Quantidade estimada de itens: ${data.catalogoQuantidadeItens || 'N/A'}\n- Possui preços definidos: ${data.catalogoPossuiPrecos || 'N/A'}`
     );
   }
 

@@ -38,17 +38,23 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { CompanyDataEditor } from './CompanyDataEditor';
+import { OnboardingFieldsManager } from './OnboardingFieldsManager';
+import { SegmentsAndQuestionsManager } from './SegmentsAndQuestionsManager';
+import { ServicesManager } from './ServicesManager';
+import { DEFAULT_ONBOARDING_FIELDS, OnboardingFieldConfig } from '../../constants/formSchema';
 import { initGoogleAuth, googleSignIn, googleLogout } from '../../services/googleAuth';
 import { listUserSpreadsheets, createOnboardingSpreadsheet, GoogleSheetFile } from '../../services/googleSheets';
 import { GoogleSignInButton } from '../GoogleSignInButton';
 import type { User as FirebaseUser } from 'firebase/auth';
+
+export type AdminTabType = 'fields' | 'segments' | 'services' | 'submissions' | 'settings' | 'companyFields';
 
 interface ManageQuestionsPageProps {
   schema: FormSchemaState;
   onUpdateSchema: (newSchema: FormSchemaState) => void;
   onBack: () => void;
   onLogout?: () => void;
-  initialTab?: 'segments' | 'companyFields' | 'submissions' | 'settings';
+  initialTab?: AdminTabType;
 }
 
 export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
@@ -56,18 +62,28 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
   onUpdateSchema,
   onBack,
   onLogout,
-  initialTab = 'segments',
+  initialTab = 'fields',
 }) => {
-  // Navigation between questions per segment, company fields, submissions, settings
-  const [activeTab, setActiveTab] = useState<'segments' | 'companyFields' | 'submissions' | 'settings'>(
-    initialTab
+  // Navigation between fields catalog, questions per segment, services, submissions, settings
+  const normalizeTab = (tab: AdminTabType): 'fields' | 'segments' | 'services' | 'submissions' | 'settings' => {
+    if (tab === 'companyFields') return 'fields';
+    return tab;
+  };
+
+  const [activeTab, setActiveTab] = useState<'fields' | 'segments' | 'services' | 'submissions' | 'settings'>(
+    normalizeTab(initialTab)
   );
 
   React.useEffect(() => {
-    if (initialTab) setActiveTab(initialTab);
+    if (initialTab) setActiveTab(normalizeTab(initialTab));
   }, [initialTab]);
 
   // Copy of schema for live editing
+  const [editableOnboardingFields, setEditableOnboardingFields] = useState<OnboardingFieldConfig[]>(
+    schema.onboardingFields && schema.onboardingFields.length > 0
+      ? schema.onboardingFields
+      : DEFAULT_ONBOARDING_FIELDS
+  );
   const [editableSegments, setEditableSegments] = useState<Record<string, SegmentConfig>>(
     schema.segmentsConfig
   );
@@ -113,7 +129,9 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
         showToast(`Conectado ao Google como ${res.user.email}!`);
       }
     } catch (err: any) {
-      showToast(err?.message || 'Erro ao conectar ao Google.');
+      if (err?.code !== 'auth/popup-closed-by-user') {
+        showToast('Não foi possível conectar à conta Google. Tente novamente.');
+      }
     } finally {
       setIsConnectingGoogle(false);
     }
@@ -667,8 +685,10 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
     setIsSaving(true);
     const updatedSchema: FormSchemaState = {
       ...schema,
+      onboardingFields: editableOnboardingFields,
       companyFields: editableCompanyFields,
       segmentsConfig: editableSegments,
+      settings: editableSettings,
     };
 
     onUpdateSchema(updatedSchema);
@@ -763,6 +783,19 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
           <div className="inline-flex rounded-2xl p-1 bg-slate-200/70 border border-slate-300/50 flex-wrap">
             <button
               type="button"
+              onClick={() => setActiveTab('fields')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                activeTab === 'fields'
+                  ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Sliders className="w-4 h-4" />
+              <span>Campos do Onboarding ({editableOnboardingFields.length})</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setActiveTab('segments')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 activeTab === 'segments'
@@ -776,15 +809,15 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
 
             <button
               type="button"
-              onClick={() => setActiveTab('companyFields')}
+              onClick={() => setActiveTab('services')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                activeTab === 'companyFields'
+                activeTab === 'services'
                   ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Sliders className="w-4 h-4" />
-              <span>Campos da Empresa ({editableCompanyFields.length})</span>
+              <Layers className="w-4 h-4" />
+              <span>Serviços da Localway</span>
             </button>
 
             <button
@@ -819,895 +852,29 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
           </div>
         </div>
 
-        {/* ================= TAB 1: SEGMENT QUESTIONS ================= */}
-        {activeTab === 'segments' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left Sidebar: Segment List */}
-            <div className="lg:col-span-4 bg-white rounded-3xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Segmentos de Atuação</h3>
-                  <p className="text-[11px] text-slate-400">Selecione para gerenciar as perguntas</p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsAddingSegment(true)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-semibold transition-colors cursor-pointer"
-                  title="Criar novo segmento"
-                >
-                  <FolderPlus className="w-3.5 h-3.5" />
-                  <span>Novo</span>
-                </button>
-              </div>
-
-              {/* Add Segment Inline Box */}
-              {isAddingSegment && (
-                <form
-                  onSubmit={handleAddNewSegment}
-                  className="p-3.5 rounded-2xl bg-blue-50/50 border border-blue-200 space-y-2.5 animate-fadeIn"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-blue-900">Novo Segmento</span>
-                    <button
-                      type="button"
-                      onClick={() => setIsAddingSegment(false)}
-                      className="text-slate-400 hover:text-slate-700"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  <input
-                    type="text"
-                    required
-                    placeholder="Nome do segmento (ex: Restaurante)"
-                    value={newSegmentName}
-                    onChange={(e) => setNewSegmentName(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs bg-white outline-none focus:border-blue-600"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Categoria (ex: Gastronomia)"
-                    value={newSegmentCategory}
-                    onChange={(e) => setNewSegmentCategory(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs bg-white outline-none focus:border-blue-600"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Descrição breve..."
-                    value={newSegmentDescription}
-                    onChange={(e) => setNewSegmentDescription(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs bg-white outline-none focus:border-blue-600"
-                  />
-
-                  <div className="flex justify-end gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setIsAddingSegment(false)}
-                      className="px-2.5 py-1 rounded-lg text-xs text-slate-600"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-semibold"
-                    >
-                      Criar Segmento
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* Segment Cards */}
-              <div className="space-y-2">
-                {segmentKeys.map((key) => {
-                  const seg = editableSegments[key];
-                  const isSelected = selectedSegmentKey === key;
-                  const qCount = seg.questions?.length || 0;
-
-                  return (
-                    <button
-                      type="button"
-                      key={key}
-                      onClick={() => setSelectedSegmentKey(key)}
-                      className={`w-full text-left p-3.5 rounded-2xl border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                          : 'bg-white hover:bg-slate-50 border-slate-200/90 text-slate-800'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-xs sm:text-sm truncate">{seg.name}</span>
-                        <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-                            isSelected
-                              ? 'bg-slate-800 text-slate-200'
-                              : 'bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          {qCount} {qCount === 1 ? 'pergunta' : 'perguntas'}
-                        </span>
-                      </div>
-                      <p
-                        className={`text-[11px] mt-1 line-clamp-1 ${
-                          isSelected ? 'text-slate-300' : 'text-slate-400'
-                        }`}
-                      >
-                        {seg.description || seg.category}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Right Area: Questions Editor for Selected Segment */}
-            <div className="lg:col-span-8 space-y-5">
-              {currentSegment ? (
-                <>
-                  {/* Segment Details Header Card */}
-                  <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-xs space-y-4">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
-                            Segmento Ativo
-                          </span>
-                          <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                            {currentSegment.name}
-                          </h2>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          Edite os detalhes gerais e as perguntas personalizadas para este segmento.
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handleAddQuestion(selectedSegmentKey)}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Adicionar Pergunta</span>
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                          Nome do Segmento
-                        </label>
-                        <input
-                          type="text"
-                          value={currentSegment.name}
-                          onChange={(e) =>
-                            handleUpdateSegmentMeta(selectedSegmentKey, 'name', e.target.value)
-                          }
-                          className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-600 outline-none"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                          Categoria
-                        </label>
-                        <input
-                          type="text"
-                          value={currentSegment.category}
-                          onChange={(e) =>
-                            handleUpdateSegmentMeta(selectedSegmentKey, 'category', e.target.value)
-                          }
-                          className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-600 outline-none"
-                        />
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                          Descrição / Subtítulo no Onboarding
-                        </label>
-                        <input
-                          type="text"
-                          value={currentSegment.description}
-                          onChange={(e) =>
-                            handleUpdateSegmentMeta(selectedSegmentKey, 'description', e.target.value)
-                          }
-                          className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-600 outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ================= GERADOR DE PERGUNTAS COM IA (GEMINI) ================= */}
-                  <div className="bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-md border border-slate-800 space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-2xl bg-white/10 flex items-center justify-center text-amber-300 shadow-inner">
-                          <Sparkles className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-sm sm:text-base font-bold text-white">
-                              Gerador de Perguntas com IA (Gemini)
-                            </h3>
-                            <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-400/30">
-                              Gemini 3.8 Flash
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-400 mt-0.5">
-                            Gere perguntas estratégicas sob medida descrevendo o que deseja coletar do cliente.
-                          </p>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setIsAiGeneratorOpen((prev) => !prev)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition-colors cursor-pointer self-start sm:self-auto border border-white/10"
-                      >
-                        <Wand2 className="w-3.5 h-3.5 text-amber-300" />
-                        <span>{isAiGeneratorOpen ? 'Recolher Gerador' : 'Abrir Gerador com IA'}</span>
-                        <ChevronDown
-                          className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                            isAiGeneratorOpen ? 'rotate-180' : ''
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    {isAiGeneratorOpen && (
-                      <div className="space-y-4 pt-1 animate-fadeIn">
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          <div className="sm:col-span-2 space-y-1.5">
-                            <label className="block text-xs font-semibold text-slate-300">
-                              Segmento Alvo
-                            </label>
-                            <select
-                              value={selectedSegmentKey}
-                              onChange={(e) => setSelectedSegmentKey(e.target.value)}
-                              className="w-full px-3 py-2 rounded-xl bg-slate-800/90 border border-slate-700 text-xs text-white outline-none focus:border-amber-400"
-                            >
-                              {segmentKeys.map((key) => (
-                                <option key={key} value={key} className="bg-slate-900 text-white">
-                                  {editableSegments[key]?.name || key}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <label className="block text-xs font-semibold text-slate-300">
-                              Qtd. de Perguntas
-                            </label>
-                            <select
-                              value={aiQuestionCount}
-                              onChange={(e) => setAiQuestionCount(Number(e.target.value))}
-                              className="w-full px-3 py-2 rounded-xl bg-slate-800/90 border border-slate-700 text-xs text-white outline-none focus:border-amber-400"
-                            >
-                              <option value={3}>3 perguntas</option>
-                              <option value={5}>5 perguntas (Recomendado)</option>
-                              <option value={8}>8 perguntas</option>
-                              <option value={10}>10 perguntas</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <label className="block text-xs font-semibold text-slate-300">
-                            Quais informações você quer coletar deste segmento?
-                          </label>
-                          <textarea
-                            rows={3}
-                            value={aiInstructions}
-                            onChange={(e) => setAiInstructions(e.target.value)}
-                            placeholder="Ex: Quero mapear os tipos de serviços mais procurados, equipamentos ou marcas com que trabalham, formas de entrega/prazos, se atendem a domicílio e canais de agendamento..."
-                            className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-800/90 border border-slate-700 text-xs text-white placeholder:text-slate-500 outline-none focus:border-amber-400 transition-colors"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between pt-1">
-                          <span className="text-[11px] text-slate-400">
-                            Respeita as perguntas já existentes e inclui opção &quot;Outro&quot; nas seleções.
-                          </span>
-
-                          <button
-                            type="button"
-                            onClick={handleGenerateQuestionsWithAi}
-                            disabled={isGeneratingAi || !aiInstructions.trim()}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-slate-950 text-xs font-bold shadow-md transition-all cursor-pointer disabled:opacity-50"
-                          >
-                            <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
-                            <span>{isGeneratingAi ? 'Gerando com Gemini...' : 'Gerar Perguntas com IA'}</span>
-                          </button>
-                        </div>
-
-                        {/* Review Screen for Generated Questions */}
-                        {generatedQuestions.length > 0 && (
-                          <div className="mt-4 pt-4 border-t border-slate-800 space-y-3.5 animate-fadeIn">
-                            <div className="flex items-center justify-between flex-wrap gap-2">
-                              <div>
-                                <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-                                  Revisão Prévia ({selectedGeneratedIds.length} de {generatedQuestions.length} selecionadas)
-                                </span>
-                                <p className="text-[11px] text-slate-400">
-                                  Edite, desmarque ou remova perguntas antes de adicionar ao segmento.
-                                </p>
-                              </div>
-
-                              <div className="flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={handleToggleSelectAllGenerated}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-slate-200 transition-colors cursor-pointer border border-slate-700"
-                                >
-                                  {selectedGeneratedIds.length === generatedQuestions.length ? (
-                                    <>
-                                      <Square className="w-3.5 h-3.5" />
-                                      <span>Desmarcar Todas</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <CheckSquare className="w-3.5 h-3.5 text-amber-300" />
-                                      <span>Selecionar Todas</span>
-                                    </>
-                                  )}
-                                </button>
-                              </div>
-                            </div>
-
-                            {/* Cards of Generated Questions */}
-                            <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
-                              {generatedQuestions.map((q, qIdx) => {
-                                const isSelected = selectedGeneratedIds.includes(q.id);
-                                return (
-                                  <div
-                                    key={q.id}
-                                    className={`p-3.5 rounded-2xl border transition-all text-slate-900 ${
-                                      isSelected
-                                        ? 'bg-white border-amber-400/80 shadow-xs'
-                                        : 'bg-slate-100/90 border-slate-300 opacity-60'
-                                    }`}
-                                  >
-                                    <div className="flex items-start gap-3">
-                                      <input
-                                        type="checkbox"
-                                        checked={isSelected}
-                                        onChange={() => handleToggleSelectGenerated(q.id)}
-                                        className="mt-1 w-4 h-4 rounded text-amber-500 focus:ring-amber-400 cursor-pointer"
-                                      />
-
-                                      <div className="flex-1 space-y-2">
-                                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                                          <input
-                                            type="text"
-                                            value={q.label}
-                                            onChange={(e) =>
-                                              handleUpdateGeneratedQuestion(qIdx, { label: e.target.value })
-                                            }
-                                            placeholder="Texto da pergunta..."
-                                            className="flex-1 font-bold text-xs text-slate-900 bg-transparent border-b border-dashed border-slate-300 focus:border-slate-800 outline-none pb-0.5"
-                                          />
-
-                                          <div className="flex items-center gap-2">
-                                            <select
-                                              value={q.type}
-                                              onChange={(e) =>
-                                                handleUpdateGeneratedQuestion(qIdx, {
-                                                  type: e.target.value as any,
-                                                })
-                                              }
-                                              className="text-[11px] font-semibold px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 outline-none"
-                                            >
-                                              <option value="checkbox">Múltipla Escolha (Checkbox)</option>
-                                              <option value="radio">Escolha Única (Radio)</option>
-                                              <option value="select">Lista Suspensa (Select)</option>
-                                              <option value="text">Texto Curto</option>
-                                              <option value="textarea">Texto Longo (Área)</option>
-                                            </select>
-
-                                            <button
-                                              type="button"
-                                              onClick={() => handleDeleteGeneratedQuestion(qIdx)}
-                                              className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                                              title="Descartar esta pergunta"
-                                            >
-                                              <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                          </div>
-                                        </div>
-
-                                        <input
-                                          type="text"
-                                          value={q.helper || ''}
-                                          onChange={(e) =>
-                                            handleUpdateGeneratedQuestion(qIdx, { helper: e.target.value })
-                                          }
-                                          placeholder="Texto de ajuda para o cliente (opcional)..."
-                                          className="w-full text-[11px] text-slate-500 bg-transparent border-b border-slate-200 focus:border-slate-600 outline-none pb-0.5"
-                                        />
-
-                                        {/* Options preview for checkbox/radio/select */}
-                                        {(q.type === 'checkbox' ||
-                                          q.type === 'radio' ||
-                                          q.type === 'select') && (
-                                          <div className="pt-1.5 space-y-1.5">
-                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                                              Opções sugeridas:
-                                            </span>
-                                            <div className="flex flex-wrap gap-1.5">
-                                              {(q.options || []).map((opt, optIdx) => (
-                                                <span
-                                                  key={optIdx}
-                                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-[11px] font-medium border border-slate-200"
-                                                >
-                                                  <span>{opt}</span>
-                                                  <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                      const updatedOpts = (q.options || []).filter(
-                                                        (_, idx) => idx !== optIdx
-                                                      );
-                                                      handleUpdateGeneratedQuestion(qIdx, {
-                                                        options: updatedOpts,
-                                                      });
-                                                    }}
-                                                    className="text-slate-400 hover:text-red-500 cursor-pointer"
-                                                  >
-                                                    ×
-                                                  </button>
-                                                </span>
-                                              ))}
-
-                                              <button
-                                                type="button"
-                                                onClick={() => {
-                                                  const newOpt = prompt('Digite o texto da nova opção:');
-                                                  if (newOpt && newOpt.trim()) {
-                                                    handleUpdateGeneratedQuestion(qIdx, {
-                                                      options: [...(q.options || []), newOpt.trim()],
-                                                    });
-                                                  }
-                                                }}
-                                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed border-slate-300 text-[11px] text-slate-600 hover:bg-slate-50 cursor-pointer"
-                                              >
-                                                <Plus className="w-3 h-3" />
-                                                <span>Opção</span>
-                                              </button>
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-
-                            {/* Batch Actions */}
-                            <div className="flex items-center justify-between pt-2">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setGeneratedQuestions([]);
-                                  setSelectedGeneratedIds([]);
-                                }}
-                                className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
-                              >
-                                Descartar Todas
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={handleAddSelectedAiQuestions}
-                                disabled={selectedGeneratedIds.length === 0}
-                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-md transition-all cursor-pointer disabled:opacity-40"
-                              >
-                                <ListPlus className="w-4 h-4" />
-                                <span>
-                                  Adicionar {selectedGeneratedIds.length} Pergunta(s) ao Segmento {selectedSegmentKey}
-                                </span>
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* List of Questions */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                      <h3 className="text-sm font-bold text-slate-800">
-                        Perguntas Cadastradas ({currentSegment.questions.length})
-                      </h3>
-                      <span className="text-xs text-slate-400">
-                        Arraste ou use as setas para alterar a ordem de exibição
-                      </span>
-                    </div>
-
-                    {currentSegment.questions.length === 0 ? (
-                      <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-slate-300 p-6">
-                        <HelpCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                        <p className="text-sm font-semibold text-slate-700">
-                          Nenhuma pergunta neste segmento
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1 mb-4">
-                          Clique em &quot;Adicionar Pergunta&quot; para criar o primeiro campo.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => handleAddQuestion(selectedSegmentKey)}
-                          className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold"
-                        >
-                          Adicionar Pergunta Agora
-                        </button>
-                      </div>
-                    ) : (
-                      currentSegment.questions.map((q, qIndex) => {
-                        const hasOptions =
-                          q.type === 'checkbox' || q.type === 'radio' || q.type === 'select';
-
-                        return (
-                          <div
-                            key={q.id}
-                            className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-5 space-y-4 hover:border-blue-200 transition-colors"
-                          >
-                            {/* Card Top: Order & Actions */}
-                            <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
-                              <div className="flex items-center gap-2">
-                                {/* Up / Down Order */}
-                                <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-0.5">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleMoveQuestion(selectedSegmentKey, qIndex, 'up')}
-                                    disabled={qIndex === 0}
-                                    className="p-1 rounded hover:bg-white text-slate-600 disabled:opacity-30 cursor-pointer"
-                                    title="Mover para cima"
-                                  >
-                                    <ArrowUp className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleMoveQuestion(selectedSegmentKey, qIndex, 'down')}
-                                    disabled={qIndex === currentSegment.questions.length - 1}
-                                    className="p-1 rounded hover:bg-white text-slate-600 disabled:opacity-30 cursor-pointer"
-                                    title="Mover para baixo"
-                                  >
-                                    <ArrowDown className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-
-                                <span className="text-xs font-bold text-slate-400">
-                                  Pergunta #{qIndex + 1}
-                                </span>
-
-                                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
-                                  {q.type}
-                                </span>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setQuestionToDelete({
-                                    segmentKey: selectedSegmentKey,
-                                    questionId: q.id,
-                                    label: q.label,
-                                  })
-                                }
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                <span>Excluir</span>
-                              </button>
-                            </div>
-
-                            {/* Question Title & Type */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              <div className="sm:col-span-2">
-                                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                                  Texto da Pergunta
-                                </label>
-                                <input
-                                  type="text"
-                                  value={q.label}
-                                  onChange={(e) =>
-                                    handleUpdateQuestion(selectedSegmentKey, q.id, {
-                                      label: e.target.value,
-                                    })
-                                  }
-                                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold text-slate-800 focus:border-blue-600 outline-none"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                                  Tipo de Resposta
-                                </label>
-                                <select
-                                  value={q.type}
-                                  onChange={(e) =>
-                                    handleUpdateQuestion(selectedSegmentKey, q.id, {
-                                      type: e.target.value as any,
-                                      options:
-                                        e.target.value === 'text' || e.target.value === 'textarea'
-                                          ? undefined
-                                          : q.options || ['Opção 1', 'Opção 2', 'Outro'],
-                                    })
-                                  }
-                                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 focus:border-blue-600 outline-none"
-                                >
-                                  <option value="checkbox">Múltipla Seleção (Checkbox)</option>
-                                  <option value="radio">Escolha Única (Radio)</option>
-                                  <option value="select">Lista Suspensa (Select)</option>
-                                  <option value="text">Texto Curto</option>
-                                  <option value="textarea">Texto Longo</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            {/* Helper / Subtitle */}
-                            <div>
-                              <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                                Texto de Apoio / Instrução (Opcional)
-                              </label>
-                              <input
-                                type="text"
-                                value={q.helper || ''}
-                                onChange={(e) =>
-                                  handleUpdateQuestion(selectedSegmentKey, q.id, {
-                                    helper: e.target.value,
-                                  })
-                                }
-                                placeholder="Ex: Selecione todas as modalidades atendidas pelo estúdio."
-                                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-700 focus:border-blue-600 outline-none"
-                              />
-                            </div>
-
-                            {/* Options Editor (if checkbox, radio, or select) */}
-                            {hasOptions && (
-                              <div className="pt-3 border-t border-slate-100 space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs font-bold text-slate-700">
-                                    Opções de Seleção ({q.options?.length || 0})
-                                  </span>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddOption(selectedSegmentKey, q.id)}
-                                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700 px-2 py-1 rounded bg-blue-50 cursor-pointer"
-                                  >
-                                    <Plus className="w-3 h-3" />
-                                    <span>Adicionar Opção</span>
-                                  </button>
-                                </div>
-
-                                <div className="space-y-2">
-                                  {(q.options || []).map((opt, optIdx) => (
-                                    <div
-                                      key={optIdx}
-                                      className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200/80"
-                                    >
-                                      <span className="text-[11px] font-bold text-slate-400 w-5 text-center">
-                                        {optIdx + 1}.
-                                      </span>
-
-                                      <input
-                                        type="text"
-                                        value={opt}
-                                        onChange={(e) =>
-                                          handleUpdateOption(
-                                            selectedSegmentKey,
-                                            q.id,
-                                            optIdx,
-                                            e.target.value
-                                          )
-                                        }
-                                        className="flex-1 px-2.5 py-1 rounded-lg border border-slate-200 text-xs bg-white text-slate-800 focus:border-blue-600 outline-none"
-                                      />
-
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          handleRemoveOption(selectedSegmentKey, q.id, optIdx)
-                                        }
-                                        className="p-1 text-slate-400 hover:text-red-500 rounded cursor-pointer"
-                                        title="Remover opção"
-                                      >
-                                        <X className="w-3.5 h-3.5" />
-                                      </button>
-                                    </div>
-                                  ))}
-                                </div>
-
-                                {/* Custom "Outro" field settings */}
-                                <div className="p-3 rounded-2xl bg-blue-50/40 border border-blue-100 space-y-2">
-                                  <span className="text-xs font-bold text-blue-900 block">
-                                    Configuração do Campo &quot;Outro&quot; (Personalizado)
-                                  </span>
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                                    <div>
-                                      <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
-                                        Rótulo da Opção Outro
-                                      </label>
-                                      <input
-                                        type="text"
-                                        value={q.otherLabel || ''}
-                                        onChange={(e) =>
-                                          handleUpdateQuestion(selectedSegmentKey, q.id, {
-                                            otherLabel: e.target.value,
-                                          })
-                                        }
-                                        placeholder="Ex: Outro tipo, Outro serviço"
-                                        className="w-full px-2.5 py-1 rounded-lg border border-slate-200 text-xs bg-white focus:border-blue-600 outline-none"
-                                      />
-                                    </div>
-                                    <div>
-                                      <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
-                                        Placeholder da Caixa de Texto
-                                      </label>
-                                      <input
-                                        type="text"
-                                        value={q.otherPlaceholder || ''}
-                                        onChange={(e) =>
-                                          handleUpdateQuestion(selectedSegmentKey, q.id, {
-                                            otherPlaceholder: e.target.value,
-                                          })
-                                        }
-                                        placeholder="Ex: Qual outro tipo?"
-                                        className="w-full px-2.5 py-1 rounded-lg border border-slate-200 text-xs bg-white focus:border-blue-600 outline-none"
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="bg-white rounded-3xl border border-slate-200 p-8 text-center text-slate-500">
-                  Selecione um segmento na coluna à esquerda para editar suas perguntas.
-                </div>
-              )}
-            </div>
-          </div>
+        {/* ================= TAB 1: CAMPOS DO ONBOARDING ================= */}
+        {activeTab === 'fields' && (
+          <OnboardingFieldsManager
+            fields={editableOnboardingFields}
+            onChange={(updated) => {
+              setEditableOnboardingFields(updated);
+            }}
+          />
         )}
 
-        {/* ================= TAB 2: COMPANY FIELDS ================= */}
-        {activeTab === 'companyFields' && (
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-5">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-              <div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                  Campos da Etapa: Dados da Empresa
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Reordene a posição dos campos (ex: mover CNPJ antes do Nome Fantasia), altere obrigatoriedade ou ative/desative.
-                </p>
-              </div>
+        {/* ================= TAB 2: PERGUNTAS POR SEGMENTO ================= */}
+        {activeTab === 'segments' && (
+          <SegmentsAndQuestionsManager
+            segments={editableSegments}
+            onChange={(updated) => {
+              setEditableSegments(updated);
+            }}
+          />
+        )}
 
-              <button
-                type="button"
-                onClick={handleSaveAll}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-              >
-                <Save className="w-3.5 h-3.5" />
-                <span>Salvar Ordem dos Campos</span>
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {editableCompanyFields.map((field, idx) => (
-                <div
-                  key={field.id}
-                  className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
-                    field.enabled
-                      ? 'bg-white border-slate-200 shadow-xs'
-                      : 'bg-slate-50 border-slate-200/60 opacity-60'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 w-full sm:w-auto">
-                    {/* Move Up / Down */}
-                    <div className="flex flex-col gap-0.5 shrink-0 bg-slate-100 rounded-lg p-0.5">
-                      <button
-                        type="button"
-                        onClick={() => handleMoveCompanyField(idx, 'up')}
-                        disabled={idx === 0}
-                        className="p-1 rounded hover:bg-white text-slate-600 disabled:opacity-30 cursor-pointer"
-                        title="Mover para cima"
-                      >
-                        <ArrowUp className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleMoveCompanyField(idx, 'down')}
-                        disabled={idx === editableCompanyFields.length - 1}
-                        className="p-1 rounded hover:bg-white text-slate-600 disabled:opacity-30 cursor-pointer"
-                        title="Mover para baixo"
-                      >
-                        <ArrowDown className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    <span className="w-6 text-center text-xs font-bold text-slate-400">
-                      #{idx + 1}
-                    </span>
-
-                    <div className="flex-1 space-y-1">
-                      <input
-                        type="text"
-                        value={field.label}
-                        onChange={(e) => handleUpdateCompanyFieldLabel(field.id, e.target.value)}
-                        className="text-xs sm:text-sm font-bold text-slate-800 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-600 outline-none w-full max-w-sm"
-                      />
-                      <div className="text-[11px] text-slate-400 flex items-center gap-2">
-                        <span>Chave: <code className="bg-slate-100 px-1 py-0.5 rounded">{field.key}</code></span>
-                        <span>•</span>
-                        <span>Tipo: {field.type}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Placeholder input */}
-                  <div className="w-full sm:w-72">
-                    <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">
-                      Placeholder (Dica no campo)
-                    </label>
-                    <input
-                      type="text"
-                      value={field.placeholder || ''}
-                      onChange={(e) => handleUpdateCompanyFieldPlaceholder(field.id, e.target.value)}
-                      placeholder="Dica no campo..."
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs bg-slate-50/50 focus:bg-white focus:border-blue-600 outline-none"
-                    />
-                  </div>
-
-                  {/* Switches: Mandatory & Active */}
-                  <div className="flex items-center gap-2 self-end sm:self-center">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleCompanyFieldRequired(field.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-                        field.required
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                          : 'bg-slate-100 text-slate-500'
-                      }`}
-                    >
-                      {field.required ? 'Obrigatório *' : 'Opcional'}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleToggleCompanyFieldEnabled(field.id)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-                        field.enabled
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-slate-200 text-slate-500'
-                      }`}
-                    >
-                      {field.enabled ? (
-                        <>
-                          <Eye className="w-3 h-3" />
-                          <span>Ativo</span>
-                        </>
-                      ) : (
-                        <>
-                          <EyeOff className="w-3 h-3" />
-                          <span>Oculto</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* ================= TAB 3: SERVIÇOS DA LOCALWAY ================= */}
+        {activeTab === 'services' && (
+          <ServicesManager />
         )}
 
         {/* ================= TAB 3: RESPOSTAS DOS CLIENTES ================= */}

@@ -59,6 +59,16 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
     cachedAccessToken = credential.accessToken;
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
+    // Gracefully handle user closing or cancelling the popup window
+    if (
+      error?.code === 'auth/popup-closed-by-user' ||
+      error?.code === 'auth/cancelled-popup-request' ||
+      error?.message?.includes('popup-closed-by-user')
+    ) {
+      console.info('Autenticação com Google cancelada pelo usuário (janela fechada).');
+      return null;
+    }
+
     console.error('Erro no login com Google:', error);
     throw error;
   } finally {

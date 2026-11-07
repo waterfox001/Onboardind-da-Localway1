@@ -30,6 +30,8 @@ import { ModuleEmail } from './components/steps/modules/ModuleEmail';
 import { ModuleEmailSignature } from './components/steps/modules/ModuleEmailSignature';
 import { ModuleBrandRegistry } from './components/steps/modules/ModuleBrandRegistry';
 import { ModuleDomain } from './components/steps/modules/ModuleDomain';
+import { ModuleSmartCard } from './components/steps/modules/ModuleSmartCard';
+import { ModuleCatalog } from './components/steps/modules/ModuleCatalog';
 
 import { StepSegmentDetails } from './components/steps/StepSegmentDetails';
 import { StepMaterials } from './components/steps/StepMaterials';
@@ -76,8 +78,8 @@ export default function App() {
     return false;
   });
   const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [adminInitialTab, setAdminInitialTab] = useState<'submissions' | 'fields' | 'segments' | 'settings'>('submissions');
-  const [adminPageTab, setAdminPageTab] = useState<'segments' | 'companyFields' | 'submissions' | 'settings'>('segments');
+  const [adminInitialTab, setAdminInitialTab] = useState<'submissions' | 'fields' | 'segments' | 'services' | 'settings'>('submissions');
+  const [adminPageTab, setAdminPageTab] = useState<'fields' | 'segments' | 'services' | 'submissions' | 'settings'>('fields');
   const [isAdminAuth, setIsAdminAuth] = useState<boolean>(() => {
     return localStorage.getItem('localway_admin_auth') === 'true';
   });
@@ -780,14 +782,15 @@ export default function App() {
     setViewMode('form');
   };
 
-  const handleOpenAdminWithTab = (tab: 'submissions' | 'fields' | 'segments' | 'settings' = 'segments') => {
-    const tabMap: Record<string, 'segments' | 'companyFields' | 'submissions' | 'settings'> = {
+  const handleOpenAdminWithTab = (tab: 'submissions' | 'fields' | 'segments' | 'services' | 'settings' = 'fields') => {
+    const tabMap: Record<string, 'fields' | 'segments' | 'services' | 'submissions' | 'settings'> = {
       segments: 'segments',
-      fields: 'companyFields',
+      fields: 'fields',
+      services: 'services',
       submissions: 'submissions',
       settings: 'settings',
     };
-    const target = tabMap[tab] || 'segments';
+    const target = tabMap[tab] || 'fields';
     setAdminPageTab(target);
 
     if (isAdminAuth) {
@@ -897,6 +900,7 @@ export default function App() {
                     data={formData}
                     onChange={updateField}
                     errors={errors}
+                    fieldsConfig={schema.onboardingFields}
                   />
                 )}
 
@@ -905,6 +909,7 @@ export default function App() {
                     data={formData}
                     onChange={updateField}
                     errors={errors}
+                    fieldsConfig={schema.onboardingFields}
                   />
                 )}
 
@@ -913,6 +918,7 @@ export default function App() {
                     data={formData}
                     onChange={updateField}
                     errors={errors}
+                    fieldsConfig={schema.onboardingFields}
                   />
                 )}
 
@@ -921,6 +927,7 @@ export default function App() {
                     data={formData}
                     onChange={updateField}
                     errors={errors}
+                    fieldsConfig={schema.onboardingFields}
                   />
                 )}
 
@@ -1037,6 +1044,22 @@ export default function App() {
                   />
                 )}
 
+                {currentStepId === 'module_plaquinha' && (
+                  <ModuleSmartCard
+                    data={formData}
+                    onChange={updateField}
+                    errors={errors}
+                  />
+                )}
+
+                {currentStepId === 'module_catalogo' && (
+                  <ModuleCatalog
+                    data={formData}
+                    onChange={updateField}
+                    errors={errors}
+                  />
+                )}
+
                 {currentStepId === 'segment_details' && (
                   <StepSegmentDetails
                     data={formData}
@@ -1052,6 +1075,7 @@ export default function App() {
                     onChange={updateField}
                     errors={errors}
                     transferNowUrl={schema.settings?.transferNowUrl}
+                    fieldsConfig={schema.onboardingFields}
                   />
                 )}
 
@@ -1060,6 +1084,7 @@ export default function App() {
                     data={formData}
                     onChange={updateField}
                     errors={errors}
+                    fieldsConfig={schema.onboardingFields}
                   />
                 )}
 

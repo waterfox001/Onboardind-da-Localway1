@@ -164,6 +164,24 @@ export function getActiveSteps(selectedServices: ServiceId[]): StepDefinition[] 
     });
   }
 
+  if (selectedServices.includes('plaquinha')) {
+    steps.push({
+      id: 'module_plaquinha',
+      title: 'Plaquinha Inteligente QR Code / NFC',
+      subtitle: 'Configurações de direcionamento e posições da sua plaquinha física',
+      categoryName: 'Plaquinha Inteligente',
+    });
+  }
+
+  if (selectedServices.includes('catalogo')) {
+    steps.push({
+      id: 'module_catalogo',
+      title: 'Catálogo de Produtos e Serviços',
+      subtitle: 'Estruturação do catálogo digital com fotos, categorias e valores',
+      categoryName: 'Catálogo Digital',
+    });
+  }
+
   // Materials
   steps.push({
     id: 'materials',

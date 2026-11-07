@@ -1,5 +1,6 @@
 import React from 'react';
 import { OnboardingData } from '../../types';
+import { OnboardingFieldConfig } from '../../constants/formSchema';
 import { TextArea } from '../FormControls';
 import { MessageCircleHeart, Sparkles } from 'lucide-react';
 
@@ -7,13 +8,20 @@ interface StepFinalNotesProps {
   data: OnboardingData;
   onChange: <K extends keyof OnboardingData>(field: K, value: OnboardingData[K]) => void;
   errors: Record<string, string>;
+  fieldsConfig?: OnboardingFieldConfig[];
 }
 
 export const StepFinalNotes: React.FC<StepFinalNotesProps> = ({
   data,
   onChange,
   errors,
+  fieldsConfig,
 }) => {
+  const getField = (fieldId: string) => fieldsConfig?.find((f) => f.id === fieldId);
+  const isFieldVisible = (fieldId: string) => {
+    const f = getField(fieldId);
+    return f ? f.enabled : true;
+  };
   return (
     <div className="space-y-6" id="step-final-notes">
       <div className="flex items-center gap-3 pb-2 border-b border-slate-100">
@@ -39,14 +47,18 @@ export const StepFinalNotes: React.FC<StepFinalNotesProps> = ({
         </p>
       </div>
 
-      <TextArea
-        id="final-observacoes"
-        label="Existe mais alguma informação importante que gostaria de compartilhar conosco?"
-        placeholder="Escreva aqui qualquer detalhe adicional, preferência de comunicação, alertas ou expectativas..."
-        value={data.observacoesFinais}
-        onChange={(e) => onChange('observacoesFinais', e.target.value)}
-        rows={5}
-      />
+      {isFieldVisible('observacoesFinais') && (
+        <TextArea
+          id="final-observacoes"
+          label={getField('observacoesFinais')?.label || "Existe mais alguma informação importante que gostaria de compartilhar conosco?"}
+          placeholder={getField('observacoesFinais')?.placeholder || "Escreva aqui qualquer detalhe adicional, preferência de comunicação, alertas ou expectativas..."}
+          value={data.observacoesFinais}
+          onChange={(e) => onChange('observacoesFinais', e.target.value)}
+          rows={5}
+          helper={getField('observacoesFinais')?.helper}
+          required={getField('observacoesFinais')?.required}
+        />
+      )}
     </div>
   );
 };

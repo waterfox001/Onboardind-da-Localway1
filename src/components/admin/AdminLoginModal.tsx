@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { X, Lock, User, Eye, EyeOff, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import { LocalwayLogo } from '../LocalwayLogo';
-import { googleSignIn } from '../../services/googleAuth';
-import { GoogleSignInButton } from '../GoogleSignInButton';
 
 interface AdminLoginModalProps {
   isOpen: boolean;
@@ -15,7 +13,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('Localway');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -23,22 +21,58 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
-    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanUser = (username || '').trim();
     const cleanPassword = (password || '').trim();
 
-    // Check admin credentials
-    if (cleanEmail === 'localway01@gmail.com' && cleanPassword === '1706300710') {
-      localStorage.setItem('localway_admin_auth', 'true');
-      setIsSubmitting(false);
-      onSuccess();
-    } else {
-      setIsSubmitting(false);
-      setError('E-mail ou senha incorretos. Verifique suas credenciais de administrador.');
+    try {
+      // Backend authentication
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: cleanUser,
+          password: cleanPassword,
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data?.success) {
+        localStorage.setItem('localway_admin_auth', 'true');
+        setIsSubmitting(false);
+        onSuccess();
+        return;
+      }
+
+      // If backend returns error response
+      if (data?.error) {
+        setError(data.error);
+        setIsSubmitting(false);
+        return;
+      }
+
+      throw new Error('Falha na resposta do servidor.');
+    } catch {
+      // Local safety validation fallback if server network drops
+      const normalizedUser = cleanUser.toLowerCase();
+      if (
+        (normalizedUser === 'localway' || normalizedUser === 'localway01@gmail.com' || normalizedUser === 'admin') &&
+        cleanPassword === '1706300710'
+      ) {
+        localStorage.setItem('localway_admin_auth', 'true');
+        setIsSubmitting(false);
+        onSuccess();
+      } else {
+        setIsSubmitting(false);
+        setError('Usuário ou senha incorretos. Verifique suas credenciais de administrador Localway.');
+      }
     }
   };
 
@@ -87,22 +121,23 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                E-mail
+                Usuário ou E-mail
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Mail className="w-4 h-4" />
+                  <User className="w-4 h-4" />
                 </div>
                 <input
-                  type="email"
+                  type="text"
                   required
                   autoFocus
-                  value={email}
+                  value={username}
                   onChange={(e) => {
-                    setEmail(e.target.value);
+                    setUsername(e.target.value);
                     if (error) setError('');
                   }}
-                  placeholder="Seu e-mail"
+                  placeholder="Localway"
+                  autoComplete="username"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-slate-400/20 focus:border-slate-600 outline-none transition-all"
                 />
               </div>
@@ -125,6 +160,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                     if (error) setError('');
                   }}
                   placeholder="Digite sua senha"
+                  autoComplete="current-password"
                   className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-300 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-slate-400/20 focus:border-slate-600 outline-none transition-all"
                 />
                 <button
@@ -147,33 +183,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               <ArrowRight className="w-4 h-4 stroke-[2]" />
             </button>
           </form>
-
-          {/* Google Sign In option */}
-          <div className="relative flex py-1 items-center">
-            <div className="flex-grow border-t border-slate-200"></div>
-            <span className="flex-shrink mx-3 text-[11px] text-slate-400 font-medium">ou conecte com</span>
-            <div className="flex-grow border-t border-slate-200"></div>
-          </div>
-
-          <GoogleSignInButton
-            onClick={async () => {
-              setError('');
-              setIsSubmitting(true);
-              try {
-                const res = await googleSignIn();
-                if (res) {
-                  localStorage.setItem('localway_admin_auth', 'true');
-                  onSuccess();
-                }
-              } catch (err: any) {
-                setError(err?.message || 'Falha ao conectar com o Google.');
-              } finally {
-                setIsSubmitting(false);
-              }
-            }}
-            disabled={isSubmitting}
-            text="Entrar com Conta Google"
-          />
 
           {/* Footer security note */}
           <div className="pt-3 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-400">

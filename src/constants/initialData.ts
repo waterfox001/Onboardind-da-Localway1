@@ -93,6 +93,8 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   ecommerceQuantidadeProdutos: '',
   ecommercePossuiFotos: '',
   ecommercePossuiCadastro: '',
+  ecommercePossuiVariacoes: '',
+  ecommerceControleEstoque: '',
   ecommerceFormasPagamento: [],
   ecommerceEntrega: '',
   ecommerceRegioesAtendidas: '',
@@ -185,6 +187,17 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   marcaJaPossuiRegistro: '',
   marcaNomeRegistrar: '',
   marcaVariacoesNome: '',
+
+  // Módulo: Plaquinha Inteligente QR Code / NFC
+  plaquinhaDestino: 'google',
+  plaquinhaQuantidade: '1',
+  plaquinhaLocalInstalacao: 'Balcão / Recepção',
+  plaquinhaObservacoes: '',
+
+  // Módulo: Catálogo de Produtos e Serviços
+  catalogoTipoItens: '',
+  catalogoQuantidadeItens: '',
+  catalogoPossuiPrecos: 'Sim',
 
   // 22. Detalhes Específicos do Segmento
   segmentoRespostas: {},

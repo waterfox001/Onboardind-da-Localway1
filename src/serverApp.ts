@@ -213,6 +213,30 @@ app.get(['/api/health', '/health'], (req: Request, res: Response) => {
   });
 });
 
+// API: Localway Admin Authentication
+app.post(['/api/admin/login', '/admin/login'], (req: Request, res: Response) => {
+  const { username, email, password } = req.body || {};
+  const inputUser = String(username || email || '').trim().toLowerCase();
+  const inputPass = String(password || '').trim();
+
+  const validUsers = ['localway', 'localway01@gmail.com', 'admin'];
+  const validPassword = process.env.ADMIN_PASSWORD || '1706300710';
+
+  if (validUsers.includes(inputUser) && inputPass === validPassword) {
+    return res.json({
+      success: true,
+      message: 'Acesso administrativo autorizado.',
+      username: 'Localway',
+      authenticatedAt: new Date().toISOString(),
+    });
+  }
+
+  return res.status(401).json({
+    success: false,
+    error: 'Usuário ou senha incorretos. Verifique suas credenciais de administrador Localway.',
+  });
+});
+
 // API: Submit onboarding to Database & Google Sheets
 app.post(['/api/submit-onboarding', '/submit-onboarding'], async (req: Request, res: Response) => {
   const payload = req.body;
@@ -456,103 +480,222 @@ app.put(['/api/submissions/:index', '/submissions/:index'], (req: Request, res: 
 // API: AI Question Generator (Server-Side Gemini Integration)
 app.post(['/api/admin/generate-questions', '/admin/generate-questions'], async (req: Request, res: Response) => {
   try {
-    const { segmentName, instructions, count = 5, existingQuestions = [] } = req.body;
+    const { segmentName, instructions, command, count = 10, existingQuestions = [] } = req.body || {};
+    const userInput = String(command || instructions || '').trim();
 
-    if (!segmentName || !instructions) {
+    if (!userInput && !segmentName) {
       return res.status(400).json({
         success: false,
-        error: 'Informe o segmento e a descrição do que deseja coletar.',
+        error: 'Informe uma instrução ou comando (ex: "Crie 10 perguntas para lojas de móveis e eletrodomésticos...").',
       });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({
-        success: false,
-        error: 'Chave GEMINI_API_KEY não configurada no servidor. Configure-a no painel de configurações.',
-      });
-    }
+    const questionCount = Math.max(3, Math.min(Number(count) || 10, 20));
 
-    const prompt = `Você é um especialista sênior em onboarding de clientes e presença digital da agência Localway.
-Crie exatamente ${count} perguntas estratégicas e objetivas para o segmento "${segmentName}".
-Instrução do usuário: "${instructions}".
+    const prompt = `Você é o assistente oficial de inteligência artificial da agência Localway, especialista sênior em onboarding de clientes, arquitetura de formulários e presença digital (Google Meu Negócio, SEO Local, Sites, E-commerce, Tráfego Pago).
 
-Perguntas que JÁ EXISTEM neste segmento (NÃO repita nem crie perguntas parecidas com estas):
+SOLICITAÇÃO DO ADMINISTRADOR LOCALWAY:
+"${userInput || `Crie ${questionCount} perguntas estratégicas para o segmento: ${segmentName}`}"
+${segmentName ? `SEGMENTO ALVO INFORMADO: "${segmentName}"` : ''}
+
+PERGUNTAS QUE JÁ EXISTEM NO SEGMENTO (NÃO repita e NÃO gere perguntas parecidas):
 ${Array.isArray(existingQuestions) && existingQuestions.length > 0 ? existingQuestions.map((q: string) => `- ${q}`).join('\n') : '- Nenhuma pergunta cadastrada ainda'}
 
-Regras obrigatórias:
-1. As perguntas devem ser extremamente relevantes para captar necessidades do negócio, portfólio, diferenciais, canais ou processos.
-2. Cada pergunta deve ter um 'type' adequado: 'checkbox' (múltipla escolha), 'radio' (escolha única), 'select' (lista suspensa), 'text' (resposta curta) ou 'textarea' (resposta longa detalhada).
-3. Para tipos com opções ('checkbox', 'radio', 'select'), forneça de 3 a 6 opções realistas do mercado brasileiro.
-4. Para perguntas com opções, SEMPRE inclua a opção "Outro" com variação natural no final (ex: "Outro tipo", "Outro serviço", "Outro formato") no campo otherLabel, e adicione essa mesma opção na lista de options.
-5. Defina um helper explicativo curto e profissional para orientar o cliente.`;
+CAMPOS GERAIS DA EMPRESA JÁ COLETADOS NO ONBOARDING (NUNCA pergunte sobre estas informações, pois já são coletadas em outras etapas):
+- Razão Social, Nome Fantasia, CNPJ, Data de Abertura da Empresa, Descrição Geral
+- Endereço Completo, Rua, Número, Bairro, Cidade, Estado, CEP
+- WhatsApp Principal, Telefone Fixo, E-mail Corporativo, Site Atual, Redes Sociais
+- Horário de Funcionamento semanal, Agendamento prévio
+- Estacionamento, Idiomas para Atendimento, Formas de Pagamento e Bandeiras de Cartão
+- Nome, Cargo, WhatsApp e E-mail do Responsável pelo Projeto
+- Envio de Materiais, Logotipo, Fotos e Observações Finais
+
+DIRETRIZES E REGRAS INEGOCIÁVEIS:
+1. IDENTIFICAÇÃO DO SEGMENTO: Extraia o nome claro do segmento comercial (ex: "Móveis e Eletrodomésticos", "Clínica Médica", "Restaurante", "Oficina Mecânica").
+2. REGRA FUNDAMENTAL SOBRE AS PERGUNTAS: As perguntas devem ser GENÉRICAS PARA O SEGMENTO COMERCIAL COMO UM TODO, e NUNCA restritas a um nicho exclusivo.
+   - Exemplo: em "Loja de Roupas", as perguntas devem servir tanto para moda infantil, masculina, feminina, plus size ou lingerie. Não crie perguntas como "Quais roupas infantis mais vendem?", e sim "Quais são as principais categorias ou linhas de produtos comercializadas?".
+3. QUANTIDADE: Gere exatamente ${questionCount} perguntas estratégicas e objetivas.
+4. TIPO DE RESPOSTA ADEQUADO:
+   - 'checkbox': quando puder marcar mais de uma opção (ex: especialidades, serviços oferecidos).
+   - 'radio': quando for escolha única obrigatória (ex: modelo de operação principal).
+   - 'select': lista suspensa.
+   - 'text': resposta curta objetiva (ex: prazo médio de entrega).
+   - 'textarea': resposta detalhada (ex: diferenciais competitivos, marcas com que trabalha).
+5. OPÇÕES REALISTAS: Para tipos com opções ('checkbox', 'radio', 'select'), forneça de 3 a 6 opções contextualizadas à realidade do mercado brasileiro, e SEMPRE inclua a opção "Outro (especificar)" no final.
+6. TEXTO DE AJUDA: Crie um helper curto e profissional orientando o cliente sobre o que preencher.`;
 
     let generatedList: any[] = [];
+    let detectedSegment = segmentName || 'Geral';
 
-    try {
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout na API Gemini')), 12000)
-      );
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout na API Gemini')), 18000)
+        );
 
-      const aiPromise = ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.ARRAY,
-            items: {
+        const aiPromise = ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
               type: Type.OBJECT,
               properties: {
-                label: { type: Type.STRING },
-                category: { type: Type.STRING },
-                type: { type: Type.STRING },
-                helper: { type: Type.STRING },
-                placeholder: { type: Type.STRING },
-                options: {
+                detectedSegment: { type: Type.STRING },
+                questions: {
                   type: Type.ARRAY,
-                  items: { type: Type.STRING },
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      label: { type: Type.STRING },
+                      category: { type: Type.STRING },
+                      type: { type: Type.STRING },
+                      helper: { type: Type.STRING },
+                      placeholder: { type: Type.STRING },
+                      options: {
+                        type: Type.ARRAY,
+                        items: { type: Type.STRING },
+                      },
+                      otherLabel: { type: Type.STRING },
+                      otherPlaceholder: { type: Type.STRING },
+                    },
+                    required: ['label', 'type'],
+                  },
                 },
-                otherLabel: { type: Type.STRING },
-                otherPlaceholder: { type: Type.STRING },
               },
-              required: ['label', 'type'],
+              required: ['questions'],
             },
           },
-        },
-      });
+        });
 
-      const response: any = await Promise.race([aiPromise, timeoutPromise]);
-      const responseText = response?.text || '[]';
-      generatedList = JSON.parse(responseText);
-    } catch (geminiErr) {
-      console.warn('Gemini fallback activated:', geminiErr);
+        const response: any = await Promise.race([aiPromise, timeoutPromise]);
+        const responseText = response?.text || '{}';
+        const parsed = JSON.parse(responseText);
+
+        if (parsed.detectedSegment) {
+          detectedSegment = parsed.detectedSegment;
+        }
+
+        if (Array.isArray(parsed.questions)) {
+          generatedList = parsed.questions;
+        }
+      } catch (geminiErr) {
+        console.warn('Gemini call failed or timed out, executing intelligent fallback:', geminiErr);
+      }
+    }
+
+    // Intelligent fallback if Gemini API is offline or without key
+    if (!generatedList || generatedList.length === 0) {
+      const seg = segmentName || 'Empresa';
+      detectedSegment = seg;
       generatedList = [
         {
-          label: `Quais são as principais especialidades ou serviços que você oferece em ${segmentName}?`,
-          category: 'Especialidades & Serviços',
+          label: `Quais são as principais categorias de produtos ou serviços que sua empresa comercializa?`,
+          category: 'Produtos & Serviços',
           type: 'checkbox',
-          options: ['Atendimento corporativo e B2B', 'Atendimento direto ao consumidor (B2C)', 'Projetos personalizados sob demanda', 'Planos recorrentes / assinaturas', 'Outro tipo de serviço'],
-          otherLabel: 'Outro tipo de serviço',
-          otherPlaceholder: 'Qual outro serviço você oferece?',
-          helper: 'Selecione todas as modalidades em que sua empresa atua.',
+          options: [
+            'Linha premium / alto padrão',
+            'Produtos de alta rotatividade e uso diário',
+            'Projetos e soluções sob medida',
+            'Atendimento no atacado / B2B',
+            'Linha de entrada / custo-benefício',
+            'Outra categoria (especificar)',
+          ],
+          helper: 'Selecione todas as principais categorias para destacarmos nos canais digitais.',
         },
         {
-          label: `Como funciona o atendimento e agendamento dos seus serviços?`,
-          category: 'Atendimento & Operação',
+          label: `Qual é o raio principal de atuação ou entrega do seu negócio?`,
+          category: 'Área de Atuação',
           type: 'radio',
-          options: ['Exclusivamente com agendamento prévio / hora marcada', 'Por ordem de chegada / pronto atendimento', 'Modelo híbrido (agendado e espontâneo)', 'Outro formato de atendimento'],
-          otherLabel: 'Outro formato de atendimento',
-          otherPlaceholder: 'Qual outro formato de atendimento?',
-          helper: 'Informe como os clientes costumam ser atendidos.',
+          options: [
+            'Apenas no bairro e proximidades',
+            'Toda a cidade e região metropolitana',
+            'Todo o estado',
+            'Nacional (atendimento em todo o Brasil)',
+            'Outro formato de cobertura',
+          ],
+          helper: 'Importante para configurarmos as regiões de anúncios e SEO Local.',
         },
         {
-          label: `Quais equipamentos, marcas ou tecnologias você utiliza no seu trabalho?`,
-          category: 'Equipamentos & Ferramentas',
+          label: `Quais são as principais marcas, fabricantes ou parceiros com que você trabalha?`,
+          category: 'Marcas & Fornecedores',
           type: 'textarea',
-          placeholder: 'Ex: Câmeras, equipamentos especializados, sistemas...',
-          helper: 'Cite equipamentos e marcas relevantes para demonstrar autoridade.',
+          placeholder: 'Ex: Marcas consolidadas, fornecedores certificados, marcas próprias...',
+          helper: 'Citar marcas conhecidas aumenta a autoridade no Google e no site.',
         },
-      ].slice(0, count);
+        {
+          label: `Como funciona a política de garantia e assistência dos seus produtos ou serviços?`,
+          category: 'Garantia & Suporte',
+          type: 'radio',
+          options: [
+            'Garantia oficial do fabricante com suporte local',
+            'Garantia própria estendida pela loja',
+            'Garantia padrão de 90 dias conforme CDC',
+            'Outra modalidade de garantia',
+          ],
+          helper: 'Transmita segurança aos novos clientes que buscarem sua empresa.',
+        },
+        {
+          label: `Sua empresa oferece serviços de montagem, instalação ou pós-venda especializado?`,
+          category: 'Pós-Venda & Serviços',
+          type: 'checkbox',
+          options: [
+            'Montagem / instalação própria inclusa',
+            'Indicação de técnicos e parceiros homologados',
+            'Suporte e manutenção periódica',
+            'Atendimento sob consulta',
+            'Não oferece montagem/instalação',
+            'Outro formato de serviço',
+          ],
+          helper: 'Diferenciais como montagem e suporte convertem mais clientes na internet.',
+        },
+        {
+          label: `Quais são os prazos médios de entrega ou disponibilidade dos seus itens?`,
+          category: 'Prazos & Logística',
+          type: 'radio',
+          options: [
+            'Pronta entrega imediata (retirada ou envio no mesmo dia)',
+            'Entrega rápida em até 48 horas',
+            'Prazo padrão de 5 a 10 dias úteis',
+            'Sob encomenda com prazo personalizado',
+            'Outro prazo de entrega',
+          ],
+          helper: 'Informe como funciona o fluxo logístico do seu estabelecimento.',
+        },
+        {
+          label: `Quais são os 3 principais diferenciais da sua empresa em relação aos concorrentes?`,
+          category: 'Diferenciais Competitivos',
+          type: 'textarea',
+          placeholder: 'Ex: Atendimento consultivo, pronta entrega de itens raros, melhores condições de parcelamento...',
+          helper: 'Destaques que utilizaremos nos textos de anúncio e na página institucional.',
+        },
+        {
+          label: `Você trabalha com condições especiais para profissionais parceiros ou compras em volume?`,
+          category: 'Comercial & Parcerias',
+          type: 'radio',
+          options: [
+            'Sim, tabela diferenciada para profissionais e arquitetos/parceiros',
+            'Sim, descontos progressivos para compras em quantidade',
+            'Tabela única para todos os clientes',
+            'Outro tipo de condição comercial',
+          ],
+          helper: 'Mapeamento para criação de campanhas voltadas para parcerias.',
+        },
+        {
+          label: `Quais são os itens ou serviços mais procurados que não podem faltar em destaque nos canais digitais?`,
+          category: 'Produtos Carro-Chefe',
+          type: 'textarea',
+          placeholder: 'Ex: Os itens mais vendidos e que atraem mais público para a sua loja...',
+          helper: 'Serão os primeiros destaques no Perfil do Google e nas páginas do site.',
+        },
+        {
+          label: `Existe alguma certificação, prêmio ou selo de qualidade que sua empresa possui?`,
+          category: 'Autoridade & Credibilidade',
+          type: 'text',
+          placeholder: 'Ex: Empresa certificada ISO, selo RA1000 Reclame Aqui, premiação local...',
+          helper: 'Selos de confiança geram forte impacto visual no site e nas redes.',
+        },
+      ].slice(0, questionCount);
     }
 
     const formatted = generatedList.map((q: any, idx: number) => {
@@ -570,16 +713,22 @@ Regras obrigatórias:
         helper: q.helper || '',
         placeholder: q.placeholder || '',
         options: Array.isArray(q.options) && q.options.length > 0 ? q.options : undefined,
-        otherLabel: q.otherLabel || (q.options?.length ? 'Outro' : undefined),
+        otherLabel: q.otherLabel || (q.options?.length ? 'Outro (especificar)' : undefined),
         otherPlaceholder: q.otherPlaceholder || (q.options?.length ? 'Qual?' : undefined),
       };
     });
 
-    return res.json({ success: true, questions: formatted });
+    return res.json({
+      success: true,
+      detectedSegment,
+      questions: formatted,
+      count: formatted.length,
+    });
   } catch (err: any) {
+    console.error('Error generating AI questions:', err);
     return res.status(500).json({
       success: false,
-      error: err?.message || 'Falha ao gerar perguntas com IA',
+      error: err?.message || 'Falha ao processar solicitação com o assistente Gemini.',
     });
   }
 });

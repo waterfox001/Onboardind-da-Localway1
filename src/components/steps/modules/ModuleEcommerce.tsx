@@ -74,6 +74,24 @@ export const ModuleEcommerce: React.FC<ModuleEcommerceProps> = ({
         />
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <RadioGroup
+          label="Os produtos possuem variações (tamanho, cor, voltagem, sabor)?"
+          name="ecom-possui-variacoes"
+          options={['Sim, produtos com variações (ex: P/M/G, cores)', 'Não, itens de modelo único']}
+          value={data.ecommercePossuiVariacoes || 'Sim, produtos com variações (ex: P/M/G, cores)'}
+          onChange={(v) => onChange('ecommercePossuiVariacoes', v)}
+        />
+
+        <RadioGroup
+          label="Como você pretende controlar o estoque da loja?"
+          name="ecom-controle-estoque"
+          options={['Controle automático pelo sistema da loja', 'Estoque compartilhado com loja física', 'Sob encomenda / Fabricação sob demanda']}
+          value={data.ecommerceControleEstoque || 'Controle automático pelo sistema da loja'}
+          onChange={(v) => onChange('ecommerceControleEstoque', v)}
+        />
+      </div>
+
       <div className="space-y-3">
         <CheckboxGroup
           label="Quais formas de pagamento a loja virtual deve aceitar?"

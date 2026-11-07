@@ -1,5 +1,6 @@
 import React from 'react';
 import { OnboardingData, DayOfWeek } from '../../types';
+import { OnboardingFieldConfig } from '../../constants/formSchema';
 import { RadioGroup, CheckboxGroup, TextInput } from '../FormControls';
 import { Clock, Calendar, Plus, X } from 'lucide-react';
 
@@ -7,6 +8,7 @@ interface StepHoursProps {
   data: OnboardingData;
   onChange: <K extends keyof OnboardingData>(field: K, value: OnboardingData[K]) => void;
   errors: Record<string, string>;
+  fieldsConfig?: OnboardingFieldConfig[];
 }
 
 const DAYS_LABELS: { key: DayOfWeek; label: string }[] = [
@@ -23,7 +25,13 @@ export const StepHours: React.FC<StepHoursProps> = ({
   data,
   onChange,
   errors,
+  fieldsConfig,
 }) => {
+  const getField = (fieldId: string) => fieldsConfig?.find((f) => f.id === fieldId);
+  const isFieldVisible = (fieldId: string) => {
+    const f = getField(fieldId);
+    return f ? f.enabled : true;
+  };
   const updateDayStatus = (day: DayOfWeek, status: 'aberto' | 'fechado') => {
     onChange('horarios', {
       ...data.horarios,
@@ -188,55 +196,63 @@ export const StepHours: React.FC<StepHoursProps> = ({
       </div>
 
       {/* Agendamento */}
-      <div className="pt-6 border-t border-slate-100 space-y-4">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-blue-600" />
-          <h3 className="text-sm font-semibold text-slate-800">
-            A empresa trabalha com agendamento?
-          </h3>
-        </div>
-
-        <RadioGroup
-          label="Os clientes precisam ou costumam agendar horário?"
-          name="trabalha-agendamento"
-          required
-          options={['Sim', 'Não']}
-          value={data.trabalhaAgendamento}
-          onChange={(v) => onChange('trabalhaAgendamento', v)}
-          error={errors.trabalhaAgendamento}
-          horizontal
-        />
-
-        {data.trabalhaAgendamento === 'Sim' && (
-          <div className="space-y-4 p-4 rounded-2xl bg-blue-50/40 border border-blue-100">
-            <CheckboxGroup
-              label="Como os clientes fazem o agendamento?"
-              options={['WhatsApp', 'Telefone', 'Site', 'Link externo', 'Outro']}
-              selectedValues={data.formasAgendamento}
-              onChange={(v) => onChange('formasAgendamento', v)}
-            />
-
-            {data.formasAgendamento.includes('Outro') && (
-              <TextInput
-                id="hours-outro-agendamento"
-                label="Qual outra forma de agendamento?"
-                placeholder="Informe como é feito o agendamento..."
-                value={data.outroAgendamento}
-                onChange={(e) => onChange('outroAgendamento', e.target.value)}
-              />
-            )}
-
-            <TextInput
-              id="hours-contato-link-agendamento"
-              label="Informe o contato ou link utilizado para agendamento"
-              placeholder="Ex: https://calendly.com/suaempresa ou número (11) 90000-0000"
-              value={data.contatoLinkAgendamento}
-              onChange={(e) => onChange('contatoLinkAgendamento', e.target.value)}
-              helper="Link ou telefone que será configurado nos botões e chamadas de ação"
-            />
+      {isFieldVisible('trabalhaAgendamento') && (
+        <div className="pt-6 border-t border-slate-100 space-y-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-blue-600" />
+            <h3 className="text-sm font-semibold text-slate-800">
+              {getField('trabalhaAgendamento')?.label || 'A empresa trabalha com agendamento?'}
+            </h3>
           </div>
-        )}
-      </div>
+
+          <RadioGroup
+            label={getField('trabalhaAgendamento')?.helper || "Os clientes precisam ou costumam agendar horário?"}
+            name="trabalha-agendamento"
+            required={getField('trabalhaAgendamento')?.required ?? true}
+            options={getField('trabalhaAgendamento')?.options?.length ? getField('trabalhaAgendamento')!.options! : ['Sim', 'Não']}
+            value={data.trabalhaAgendamento}
+            onChange={(v) => onChange('trabalhaAgendamento', v)}
+            error={errors.trabalhaAgendamento}
+            horizontal
+          />
+
+          {data.trabalhaAgendamento === 'Sim' && (
+            <div className="space-y-4 p-4 rounded-2xl bg-blue-50/40 border border-blue-100">
+              {isFieldVisible('formasAgendamento') && (
+                <CheckboxGroup
+                  label={getField('formasAgendamento')?.label || "Como os clientes fazem o agendamento?"}
+                  options={getField('formasAgendamento')?.options?.length ? getField('formasAgendamento')!.options! : ['WhatsApp', 'Telefone', 'Site', 'Link externo', 'Outro']}
+                  selectedValues={data.formasAgendamento}
+                  onChange={(v) => onChange('formasAgendamento', v)}
+                  helper={getField('formasAgendamento')?.helper}
+                />
+              )}
+
+              {data.formasAgendamento.includes('Outro') && (
+                <TextInput
+                  id="hours-outro-agendamento"
+                  label="Qual outra forma de agendamento?"
+                  placeholder="Informe como é feito o agendamento..."
+                  value={data.outroAgendamento}
+                  onChange={(e) => onChange('outroAgendamento', e.target.value)}
+                />
+              )}
+
+              {isFieldVisible('contatoLinkAgendamento') && (
+                <TextInput
+                  id="hours-contato-link-agendamento"
+                  label={getField('contatoLinkAgendamento')?.label || "Informe o contato ou link utilizado para agendamento"}
+                  placeholder={getField('contatoLinkAgendamento')?.placeholder || "Ex: https://calendly.com/suaempresa ou número (11) 90000-0000"}
+                  value={data.contatoLinkAgendamento}
+                  onChange={(e) => onChange('contatoLinkAgendamento', e.target.value)}
+                  helper={getField('contatoLinkAgendamento')?.helper || "Link ou telefone que será configurado nos botões e chamadas de ação"}
+                  required={getField('contatoLinkAgendamento')?.required}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
