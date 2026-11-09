@@ -1,4 +1,13 @@
-export type QuestionType = 'text' | 'textarea' | 'select' | 'radio' | 'checkbox';
+export type QuestionType =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'radio'
+  | 'checkbox'
+  | 'yes_no'
+  | 'date'
+  | 'file'
+  | 'select';
 
 export interface SegmentQuestion {
   id: string;
@@ -11,6 +20,7 @@ export interface SegmentQuestion {
   otherPlaceholder?: string;
   required?: boolean;
   enabled?: boolean;
+  order?: number;
 }
 
 export interface SegmentConfig {

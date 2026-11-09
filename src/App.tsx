@@ -148,7 +148,10 @@ export default function App() {
           if (schemaData.success && schemaData.schema) {
             merged.companyFields = schemaData.schema.companyFields || merged.companyFields;
             merged.segmentsConfig = schemaData.schema.segmentsConfig || merged.segmentsConfig;
+            merged.servicesConfig = schemaData.schema.servicesConfig || merged.servicesConfig;
+            merged.onboardingFields = schemaData.schema.onboardingFields || merged.onboardingFields;
           }
+
           if (settingsData.success && settingsData.settings) {
             merged.settings = { ...merged.settings, ...settingsData.settings };
           }
@@ -936,8 +939,10 @@ export default function App() {
                     data={formData}
                     onChange={updateField}
                     errors={errors}
+                    servicesConfig={schema.servicesConfig}
                   />
                 )}
+
 
                 {/* Dynamic Service Modules */}
                 {currentStepId === 'module_google' && (

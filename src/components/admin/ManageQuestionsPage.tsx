@@ -41,13 +41,26 @@ import { CompanyDataEditor } from './CompanyDataEditor';
 import { OnboardingFieldsManager } from './OnboardingFieldsManager';
 import { SegmentsAndQuestionsManager } from './SegmentsAndQuestionsManager';
 import { ServicesManager } from './ServicesManager';
+import { UniversalQuestionsManager } from './UniversalQuestionsManager';
+import { LocalAIChat } from './LocalAIChat';
+import { DEFAULT_SERVICES_CONFIG } from '../../constants/services';
+import { ManagedServiceConfig, ServiceId } from '../../types';
 import { DEFAULT_ONBOARDING_FIELDS, OnboardingFieldConfig } from '../../constants/formSchema';
 import { initGoogleAuth, googleSignIn, googleLogout } from '../../services/googleAuth';
 import { listUserSpreadsheets, createOnboardingSpreadsheet, GoogleSheetFile } from '../../services/googleSheets';
 import { GoogleSignInButton } from '../GoogleSignInButton';
 import type { User as FirebaseUser } from 'firebase/auth';
 
-export type AdminTabType = 'fields' | 'segments' | 'services' | 'submissions' | 'settings' | 'companyFields';
+export type AdminTabType =
+  | 'services'
+  | 'questions'
+  | 'local-ai'
+  | 'fields'
+  | 'segments'
+  | 'submissions'
+  | 'settings'
+  | 'companyFields';
+
 
 interface ManageQuestionsPageProps {
   schema: FormSchemaState;
@@ -64,21 +77,36 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
   onLogout,
   initialTab = 'fields',
 }) => {
-  // Navigation between fields catalog, questions per segment, services, submissions, settings
-  const normalizeTab = (tab: AdminTabType): 'fields' | 'segments' | 'services' | 'submissions' | 'settings' => {
+  // Navigation between services, individual questions, Local AI, fields catalog, segments, submissions, settings
+  const normalizeTab = (
+    tab: AdminTabType
+  ): 'services' | 'questions' | 'local-ai' | 'fields' | 'segments' | 'submissions' | 'settings' => {
     if (tab === 'companyFields') return 'fields';
     return tab;
   };
 
-  const [activeTab, setActiveTab] = useState<'fields' | 'segments' | 'services' | 'submissions' | 'settings'>(
-    normalizeTab(initialTab)
-  );
+  const [activeTab, setActiveTab] = useState<
+    'services' | 'questions' | 'local-ai' | 'fields' | 'segments' | 'submissions' | 'settings'
+  >(normalizeTab(initialTab));
 
   React.useEffect(() => {
     if (initialTab) setActiveTab(normalizeTab(initialTab));
   }, [initialTab]);
 
   // Copy of schema for live editing
+  const [editableServices, setEditableServices] = useState<Record<string, ManagedServiceConfig>>(
+    schema.servicesConfig && Object.keys(schema.servicesConfig).length > 0
+      ? schema.servicesConfig
+      : DEFAULT_SERVICES_CONFIG
+  );
+  const [questionsTargetServiceId, setQuestionsTargetServiceId] = useState<string>('google');
+
+  React.useEffect(() => {
+    if (schema.servicesConfig && Object.keys(schema.servicesConfig).length > 0) {
+      setEditableServices(schema.servicesConfig);
+    }
+  }, [schema.servicesConfig]);
+
   const [editableOnboardingFields, setEditableOnboardingFields] = useState<OnboardingFieldConfig[]>(
     schema.onboardingFields && schema.onboardingFields.length > 0
       ? schema.onboardingFields
@@ -91,6 +119,7 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
     schema.companyFields
   );
   const [editableSettings, setEditableSettings] = useState(schema.settings);
+
 
   // Submissions state
   const [submissions, setSubmissions] = useState<any[]>([]);
@@ -688,8 +717,10 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
       onboardingFields: editableOnboardingFields,
       companyFields: editableCompanyFields,
       segmentsConfig: editableSegments,
+      servicesConfig: editableServices,
       settings: editableSettings,
     };
+
 
     onUpdateSchema(updatedSchema);
     localStorage.setItem('localway_form_schema_v1', JSON.stringify(updatedSchema));
@@ -780,33 +811,7 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
       <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex-1">
         {/* Main Tab Switcher */}
         <div className="flex items-center justify-between pb-6 flex-wrap gap-4">
-          <div className="inline-flex rounded-2xl p-1 bg-slate-200/70 border border-slate-300/50 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setActiveTab('fields')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                activeTab === 'fields'
-                  ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Sliders className="w-4 h-4" />
-              <span>Campos do Onboarding ({editableOnboardingFields.length})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('segments')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                activeTab === 'segments'
-                  ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Database className="w-4 h-4" />
-              <span>Perguntas por Segmento ({segmentKeys.length})</span>
-            </button>
-
+          <div className="inline-flex rounded-2xl p-1 bg-slate-200/70 border border-slate-300/50 flex-wrap gap-1">
             <button
               type="button"
               onClick={() => setActiveTab('services')}
@@ -816,8 +821,47 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Layers className="w-4 h-4" />
-              <span>Serviços da Localway</span>
+              <Layers className="w-4 h-4 text-blue-600" />
+              <span>Serviços ({Object.keys(editableServices).length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('questions')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                activeTab === 'questions' || activeTab === 'segments'
+                  ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Sliders className="w-4 h-4 text-indigo-600" />
+              <span>Perguntas (8 Tipos)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('local-ai')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                activeTab === 'local-ai'
+                  ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span>Local AI</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('fields')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                activeTab === 'fields'
+                  ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Database className="w-4 h-4 text-slate-600" />
+              <span>Campos da Empresa</span>
             </button>
 
             <button
@@ -829,7 +873,7 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <FileText className="w-4 h-4" />
+              <FileText className="w-4 h-4 text-emerald-600" />
               <span>Respostas ({submissions.length})</span>
             </button>
 
@@ -842,15 +886,59 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Settings className="w-4 h-4" />
-              <span>Configurações & Links</span>
+              <Settings className="w-4 h-4 text-slate-600" />
+              <span>Integrações & Links</span>
             </button>
           </div>
 
-          <div className="text-xs text-slate-500 font-medium">
-            Toda mudança de texto, opção ou dado é refletida instantaneamente no sistema.
+          <div className="text-xs text-slate-500 font-medium hidden md:block">
+            Alterações no catálogo são refletidas no formulário público instantaneamente.
           </div>
         </div>
+
+        {/* ================= TAB 1: SERVIÇOS DA LOCALWAY ================= */}
+        {activeTab === 'services' && (
+          <ServicesManager
+            servicesConfig={editableServices}
+            onChange={(updated) => setEditableServices(updated)}
+            onManageServiceQuestions={(svcId) => {
+              setQuestionsTargetServiceId(svcId);
+              setActiveTab('questions');
+            }}
+          />
+        )}
+
+        {/* ================= TAB 2: PERGUNTAS (SERVIÇOS E SEGMENTOS) ================= */}
+        {(activeTab === 'questions' || activeTab === 'segments') && (
+          <UniversalQuestionsManager
+            servicesConfig={editableServices}
+            segmentsConfig={editableSegments}
+            onUpdateServices={(updated) => setEditableServices(updated)}
+            onUpdateSegments={(updated) => setEditableSegments(updated)}
+            initialTarget={activeTab === 'segments' ? 'segment' : 'service'}
+            initialServiceId={questionsTargetServiceId}
+          />
+        )}
+
+        {/* ================= TAB 3: LOCAL AI ================= */}
+        {activeTab === 'local-ai' && (
+          <LocalAIChat
+            schema={{
+              ...schema,
+              servicesConfig: editableServices,
+              segmentsConfig: editableSegments,
+              onboardingFields: editableOnboardingFields,
+            }}
+            onUpdateSchema={(newSchema) => {
+              if (newSchema.servicesConfig) setEditableServices(newSchema.servicesConfig);
+              if (newSchema.segmentsConfig) setEditableSegments(newSchema.segmentsConfig);
+              if (newSchema.onboardingFields) setEditableOnboardingFields(newSchema.onboardingFields);
+              onUpdateSchema(newSchema);
+            }}
+            onNavigateToTab={(tab) => setActiveTab(tab as any)}
+          />
+        )}
+
 
         {/* ================= TAB 1: CAMPOS DO ONBOARDING ================= */}
         {activeTab === 'fields' && (
@@ -862,20 +950,6 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
           />
         )}
 
-        {/* ================= TAB 2: PERGUNTAS POR SEGMENTO ================= */}
-        {activeTab === 'segments' && (
-          <SegmentsAndQuestionsManager
-            segments={editableSegments}
-            onChange={(updated) => {
-              setEditableSegments(updated);
-            }}
-          />
-        )}
-
-        {/* ================= TAB 3: SERVIÇOS DA LOCALWAY ================= */}
-        {activeTab === 'services' && (
-          <ServicesManager />
-        )}
 
         {/* ================= TAB 3: RESPOSTAS DOS CLIENTES ================= */}
         {activeTab === 'submissions' && (

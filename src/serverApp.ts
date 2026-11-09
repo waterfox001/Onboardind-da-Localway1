@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai';
 import seedSubmissions from '../data/submissions.json';
 
 dotenv.config();
@@ -729,6 +729,234 @@ DIRETRIZES E REGRAS INEGOCIÁVEIS:
     return res.status(500).json({
       success: false,
       error: err?.message || 'Falha ao processar solicitação com o assistente Gemini.',
+    });
+  }
+});
+
+// API: Local AI - Assistente Inteligente para Administração do Onboarding
+app.post(['/api/admin/local-ai', '/admin/local-ai'], async (req: Request, res: Response) => {
+  try {
+    const { message, history = [], currentContext } = req.body || {};
+    const userPrompt = String(message || '').trim();
+
+    if (!userPrompt) {
+      return res.status(400).json({
+        success: false,
+        error: 'Mensagem vazia. Envie um comando para o assistente Local AI.',
+      });
+    }
+
+    const systemInstruction = `Você é o "Local AI", assistente oficial de administração e configuração do sistema de Onboarding da Localway.
+Seu objetivo é ajudar a equipe interna da Localway a gerenciar serviços, perguntas e regras de preenchimento.
+
+SERVIÇOS OFICIAIS DISPONÍVEIS NA LOCALWAY (ID exato : Nome):
+- google : Perfil da Empresa no Google (Google Meu Negócio)
+- site : Site Profissional (Site Institucional)
+- ecommerce : Loja Virtual / E-commerce
+- trafego : Tráfego Pago
+- identidade : Identidade Visual
+- minisite : Mini Site
+- seo : SEO Local
+- automacoes : Sistemas e Automações
+- whatsapp : WhatsApp Business
+- email : E-mail Profissional
+- assinatura_email : Assinatura de E-mail Profissional
+- registro_marca : Registro de Marca
+- registro_dominio : Registro de Domínio
+- plaquinha : Plaquinha Inteligente QR Code / NFC
+- catalogo : Catálogo de Produtos e Serviços
+
+TIPOS DE PERGUNTAS VÁLIDOS (UniversalQuestionType):
+'text' (Texto Curto), 'textarea' (Texto Longo / Parágrafo), 'number' (Número), 'radio' (Resposta Única), 'checkbox' (Múltipla Seleção), 'yes_no' (Sim ou Não), 'date' (Data), 'file' (Upload de Arquivo), 'select' (Lista suspensa).
+
+SUA MISSÃO:
+1. Analise o que o administrador pediu.
+2. Formule uma resposta profissional, direta e prestativa em português ("reply").
+3. Se o pedido envolver criar uma pergunta, alterar um serviço (ativar/desativar/editar) ou adicionar um segmento, configure "hasAction": true e preencha "action" com os campos detalhados.
+4. Se for apenas uma dúvida ou conversa explicativa, defina "hasAction": false e actionType: "none".
+5. IMPORTANTÍSSIMO: Nunca aplique alterações sem fornecer um "previewSummary" claro para o cartão de confirmação.`;
+
+    const fullPrompt = `${systemInstruction}
+
+CONTEXTO ATUAL DO SISTEMA:
+${currentContext ? JSON.stringify(currentContext).slice(0, 1000) : 'Configurações padrão ativas.'}
+
+HISTÓRICO RECENTE:
+${Array.isArray(history) && history.length > 0 ? history.slice(-4).map((h: any) => `${h.role}: ${h.content}`).join('\n') : 'Início da conversa'}
+
+COMANDO DO ADMINISTRADOR LOCALWAY:
+"${userPrompt}"`;
+
+    let aiResult: any = null;
+
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout de 30 segundos na API Gemini')), 30000)
+        );
+
+        const aiPromise = ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: fullPrompt,
+          config: {
+            thinkingConfig: {
+              thinkingLevel: ThinkingLevel.LOW,
+            },
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                reply: { type: Type.STRING },
+                hasAction: { type: Type.BOOLEAN },
+                action: {
+                  type: Type.OBJECT,
+                  properties: {
+                    actionType: { type: Type.STRING },
+                    target: { type: Type.STRING },
+                    serviceId: { type: Type.STRING },
+                    segmentKey: { type: Type.STRING },
+                    questionLabel: { type: Type.STRING },
+                    questionType: { type: Type.STRING },
+                    questionHelper: { type: Type.STRING },
+                    questionPlaceholder: { type: Type.STRING },
+                    questionRequired: { type: Type.BOOLEAN },
+                    questionOptions: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING },
+                    },
+                    serviceTitle: { type: Type.STRING },
+                    serviceTagline: { type: Type.STRING },
+                    serviceEnabled: { type: Type.BOOLEAN },
+                    previewSummary: { type: Type.STRING },
+                  },
+                },
+              },
+              required: ['reply', 'hasAction'],
+            },
+          },
+        });
+
+        const response: any = await Promise.race([aiPromise, timeoutPromise]);
+        const responseText = response?.text || '{}';
+        aiResult = JSON.parse(responseText);
+      } catch (geminiErr) {
+        console.warn('Gemini 3.8 Flash call failed or timed out, activating intelligent fallback:', geminiErr);
+      }
+    }
+
+    // Intelligent heuristic fallback if Gemini API is unreachable or returned empty
+    if (!aiResult || !aiResult.reply) {
+      const lower = userPrompt.toLowerCase();
+
+      // Heuristic 1: Toggle service active/inactive
+      const serviceMatches: Record<string, string> = {
+        google: 'google',
+        maps: 'google',
+        site: 'site',
+        ecommerce: 'ecommerce',
+        loja: 'ecommerce',
+        trafego: 'trafego',
+        anuncio: 'trafego',
+        identidade: 'identidade',
+        logo: 'identidade',
+        minisite: 'minisite',
+        seo: 'seo',
+        automacao: 'automacoes',
+        whatsapp: 'whatsapp',
+        email: 'email',
+        assinatura: 'assinatura_email',
+        marca: 'registro_marca',
+        dominio: 'registro_dominio',
+        plaquinha: 'plaquinha',
+        catalogo: 'catalogo',
+      };
+
+      let matchedServiceId = '';
+      for (const [key, svcId] of Object.entries(serviceMatches)) {
+        if (lower.includes(key)) {
+          matchedServiceId = svcId;
+          break;
+        }
+      }
+
+      if (matchedServiceId && (lower.includes('desativ') || lower.includes('ocult') || lower.includes('deslig'))) {
+        aiResult = {
+          reply: `Preparei a desativação do serviço **${matchedServiceId.toUpperCase()}**. Ao desativar, ele não aparecerá na etapa de seleção pública para novos clientes, mantendo 100% preservadas as respostas e perguntas anteriores.`,
+          hasAction: true,
+          action: {
+            actionType: 'toggle_service',
+            target: 'service',
+            serviceId: matchedServiceId,
+            serviceEnabled: false,
+            previewSummary: `Desativar o serviço "${matchedServiceId}" no formulário público`,
+          },
+        };
+      } else if (matchedServiceId && (lower.includes('ativ') || lower.includes('exib') || lower.includes('ligar'))) {
+        aiResult = {
+          reply: `Preparei a ativação do serviço **${matchedServiceId.toUpperCase()}**. Ele voltará a ficar disponível para seleção pelos clientes no onboarding.`,
+          hasAction: true,
+          action: {
+            actionType: 'toggle_service',
+            target: 'service',
+            serviceId: matchedServiceId,
+            serviceEnabled: true,
+            previewSummary: `Ativar o serviço "${matchedServiceId}" no formulário público`,
+          },
+        };
+      } else if (lower.includes('pergunta') || lower.includes('campo') || lower.includes('criar') || lower.includes('adicionar')) {
+        const targetService = matchedServiceId || 'site';
+        let questionType = 'text';
+        if (lower.includes('sim') || lower.includes('nao') || lower.includes('não')) questionType = 'yes_no';
+        else if (lower.includes('data') || lower.includes('prazo')) questionType = 'date';
+        else if (lower.includes('arquivo') || lower.includes('foto') || lower.includes('anexo')) questionType = 'file';
+        else if (lower.includes('numero') || lower.includes('número') || lower.includes('quantidade')) questionType = 'number';
+        else if (lower.includes('opcao') || lower.includes('opção') || lower.includes('multipla') || lower.includes('múltipla')) questionType = 'checkbox';
+        else if (lower.includes('longo') || lower.includes('detalhe') || lower.includes('descreva')) questionType = 'textarea';
+
+        const labelClean = userPrompt
+          .replace(/^(crie|adicione|adicionar|coloque|inclua)\s+(uma\s+)?(pergunta|campo)\s*(sobre|para|de)?/i, '')
+          .trim();
+
+        aiResult = {
+          reply: `Criei uma proposta de pergunta para o serviço **${targetService.toUpperCase()}**: "${labelClean || 'Informação complementar do serviço'}". Revise a prévia abaixo e clique em 'Aplicar Alteração' para adicionar ao sistema.`,
+          hasAction: true,
+          action: {
+            actionType: 'add_question',
+            target: 'service',
+            serviceId: targetService,
+            questionLabel: labelClean.length > 5 ? labelClean : 'Qual é a principal prioridade deste serviço para sua empresa?',
+            questionType,
+            questionHelper: 'Campo sugerido automaticamente pelo Local AI.',
+            questionRequired: true,
+            questionOptions: questionType === 'checkbox' ? ['Opção Principal', 'Opção Secundária', 'Outro'] : undefined,
+            previewSummary: `Adicionar nova pergunta no serviço "${targetService}" (${questionType})`,
+          },
+        };
+      } else {
+        aiResult = {
+          reply: `Olá! Sou o **Local AI**, assistente inteligente de onboarding da Localway. Posso ajudar você a:\n- Adicionar ou editar perguntas em qualquer um dos 13 serviços.\n- Ativar ou desativar serviços na seleção pública.\n- Sugerir perguntas estratégicas para qualquer segmento.\n\nComo posso ajudar você agora?`,
+          hasAction: false,
+          action: {
+            actionType: 'none',
+            target: 'system',
+            previewSummary: '',
+          },
+        };
+      }
+    }
+
+    return res.json({
+      success: true,
+      reply: aiResult.reply,
+      hasAction: Boolean(aiResult.hasAction),
+      action: aiResult.action || null,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    console.error('Error in /api/admin/local-ai:', err);
+    return res.status(500).json({
+      success: false,
+      error: err?.message || 'Erro ao processar consulta com o Local AI.',
     });
   }
 });

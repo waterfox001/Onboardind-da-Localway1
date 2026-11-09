@@ -1,4 +1,6 @@
 import { SEGMENTS_CONFIG, SegmentConfig } from './segments';
+import { DEFAULT_SERVICES_CONFIG } from './services';
+import { ManagedServiceConfig } from '../types';
 
 export type FieldStepId =
   | 'company'
@@ -497,6 +499,7 @@ export interface FormSchemaState {
   companyFields: OnboardingFieldConfig[];
   onboardingFields: OnboardingFieldConfig[];
   segmentsConfig: Record<string, SegmentConfig>;
+  servicesConfig: Record<string, ManagedServiceConfig>;
   settings: {
     googleScriptUrl: string;
     transferNowUrl: string;
@@ -509,6 +512,7 @@ export const INITIAL_SCHEMA: FormSchemaState = {
   companyFields: DEFAULT_COMPANY_FIELDS,
   onboardingFields: DEFAULT_ONBOARDING_FIELDS,
   segmentsConfig: SEGMENTS_CONFIG,
+  servicesConfig: DEFAULT_SERVICES_CONFIG,
   settings: {
     googleScriptUrl:
       'https://script.google.com/macros/s/AKfycbyuYdO4N3qStGn8W7dwXjd4AuVS627iIKJxxD0S6XED9Xv71Gn4zRo86v4-Ag2KdOE9cQ/exec',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { OnboardingData, ServiceId } from '../../types';
+import { OnboardingData, ServiceId, ManagedServiceConfig } from '../../types';
 import { SERVICES_LIST } from '../../constants/services';
 import {
   MapPin,
@@ -15,6 +15,8 @@ import {
   FileSignature,
   ShieldCheck,
   AtSign,
+  QrCode,
+  BookOpen,
   Check,
   Sparkles,
 } from 'lucide-react';
@@ -23,12 +25,14 @@ interface StepServicesSelectionProps {
   data: OnboardingData;
   onChange: <K extends keyof OnboardingData>(field: K, value: OnboardingData[K]) => void;
   errors: Record<string, string>;
+  servicesConfig?: Record<string, ManagedServiceConfig>;
 }
 
 export const StepServicesSelection: React.FC<StepServicesSelectionProps> = ({
   data,
   onChange,
   errors,
+  servicesConfig,
 }) => {
   const toggleService = (id: ServiceId) => {
     const current = [...data.servicosContratados];
@@ -70,8 +74,22 @@ export const StepServicesSelection: React.FC<StepServicesSelectionProps> = ({
         return <ShieldCheck className="w-5 h-5" />;
       case 'registro_dominio':
         return <AtSign className="w-5 h-5" />;
+      case 'plaquinha':
+        return <QrCode className="w-5 h-5" />;
+      case 'catalogo':
+        return <BookOpen className="w-5 h-5" />;
+      default:
+        return <Sparkles className="w-5 h-5" />;
     }
   };
+
+  // Filter only enabled services (Requirement: Disabled services MUST NOT appear in the selection)
+  const displayedServices = SERVICES_LIST.filter((svc) => {
+    if (servicesConfig && servicesConfig[svc.id]) {
+      return servicesConfig[svc.id].enabled !== false;
+    }
+    return svc.enabled !== false;
+  });
 
   return (
     <div className="space-y-6" id="step-services-selection">
@@ -105,7 +123,10 @@ export const StepServicesSelection: React.FC<StepServicesSelectionProps> = ({
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-        {SERVICES_LIST.map((svc) => {
+        {displayedServices.map((svc) => {
+          const config = servicesConfig?.[svc.id];
+          const title = config?.title || svc.title;
+          const tagline = config?.tagline || svc.tagline;
           const isSelected = data.servicosContratados.includes(svc.id);
 
           return (
@@ -145,10 +166,10 @@ export const StepServicesSelection: React.FC<StepServicesSelectionProps> = ({
 
               <div>
                 <h3 className="text-sm font-bold text-slate-900 leading-tight">
-                  {svc.title}
+                  {title}
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  {svc.tagline}
+                  {tagline}
                 </p>
               </div>
             </button>

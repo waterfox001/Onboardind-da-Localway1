@@ -15,6 +15,46 @@ export type ServiceId =
   | 'plaquinha'
   | 'catalogo';
 
+export type UniversalQuestionType =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'radio'
+  | 'checkbox'
+  | 'yes_no'
+  | 'date'
+  | 'file'
+  | 'select';
+
+export interface UniversalQuestion {
+  id: string;
+  label: string;
+  placeholder?: string;
+  type: UniversalQuestionType;
+  options?: string[];
+  helper?: string;
+  required?: boolean;
+  enabled?: boolean;
+  order?: number;
+  otherLabel?: string;
+  otherPlaceholder?: string;
+}
+
+export interface ManagedServiceConfig {
+  id: ServiceId;
+  title: string;
+  shortTitle: string;
+  tagline: string;
+  enabled: boolean;
+  questions: UniversalQuestion[];
+  iconName?: string;
+  themeColor?: string;
+  bgLight?: string;
+  borderLight?: string;
+  textColor?: string;
+  ringColor?: string;
+}
+
 export interface ServiceOption {
   id: ServiceId;
   title: string;
@@ -26,6 +66,8 @@ export interface ServiceOption {
   borderLight: string; // Tailwind class
   textColor: string; // Tailwind class
   ringColor: string; // Tailwind class
+  enabled?: boolean;
+  questions?: UniversalQuestion[];
 }
 
 export type DayOfWeek =
