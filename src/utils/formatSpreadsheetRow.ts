@@ -1,9 +1,10 @@
-import { OnboardingData, DaySchedule } from '../types';
+import { OnboardingData, DaySchedule, SharedCatalogItem } from '../types';
 import { SERVICES_LIST } from '../constants/services';
 import { SEGMENTS_CONFIG } from '../constants/segments';
+import { OnboardingFieldConfig } from '../constants/formSchema';
 
 function formatDaySchedule(s: DaySchedule): string {
-  if (s.status === 'fechado') return 'Fechado';
+  if (!s || s.status === 'fechado') return 'Fechado';
   let txt = `${s.abertura1 || '08:00'} às ${s.fechamento1 || '18:00'}`;
   if (s.temIntervalo && s.abertura2 && s.fechamento2) {
     txt += ` e ${s.abertura2} às ${s.fechamento2}`;
@@ -11,9 +12,23 @@ function formatDaySchedule(s: DaySchedule): string {
   return txt;
 }
 
+function resolveCatalogItems(ids?: string[], catalog?: SharedCatalogItem[]): string {
+  if (!ids || ids.length === 0 || !catalog || catalog.length === 0) return '';
+  return ids
+    .map((id) => catalog.find((c) => c.id === id))
+    .filter(Boolean)
+    .map((item) => {
+      const varTxt = item!.variacoes ? ` [${item!.variacoes}]` : '';
+      return `${item!.nome}${item!.preco ? ` (${item!.preco})` : ''}${varTxt}`;
+    })
+    .join('; ');
+}
+
 export function formatSpreadsheetPayload(
   data: OnboardingData,
-  customSegmentsConfig?: Record<string, any>
+  customSegmentsConfig?: Record<string, any>,
+  customServicesConfig?: Record<string, any>,
+  customOnboardingFields?: OnboardingFieldConfig[]
 ) {
   const now = new Date();
   const dataHora = now.toLocaleString('pt-BR', {
@@ -36,23 +51,87 @@ export function formatSpreadsheetPayload(
       ? segTxt
       : `Seg: ${segTxt} | Ter: ${terTxt} | Qua: ${quaTxt} | Qui: ${quiTxt} | Sex: ${sexTxt}`;
 
-  // Nomes dos serviços contratados
+  // Nomes dos serviços contratados (usando título customizado pelo admin se existir)
   const servicosContratadosNomes = data.servicosContratados
-    .map((id) => SERVICES_LIST.find((s) => s.id === id)?.title || id)
+    .map((id) => customServicesConfig?.[id]?.title || SERVICES_LIST.find((s) => s.id === id)?.title || id)
     .join(', ');
+
+  const catalog = data.catalogoCompartilhado || [];
+  const catalogoStr = catalog
+    .map((item, idx) => {
+      const varTxt = item.variacoes ? ` | Variações: ${item.variacoes}` : '';
+      return `${idx + 1}. [${item.tipo === 'produto' ? 'Produto' : 'Serviço'}] ${item.nome}${item.preco ? ` — ${item.preco}` : ''}${item.descricao ? `: ${item.descricao}` : ''}${varTxt}`;
+    })
+    .join('\n');
 
   // Detalhes compilados dos serviços
   const servicosDetalhesArray: string[] = [];
 
   if (data.servicosContratados.includes('google')) {
+    const destaques =
+      resolveCatalogItems(data.googleItensDestaqueIds, catalog) ||
+      data.googlePrincipaisServicos ||
+      'Nenhum destaque específico selecionado';
     servicosDetalhesArray.push(
-      `[GOOGLE MEU NEGÓCIO]:\n- Nome Comercial: ${data.googleNomeComercial || 'Igual ao nome fantasia'}\n- Categoria Principal: ${data.googleCategoriaPrincipal}\n- Categorias Secundárias: ${data.googleCategoriasSecundarias || 'Nenhuma'}\n- Principais Serviços: ${data.googlePrincipaisServicos}\n- Descrição: ${data.googleDescricaoServicos}\n- Área de Atendimento: ${data.googleAreaAtendimento}\n- Horários/Endereço: ${data.googleEndereco || 'Conforme endereço cadastrado'}\n- Já possui perfil: ${data.googleJaPossuiPerfil} ${data.googleLinkPerfil ? `(${data.googleLinkPerfil})` : ''}\n- Correções necessárias: ${data.googleCorrecoesPerfil || 'Nenhuma'}`
+      `[PERFIL DA EMPRESA NO GOOGLE]:\n` +
+        `- Situação do Perfil: ${data.googleJaPossuiPerfil || 'Não informado'}\n` +
+        `- Link do Perfil: ${data.googleLinkPerfil || 'N/A'}\n` +
+        `- Forma de Atendimento: ${data.formaAtendimento || 'Não informado'}\n` +
+        `- Área / Região de Atendimento: ${data.googleAreaAtendimento || 'Atendimento no estabelecimento'}\n` +
+        `- Produtos/Serviços em Destaque (até 3): ${destaques}\n` +
+        `- Informações Complementares: ${data.googleInfoAdicionais || data.googleCorrecoesPerfil || 'Nenhuma'}`
     );
   }
 
   if (data.servicosContratados.includes('site')) {
+    const siteServicosStr =
+      resolveCatalogItems(data.siteServicosSelecionadosIds, catalog) || 'Conforme cadastro geral';
+    const siteProdutosStr =
+      data.siteComercializaProdutos === 'Sim'
+        ? resolveCatalogItems(data.siteProdutosSelecionadosIds, catalog) || 'A definir'
+        : 'Não comercializa produtos';
+    const equipeStr = (data.siteEquipePessoas || [])
+      .map((p) => `${p.nome}${p.funcao ? ` (${p.funcao})` : ''}`)
+      .filter(Boolean)
+      .join(', ');
+
     servicosDetalhesArray.push(
-      `[SITE PROFISSIONAL]:\n- Já possui site: ${data.siteJaPossui} ${data.siteLinkAtual ? `(${data.siteLinkAtual})` : ''}\n- O que manter: ${data.siteManterAtual || 'Nenhum'}\n- O que mudar: ${data.siteMudarAtual || 'Tudo'}\n- Objetivos: ${data.siteObjetivos.join(', ')} ${data.siteOutroObjetivo ? `(${data.siteOutroObjetivo})` : ''}\n- Páginas: ${data.sitePaginasNecessarias.join(', ')} ${data.siteOutraPagina ? `(${data.siteOutraPagina})` : ''}\n- Referência: ${data.siteReferencia || 'Nenhuma informada'}\n- Informação obrigatória: ${data.siteInfoObrigatoria || 'Nenhuma'}`
+      `[SITE INSTITUCIONAL]:\n` +
+        `- História da Empresa: ${data.siteHistoria || 'Não informada'}\n` +
+        `- Apresentar Responsável no Site: ${data.siteApresentarResponsavel || 'Não informado'}\n` +
+        `- Diferenciais: ${(data.siteDiferenciais || []).join(', ')}${data.siteDiferenciaisOutro ? ` (${data.siteDiferenciaisOutro})` : ''}\n` +
+        `- Público-Alvo: ${(data.sitePublicoAlvo || []).join(', ')}${data.sitePublicoAlvoOutro ? ` (${data.sitePublicoAlvoOutro})` : ''}\n` +
+        `- Serviços Oferecidos: ${siteServicosStr}\n` +
+        `- Comercializa Produtos: ${data.siteComercializaProdutos || 'Não informado'}\n` +
+        `- Produtos no Site: ${siteProdutosStr}\n` +
+        `- Processo de Atendimento/Contratação: ${(data.siteProcessoAtendimento || []).join(', ')}${data.siteProcessoAtendimentoOutro ? ` (${data.siteProcessoAtendimentoOutro})` : ''}\n` +
+        `- Orientações Pré-Contratação: ${data.siteOrientacaoPreContratacao || 'Nenhuma'}\n` +
+        `- Apresentação de Pessoas/Equipe: ${data.siteApresentarEquipeTipo || 'Não informado'}${equipeStr ? ` — ${equipeStr}` : ''}\n` +
+        `- Vídeos para o Site: ${data.sitePossuiVideos || 'Não informado'}${data.siteVideosLink ? ` (${data.siteVideosLink})` : ''}\n` +
+        `- Seções Adicionais: ${(data.siteSecoesAdicionais || data.sitePaginasNecessarias || []).join(', ')}${data.siteSecoesAdicionaisOutro ? ` (${data.siteSecoesAdicionaisOutro})` : ''}\n` +
+        `- Dúvidas Frequentes: ${data.siteDuvidasFrequentes || 'Nenhuma'}\n` +
+        `- Objetivo Principal do Site: ${data.siteObjetivoPrincipal || (data.siteObjetivos || []).join(', ') || 'Não informado'}`
+    );
+  }
+
+  if (data.servicosContratados.includes('minisite')) {
+    const destaquesMini = resolveCatalogItems(data.minisiteItensDestaqueIds, catalog) || 'Nenhum destaque selecionado';
+    const extras = data.minisiteRecursosAdicionais || [];
+    const extraDetails: string[] = [];
+    if (extras.length > 0) extraDetails.push(extras.join(', '));
+    if (data.minisiteWifiRede) extraDetails.push(`Wi-Fi: ${data.minisiteWifiRede}${data.minisiteWifiSenha ? ` / Senha: ${data.minisiteWifiSenha}` : ''}`);
+    if (data.minisitePixChave) extraDetails.push(`Pix: ${data.minisitePixChave}${data.minisitePixTitular ? ` (${data.minisitePixTitular})` : ''}`);
+
+    servicosDetalhesArray.push(
+      `[MINI SITE]:\n` +
+        `- Links e Botões: ${(data.minisiteInformacoes || []).join(', ')} ${data.minisiteOutraInfo ? `(${data.minisiteOutraInfo})` : ''}\n` +
+        `- Apresentação da Empresa: ${data.minisiteApresentacao || 'Usar descrição geral'}\n` +
+        `- Principais Produtos/Serviços (até 3): ${destaquesMini}\n` +
+        `- Possui Catálogo/Cardápio Digital: ${data.minisiteCatalogoPossui || 'Não informado'}${data.minisiteCatalogoLink ? ` (${data.minisiteCatalogoLink})` : ''}${data.minisiteCatalogoArquivo ? ` [Arquivo: ${data.minisiteCatalogoArquivo}]` : ''}\n` +
+        `- Cores Desejadas: ${data.minisiteCoresDesejadas || 'Livre / Padrão'} | Evitar: ${data.minisiteCoresEvitar || 'Nenhuma'}\n` +
+        `- Referência Visual: ${data.minisiteReferenciaVisual || 'Nenhuma'}\n` +
+        `- Recursos Adicionais: ${extraDetails.join(' | ') || 'Nenhum'}\n` +
+        `- WhatsApp: ${data.minisiteWhatsapp || data.whatsapp || '-'} | Instagram: ${data.minisiteInstagram || data.instagram || '-'} | Site: ${data.minisiteSite || data.site || '-'}`
     );
   }
 
@@ -71,12 +150,6 @@ export function formatSpreadsheetPayload(
   if (data.servicosContratados.includes('identidade')) {
     servicosDetalhesArray.push(
       `[IDENTIDADE VISUAL]:\n- Já possui: ${data.identidadeJaPossui}\n- Elementos a manter: ${data.identidadeElementosManter || 'Nenhum'}\n- Possui logo em alta: ${data.identidadePossuiLogoAlta}\n- Cores desejadas: ${data.identidadeCoresDesejadas}\n- Cores a evitar: ${data.identidadeCoresNaoDesejadas || 'Nenhuma'}\n- Marcas referência: ${data.identidadeMarcasReferencia || 'Nenhuma'}\n- Percepção desejada: ${data.identidadePercepcao.join(', ')} ${data.identidadeOutraPercepcao ? `(${data.identidadeOutraPercepcao})` : ''}`
-    );
-  }
-
-  if (data.servicosContratados.includes('minisite')) {
-    servicosDetalhesArray.push(
-      `[MINI SITE]:\n- Informações a exibir: ${data.minisiteInformacoes.join(', ')} ${data.minisiteOutraInfo ? `(${data.minisiteOutraInfo})` : ''}\n- WhatsApp: ${data.minisiteWhatsapp}\n- Instagram: ${data.minisiteInstagram}\n- Site: ${data.minisiteSite}\n- Endereço: ${data.minisiteEndereco}\n- Informações adicionais: ${data.minisiteInfoAdicional || 'Nenhuma'}`
     );
   }
 
@@ -170,7 +243,7 @@ export function formatSpreadsheetPayload(
   const handledQuestions = new Set<string>();
 
   if (segConfig && Array.isArray(segConfig.questions)) {
-    segConfig.questions.forEach((q) => {
+    segConfig.questions.forEach((q: any) => {
       handledQuestions.add(q.id);
       const resp = data.segmentoRespostas?.[q.id];
       const outroText = data.segmentoRespostas?.[`${q.id}_outro`];
@@ -200,7 +273,6 @@ export function formatSpreadsheetPayload(
     });
   }
 
-  // Also include any dynamically added or custom segment answers not in standard config
   if (data.segmentoRespostas && typeof data.segmentoRespostas === 'object') {
     Object.entries(data.segmentoRespostas).forEach(([key, val]) => {
       if (handledQuestions.has(key) || key.endsWith('_outro')) return;
@@ -220,31 +292,59 @@ export function formatSpreadsheetPayload(
       ? detalhesSegmentoArray.join('\n')
       : 'Nenhum detalhe específico preenchido';
 
-  // Objeto com as colunas completas da planilha
+  // Custom / admin-created fields inside respostasPersonalizadas
+  const customAnswersMap: Record<string, string> = {};
+  if (data.respostasPersonalizadas && typeof data.respostasPersonalizadas === 'object') {
+    Object.entries(data.respostasPersonalizadas).forEach(([key, val]) => {
+      if (val === undefined || val === null) return;
+      if (Array.isArray(val) && val.length === 0) return;
+      const strVal = Array.isArray(val) ? val.join(', ') : String(val);
+      if (!strVal.trim()) return;
+
+      let label = key;
+      const genField = customOnboardingFields?.find((f) => f.id === key || f.key === key);
+      if (genField) {
+        label = genField.label;
+      } else if (customServicesConfig) {
+        for (const svc of Object.values(customServicesConfig)) {
+          const sq = (svc as any)?.questions?.find((q: any) => q.id === key || q.storageKey === key);
+          if (sq) {
+            label = sq.label;
+            break;
+          }
+        }
+      }
+      customAnswersMap[`[Extra] ${label}`] = strVal;
+    });
+  }
+
+  // Objeto com as colunas completas da planilha (preservando chaves históricas intactas)
   const rowData: Record<string, string> = {
     'Código do cliente': (data as any).codigoCliente || '',
     'Data e hora': dataHora,
     'Status do Onboarding': 'Finalizado',
     'Data de finalização': dataHora,
-    'Nome fantasia': data.nomeFantasia,
-    'Razão social': data.razaoSocial,
-    'CNPJ': data.cnpj,
+    'Nome fantasia': data.nomeFantasia || '',
+    'Razão social': data.razaoSocial || '',
+    'CNPJ': data.cnpj || '',
     'Segmento': data.segmento === 'Outro' && data.outroSegmento ? `Outro (${data.outroSegmento})` : (data.segmento || ''),
-    'Outro segmento': data.outroSegmento,
-    'Descrição da empresa': data.descricaoEmpresa,
-    'Data de abertura': data.dataAbertura,
-    'Telefone': data.telefone,
-    'WhatsApp': data.whatsapp,
-    'E-mail': data.email,
-    'Site': data.site,
-    'Instagram': data.instagram,
-    'Facebook / outras redes': data.facebookOutras,
-    'Rua / Avenida': data.ruaAvenida,
-    'Número': data.numero,
-    'Complemento': data.complemento,
-    'Bairro': data.bairro,
-    'Cidade': data.cidade,
-    'Estado': data.estado,
+    'Outro segmento': data.outroSegmento || '',
+    'Descrição da empresa': data.descricaoEmpresa || '',
+    'Data de abertura': data.dataAbertura || '',
+    'Telefone': data.telefone || '',
+    'WhatsApp': data.whatsapp || '',
+    'E-mail': data.email || '',
+    'Site': data.site || '',
+    'Instagram': data.instagram || '',
+    'Facebook / outras redes': data.facebookOutras || '',
+    'Sem local físico fixo': data.enderecoSemLocalFisico ? 'Sim' : 'Não',
+    'CEP': data.cep || '',
+    'Rua / Avenida': data.enderecoSemLocalFisico ? 'Atendimento sem local físico fixo' : (data.ruaAvenida || ''),
+    'Número': data.numero || '',
+    'Complemento': data.complemento || '',
+    'Bairro': data.bairro || '',
+    'Cidade': data.cidade || '',
+    'Estado': data.estado || '',
     'Horário segunda a sexta': horarioSegSex,
     'Segunda': segTxt,
     'Terça': terTxt,
@@ -253,32 +353,39 @@ export function formatSpreadsheetPayload(
     'Sexta': sexTxt,
     'Sábado': sabTxt,
     'Domingo': domTxt,
-    'Trabalha com agendamento': data.trabalhaAgendamento,
-    'Formas de agendamento': data.formasAgendamento.join(', ') + (data.outroAgendamento ? ` (${data.outroAgendamento})` : ''),
-    'Contato / link de agendamento': data.contatoLinkAgendamento,
-    'Estacionamento': data.estacionamento,
-    'Outro estacionamento': data.outroEstacionamento,
-    'Idiomas': data.idiomas.join(', '),
+    'Trabalha com agendamento': data.trabalhaAgendamento || '',
+    'Formas de agendamento':
+      (data.formasAgendamento || []).join(', ') +
+      (data.outroAgendamento ? ` (${data.outroAgendamento})` : ''),
+    'Possui link de agendamento': data.possuiLinkAgendamento || '',
+    'Contato / link de agendamento': data.contatoLinkAgendamento || '',
+    'Tipo de estabelecimento': data.tipoEstabelecimento || '',
+    'Forma de atendimento': data.formaAtendimento || '',
+    'Estacionamento': data.estacionamento || '',
+    'Outro estacionamento': data.outroEstacionamento || '',
+    'Idiomas': (data.idiomas || []).join(', '),
     'Formas de pagamento':
-      data.formasPagamento.join(', ') +
+      (data.formasPagamento || []).join(', ') +
       (data.bandeirasCartao && data.bandeirasCartao.length > 0
         ? ` [Bandeiras: ${data.bandeirasCartao.join(', ')}]`
         : '') +
       (data.outroPagamento ? ` (${data.outroPagamento})` : ''),
-    'Outro pagamento': data.outroPagamento,
-    'Responsável': data.responsavelNome,
-    'WhatsApp responsável': data.responsavelWhatsapp,
-    'E-mail responsável': data.responsavelEmail,
-    'Cargo / função': data.responsavelCargo,
+    'Outro pagamento': data.outroPagamento || '',
+    'Responsável': data.responsavelNome || '',
+    'WhatsApp responsável': data.responsavelWhatsapp || '',
+    'E-mail responsável': data.responsavelEmail || '',
+    'Cargo / função': data.responsavelCargo || '',
     'Serviços contratados': servicosContratadosNomes,
+    'Cadastro compartilhado (Produtos e Serviços)': catalogoStr,
     'Detalhes dos serviços': detalhesServicosStr,
     'Detalhes específicos do segmento': detalhesSegmentoStr,
     ...individualSegmentQuestions,
-    'Possui materiais': data.possuiMateriais,
-    'Tipos de materiais': data.tiposMateriais.join(', '),
-    'Link TransferNow': data.linkTransferNow + (data.linksMateriais ? ` | Links: ${data.linksMateriais}` : ''),
-    'Observações dos materiais': data.observacoesMateriais,
-    'Observações finais': data.observacoesFinais,
+    ...customAnswersMap,
+    'Possui materiais': data.possuiMateriais || '',
+    'Tipos de materiais': (data.tiposMateriais || []).join(', '),
+    'Link TransferNow': (data.linkTransferNow || '') + (data.linksMateriais ? ` | Links: ${data.linksMateriais}` : ''),
+    'Observações dos materiais': data.observacoesMateriais || '',
+    'Observações finais': data.observacoesFinais || '',
   };
 
   return {

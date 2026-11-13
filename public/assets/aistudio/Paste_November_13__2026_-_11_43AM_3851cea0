@@ -1,0 +1,1002 @@
+IMPLEMENTAÇÃO COMPLETA — REESTRUTURAÇÃO DO ONBOARDING LOCALWAY
+
+Quero realizar uma atualização completa no sistema de onboarding da Localway, corrigindo a organização dos formulários, revisando as perguntas de cada serviço, eliminando perguntas repetidas e melhorando a edição dos campos pelo painel administrativo.
+
+Leia todas as instruções antes de começar.
+
+REGRA PRINCIPAL: PRESERVAR O PROJETO EXISTENTE
+
+Não crie outro projeto.
+Não reconstrua o sistema do zero.
+Não altere a identidade visual atual.
+Não remova funcionalidades que já estão funcionando.
+Não substitua tecnologias ou integrações sem necessidade.
+
+Trabalhe diretamente no projeto existente.
+
+Preserve:
+
+* Design atual.
+* Cores e identidade visual.
+* Tipografia.
+* Componentes.
+* Animações.
+* Espaçamentos.
+* Responsividade.
+* Estrutura de navegação.
+* Firebase.
+* Google Sheets.
+* Local AI e suas funcionalidades.
+* Histórico e registros dos clientes.
+
+Antes de alterar qualquer coisa, analise a estrutura atual do projeto, os componentes, os campos cadastrados, os identificadores, as regras condicionais e a forma como os dados são armazenados.
+
+Não faça alterações destrutivas.
+
+⸻
+
+1. ESTRUTURA DOS SERVIÇOS
+
+O onboarding deverá trabalhar inicialmente com três serviços ativos:
+
+1. Perfil da Empresa no Google.
+2. Site institucional.
+3. Mini site.
+
+E-commerce e plaquinha inteligente devem permanecer desativados na seleção pública de serviços.
+
+IMPORTANTE:
+
+* Não excluir esses serviços.
+* Não apagar suas perguntas.
+* Não apagar seus registros ou histórico.
+* Apenas mantê-los desativados para evitar que clientes os selecionem por engano.
+* Permitir reativação futura pelo painel administrativo.
+
+O site institucional não deve ser confundido com uma loja virtual.
+
+O site institucional poderá apresentar produtos, serviços, descrições, imagens, preços e botões de contato, sem necessariamente possuir carrinho, checkout ou pagamento online.
+
+Exemplo: uma autoescola poderá apresentar aulas de carro, aulas de moto, informações, valores e um botão para solicitar atendimento.
+
+⸻
+
+2. FLUXO DO CLIENTE
+
+O funcionamento deverá ser:
+
+1. Cliente seleciona os serviços contratados.
+2. Cliente preenche o onboarding geral.
+3. Cliente responde às perguntas específicas dos serviços selecionados.
+4. O sistema utiliza os dados gerais nos serviços correspondentes.
+5. O cliente não precisa preencher novamente informações que já forneceu.
+
+Exemplo:
+
+Se contratar Google, site institucional e mini site, o cliente informa uma única vez:
+
+* Nome da empresa.
+* WhatsApp.
+* Endereço.
+* Horários.
+* Redes sociais.
+* E-mail.
+* Materiais gerais.
+
+Essas informações ficam disponíveis para os três serviços.
+
+Não criar cópias desnecessárias dos mesmos campos.
+
+REAPROVEITAMENTO DE PRODUTOS E SERVIÇOS
+
+Além dos dados gerais, implementar, se compatível com a estrutura existente, um cadastro compartilhado de produtos e serviços.
+
+O cliente poderá cadastrar um produto ou serviço uma única vez e selecionar em quais entregas deseja utilizá-lo.
+
+Exemplo:
+
+Um cliente cadastra:
+
+* Corte masculino.
+* Corte infantil.
+* Barba.
+* Pomada capilar.
+
+Esses itens poderão ser utilizados no Perfil da Empresa no Google, no site institucional e no mini site, conforme a seleção do cliente.
+
+Não obrigar o cliente a cadastrar novamente o mesmo produto ou serviço em cada formulário.
+
+Se os serviços exigirem informações adicionais específicas, solicitar somente os dados complementares que ainda não existirem.
+
+⸻
+
+3. ONBOARDING GERAL
+
+O onboarding geral já possui campos cadastrados e aproximadamente 35 campos, distribuídos em categorias.
+
+Quero manter as informações úteis, mas reorganizar a apresentação em somente DUAS PÁGINAS.
+
+As categorias atuais devem ser agrupadas. Não quero que o cliente precise navegar por várias páginas pequenas.
+
+PÁGINA 1 — DADOS DA EMPRESA
+
+Agrupar as categorias de empresa, endereço e horários/agendamento.
+
+A. Empresa
+
+Manter os campos existentes:
+
+* Nome fantasia.
+* Razão social.
+* CNPJ.
+* Data de abertura.
+* Segmento da empresa.
+* Descrição da empresa.
+* WhatsApp principal.
+* Telefone comercial.
+* E-mail.
+* Site atual.
+* Instagram.
+* Facebook e outras redes sociais.
+
+Regras:
+
+* Nome fantasia permanece ativo.
+* Segmento e descrição permanecem ativos.
+* Os campos de razão social, CNPJ e data de abertura podem ficar desativados inicialmente.
+* NÃO excluir esses campos.
+* Permitir reativá-los futuramente.
+* Todos os campos devem poder ser configurados como obrigatórios ou opcionais.
+
+B. Endereço
+
+Manter:
+
+* CEP.
+* Rua/avenida.
+* Número.
+* Complemento.
+* Bairro.
+* Cidade.
+* Estado.
+
+Implementar preenchimento automático por CEP utilizando ViaCEP ou serviço equivalente.
+
+Ao informar o CEP:
+
+* Preencher rua, bairro, cidade e estado automaticamente.
+* Permitir edição manual.
+* Não impedir o preenchimento quando o CEP não retornar algum dado.
+* Número e complemento permanecem manuais.
+
+C. Horários de funcionamento e agendamento
+
+Manter:
+
+* Horários de segunda a domingo.
+* Possibilidade de marcar dias fechados.
+* Possibilidade de cadastrar mais de um período por dia.
+* Pergunta: Trabalha com agendamento prévio?
+* Opções: Sim ou Não.
+
+Se responder Sim, exibir:
+
+* Como funciona o agendamento?
+* Possui link de agendamento? Se sim, informar o link.
+
+PÁGINA 2 — ESTRUTURA E MATERIAIS
+
+Agrupar as categorias de estrutura, pagamento, responsável e arquivos.
+
+A. Estrutura e atendimento
+
+Manter as perguntas atuais sobre:
+
+* Tipo de estabelecimento.
+* Forma de atendimento.
+* Estacionamento.
+* Idiomas de atendimento.
+
+Preservar as opções existentes sempre que forem úteis.
+
+B. Formas de pagamento
+
+Manter:
+
+* Pix.
+* Dinheiro.
+* Cartão de crédito.
+* Cartão de débito.
+* Boleto.
+* Transferência bancária.
+* Outros.
+
+Se selecionar cartão de crédito ou débito, abrir campo para selecionar as bandeiras aceitas.
+
+C. Responsável pelo projeto
+
+Manter:
+
+* Nome do responsável.
+* WhatsApp do responsável.
+* E-mail do responsável.
+
+D. Arquivos e materiais digitais
+
+Manter:
+
+* Logotipo.
+* Fotos do estabelecimento.
+* Fotos da equipe.
+* Fotos de produtos e serviços.
+* Outros materiais relevantes.
+
+Permitir envio de arquivos e compartilhamento por link, conforme as funcionalidades já existentes.
+
+Se o cliente não possuir materiais, não obrigar o envio.
+
+E. Observações finais
+
+Manter campo de texto longo e opcional para informações adicionais destinadas à equipe Localway.
+
+IMPORTANTE SOBRE AS DUAS PÁGINAS:
+
+Não excluir campos atuais apenas porque não estão listados individualmente neste prompt.
+
+Reorganizar os campos existentes dentro dos dois grupos, preservando os dados e configurações úteis.
+
+Os campos que não forem utilizados inicialmente podem permanecer desativados para uso futuro.
+
+⸻
+
+4. PERGUNTAS — PERFIL DA EMPRESA NO GOOGLE
+
+Atualizar o formulário específico do Perfil da Empresa no Google.
+
+PERGUNTA 1 — SITUAÇÃO ATUAL
+
+Sua empresa já possui um Perfil da Empresa no Google cadastrado?
+
+Opções:
+
+* Sim, já temos e somos administradores.
+* Sim, mas perdemos o acesso e precisamos recuperá-lo.
+* Não possuímos perfil ou não temos certeza.
+
+PERGUNTA 2 — LINK DO PERFIL
+
+Informe o link do seu Perfil da Empresa no Google.
+
+Regras:
+
+* Campo de URL.
+* Exibir somente quando o cliente informar que já possui um perfil.
+* Não exibir para quem não possui perfil.
+
+PERGUNTA 3 — FORMA DE ATENDIMENTO
+
+Como funciona o atendimento da sua empresa?
+
+Opções:
+
+* Atendemos clientes em nosso estabelecimento.
+* Atendemos somente na região dos clientes.
+* Trabalhamos das duas formas.
+
+Aproveitar as informações gerais sobre estabelecimento e atendimento sempre que possível. Não solicitar novamente dados já respondidos.
+
+PERGUNTA 4 — ÁREA DE ATENDIMENTO
+
+Quais bairros, cidades ou regiões sua empresa atende?
+
+Campo de texto.
+
+Exibir quando a empresa realizar atendimento em outras localidades ou possuir área de cobertura.
+
+PERGUNTA 5 — PRINCIPAIS PRODUTOS E SERVIÇOS
+
+Quais produtos ou serviços você gostaria de destacar no seu Perfil da Empresa no Google?
+
+Permitir cadastrar até três itens.
+
+Para cada item:
+
+* Nome do produto ou serviço.
+* Descrição.
+* Foto.
+* Preço opcional.
+* Opção de preço inicial ou sob consulta, quando aplicável.
+
+Não obrigar o preenchimento dos três itens.
+
+Se o cliente já tiver cadastrado produtos ou serviços no cadastro compartilhado, permitir selecioná-los em vez de cadastrar novamente.
+
+Permitir adicionar informações complementares específicas do Google quando necessário.
+
+IMPORTANTE:
+
+Não repetir perguntas sobre:
+
+* WhatsApp.
+* Telefone.
+* E-mail.
+* Endereço.
+* Horários.
+* Redes sociais.
+* Fotos gerais da empresa.
+
+Esses dados já estão no onboarding geral.
+
+⸻
+
+5. PERGUNTAS — MINI SITE
+
+O mini site deverá coletar somente as informações específicas da página e as preferências de exibição.
+
+PERGUNTA 1 — LINKS E BOTÕES
+
+Quais links e botões você deseja destacar no seu mini site?
+
+Opções:
+
+* WhatsApp.
+* Instagram.
+* Facebook.
+* Site oficial.
+* Localização / Como chegar.
+* Avaliações no Google.
+* Catálogo / Cardápio.
+* Outros.
+
+IMPORTANTE:
+
+Os links já informados no onboarding geral devem ser reutilizados automaticamente.
+
+O cliente apenas escolhe quais deseja exibir.
+
+Não solicitar novamente números ou URLs já cadastrados.
+
+Se escolher um recurso cujo link ainda não exista, solicitar somente esse dado.
+
+PERGUNTA 2 — APRESENTAÇÃO
+
+Qual frase de apresentação, slogan ou descrição você gostaria de utilizar no mini site?
+
+Campo de texto longo.
+
+Se o cliente não possuir slogan, a Localway poderá criar uma apresentação.
+
+PERGUNTA 3 — PRODUTOS E SERVIÇOS EM DESTAQUE
+
+Quais produtos ou serviços você deseja destacar no mini site?
+
+Permitir até três destaques.
+
+Para cada item:
+
+* Nome.
+* Descrição.
+* Foto.
+* Preço opcional.
+
+Permitir selecionar itens já cadastrados no cadastro compartilhado.
+
+Não exigir que o cliente cadastre novamente os mesmos produtos ou serviços.
+
+PERGUNTA 4 — CATÁLOGO DIGITAL
+
+Sua empresa possui catálogo digital, cardápio ou lista de produtos e serviços?
+
+Opções:
+
+* Sim, tenho um link.
+* Sim, tenho um arquivo ou PDF.
+* Não possuo.
+
+Se responder Sim:
+
+* Exibir campo de link, quando escolher link.
+* Exibir upload, quando escolher arquivo.
+
+PERGUNTA 5 — PREFERÊNCIAS VISUAIS
+
+Quais cores gostaria de utilizar no mini site?
+
+Quais cores prefere evitar?
+
+Campos opcionais.
+
+PERGUNTA 6 — REFERÊNCIA VISUAL
+
+Existe algum site ou mini site que você utiliza como referência?
+
+Campo opcional para inserir link.
+
+PERGUNTA 7 — RECURSOS ADICIONAIS
+
+Quais recursos adicionais você gostaria de disponibilizar no mini site?
+
+Opções:
+
+* Wi-Fi.
+* Pix.
+* Horários de funcionamento.
+* Endereço e localização.
+* Outros.
+
+Regras condicionais:
+
+Wi-Fi:
+Se selecionar, exibir:
+
+* Nome da rede.
+* Senha.
+
+Solicitar somente se o cliente realmente desejar publicar essas informações.
+
+Pix:
+Se selecionar, exibir:
+
+* Chave Pix.
+* Nome do titular, caso deseje exibi-lo para identificação.
+
+Não solicitar dados bancários desnecessários.
+
+Horários e endereço:
+Reutilizar os dados do onboarding geral.
+
+Não perguntar novamente.
+
+⸻
+
+6. PERGUNTAS — SITE INSTITUCIONAL
+
+O site institucional deverá ter uma estrutura padrão desenvolvida pela Localway.
+
+Todos os clientes terão a mesma base estrutural, mas poderão ter design, cores, imagens, textos e informações diferentes.
+
+O site pode apresentar:
+
+* Empresa.
+* História.
+* Serviços.
+* Produtos.
+* Preços.
+* Fotos.
+* Diferenciais.
+* Equipe.
+* Catálogo.
+* Botões de contato.
+* Solicitação de orçamento.
+* Agendamento.
+* Outras seções relevantes.
+
+Não é necessário possuir carrinho, checkout ou pagamento online.
+
+O objetivo é apresentar os produtos e serviços e facilitar o contato e a contratação.
+
+A. HISTÓRIA E APRESENTAÇÃO
+
+Pergunta 1
+
+Conte um pouco sobre a história da sua empresa.
+
+Como surgiu, quando começou e como chegou até aqui?
+
+Campo de texto longo e opcional.
+
+Pergunta 2
+
+Quem é o proprietário ou profissional responsável pela empresa?
+
+Deseja apresentar essa pessoa no site?
+
+Opções:
+
+* Sim.
+* Não.
+
+Se Sim, permitir informar nome, função e enviar foto.
+
+Reutilizar os dados do responsável já informados no onboarding geral quando forem os mesmos.
+
+Pergunta 3
+
+Quais são os principais diferenciais da sua empresa?
+
+Oferecer sugestões selecionáveis:
+
+* Experiência e tradição.
+* Atendimento personalizado.
+* Qualidade.
+* Agilidade.
+* Praticidade.
+* Preço competitivo.
+* Profissionais especializados.
+* Variedade de produtos e serviços.
+* Outro.
+
+Permitir selecionar várias opções e adicionar uma descrição complementar.
+
+Pergunta 4
+
+Quem são os principais clientes que sua empresa deseja alcançar?
+
+Exemplos:
+
+* Famílias.
+* Turistas.
+* Homens.
+* Mulheres.
+* Crianças.
+* Empresas.
+* Público de determinada faixa etária.
+* Outros.
+
+Campo de seleção e texto complementar.
+
+B. SERVIÇOS
+
+Pergunta 5
+
+Quais serviços sua empresa oferece?
+
+Permitir cadastrar vários serviços.
+
+Para cada serviço:
+
+* Nome do serviço.
+* Descrição breve.
+* Preço ou valor inicial.
+* Opção de preço sob consulta.
+* Duração aproximada, quando aplicável.
+* Foto opcional.
+
+Permitir cadastrar vários serviços, sem limitar o cliente a apenas três.
+
+Exemplo de autoescola:
+
+* Aula de carro.
+* Aula de moto.
+* Aula para habilitados.
+
+Cada serviço pode ter descrição, valor e botão de contato.
+
+Permitir que a Localway utilize essas informações para criar páginas, cards ou seções de apresentação.
+
+C. PRODUTOS
+
+Pergunta 6
+
+Sua empresa também comercializa produtos?
+
+Opções:
+
+* Sim.
+* Não.
+
+Se responder Sim, abrir cadastro de produtos.
+
+Para cada produto:
+
+* Nome.
+* Descrição.
+* Foto.
+* Preço ou valor inicial.
+* Tamanho, modelo, cor ou variações, quando aplicável.
+
+Permitir cadastrar vários produtos.
+
+Se o cliente já tiver cadastrado produtos no cadastro compartilhado, permitir selecioná-los.
+
+Não exigir que uma empresa que presta somente serviços responda a perguntas sobre produtos.
+
+D. ATENDIMENTO E CONTRATAÇÃO
+
+Pergunta 7
+
+Como funciona o processo de atendimento ou contratação dos seus serviços e produtos?
+
+Opções:
+
+* O cliente entra em contato pelo WhatsApp.
+* O cliente agenda um horário.
+* O cliente solicita um orçamento.
+* O cliente vai até o estabelecimento.
+* A empresa realiza entregas.
+* O cliente solicita informações pelo site.
+* Outro.
+
+Permitir múltipla seleção.
+
+Pergunta 8
+
+Existe alguma orientação importante que o cliente precisa conhecer antes de contratar um serviço ou adquirir um produto?
+
+Campo opcional de texto longo.
+
+Exemplos:
+
+* Necessidade de agendamento.
+* Prazos.
+* Condições de entrega.
+* Documentação necessária.
+* Condições específicas de atendimento.
+
+E. MATERIAIS E APRESENTAÇÃO
+
+Pergunta 9
+
+Você gostaria de apresentar o proprietário, os profissionais ou a equipe no site?
+
+Opções:
+
+* Somente o proprietário.
+* Somente a equipe.
+* Proprietário e equipe.
+* Não desejo apresentar pessoas.
+
+Se houver interesse, permitir informar nomes, funções e fotos.
+
+Reutilizar materiais já enviados no onboarding geral.
+
+Pergunta 10
+
+Possui vídeos que gostaria de utilizar no site?
+
+Opções:
+
+* Sim, tenho vídeos para compartilhar.
+* Não tenho.
+* Gostaria de produzir futuramente.
+
+Se Sim, permitir compartilhar link ou arquivo.
+
+F. SEÇÕES COMPLEMENTARES
+
+Pergunta 11
+
+Quais seções adicionais você gostaria de ter no site, além da estrutura padrão da Localway?
+
+Opções:
+
+* Sobre nós.
+* Nossa equipe.
+* Galeria de fotos.
+* Perguntas frequentes.
+* Depoimentos de clientes.
+* Portfólio de trabalhos realizados.
+* Blog.
+* Outras.
+
+Permitir múltipla seleção.
+
+Pergunta 12
+
+Quais dúvidas seus clientes costumam ter antes de contratar ou comprar?
+
+Campo de texto longo.
+
+A Localway poderá utilizar essas informações para desenvolver a seção de perguntas frequentes.
+
+Pergunta 13
+
+Qual é o principal objetivo que você espera alcançar com o site?
+
+Opções:
+
+* Receber contatos pelo WhatsApp.
+* Receber pedidos de orçamento.
+* Gerar agendamentos.
+* Apresentar a empresa e seus serviços.
+* Gerar vendas.
+* Fortalecer a presença digital da empresa.
+
+⸻
+
+7. INFORMAÇÕES QUE NÃO DEVEM SER SOLICITADAS NOVAMENTE
+
+Essa regra deve ser aplicada a todos os formulários.
+
+Não repetir no Google, site ou mini site:
+
+* Nome fantasia.
+* Segmento.
+* Descrição geral da empresa.
+* WhatsApp.
+* Telefone.
+* E-mail.
+* Endereço.
+* CEP.
+* Horários.
+* Instagram.
+* Facebook.
+* Site atual.
+* Materiais gerais já enviados.
+
+O cliente responde uma única vez no onboarding geral.
+
+Nos serviços específicos, o sistema poderá perguntar se deseja utilizar, destacar ou exibir determinada informação.
+
+Exemplo:
+
+Em vez de perguntar novamente qual é o WhatsApp, perguntar:
+
+“Deseja exibir o botão do WhatsApp informado no cadastro geral?”
+
+As informações devem ser vinculadas ao cadastro do cliente e reaproveitadas automaticamente.
+
+⸻
+
+8. PAINEL ADMINISTRATIVO — CENTRAL DE GERENCIAMENTO DE PERGUNTAS
+
+ESTA FUNCIONALIDADE É PRIORITÁRIA.
+
+Atualmente consigo editar perguntas e campos no ambiente de desenvolvimento, mas na aplicação publicada não consigo reorganizar livremente os campos do onboarding geral.
+
+Quero que isso seja corrigido.
+
+Criar ou aprimorar uma área central de gerenciamento de perguntas.
+
+Quero administrar todos os formulários em um único ambiente:
+
+* Onboarding geral.
+* Perfil da Empresa no Google.
+* Site institucional.
+* Mini site.
+
+Pode haver filtros por serviço e categoria, mas não quero precisar procurar perguntas em várias telas diferentes.
+
+Funcionalidades obrigatórias
+
+Permitir:
+
+1. Adicionar perguntas.
+2. Editar perguntas.
+3. Excluir perguntas, respeitando a integridade do histórico.
+4. Ativar e desativar perguntas.
+5. Alterar obrigatoriedade.
+6. Alterar tipo de resposta.
+7. Editar opções de resposta.
+8. Alterar descrição e texto de orientação.
+9. Alterar placeholder.
+10. Reordenar perguntas.
+11. Reordenar campos dentro das categorias.
+12. Reordenar categorias.
+13. Mover campos de uma categoria para outra.
+14. Alterar a ordem dos campos no onboarding geral.
+15. Criar perguntas condicionais.
+16. Visualizar prévia do formulário.
+
+REORDENAÇÃO POR ARRASTAR E SOLTAR
+
+Implementar drag and drop funcional.
+
+Exemplo:
+
+Se a ordem atual for:
+
+1. Nome fantasia.
+2. Razão social.
+3. CNPJ.
+4. Data de abertura.
+5. Segmento.
+
+Quero conseguir arrastar o campo Nome fantasia para depois de Data de abertura.
+
+Essa mudança deve ser possível diretamente na aplicação publicada.
+
+Não basta funcionar no ambiente de desenvolvimento ou na prévia do Google AI Studio.
+
+As alterações devem ser salvas e persistir depois de atualizar a página ou realizar novo login.
+
+TIPOS DE PERGUNTAS
+
+Preservar os tipos já existentes:
+
+* Texto curto.
+* Texto longo.
+* Número.
+* Resposta única.
+* Múltipla seleção.
+* Sim/não.
+* Data.
+* Upload de arquivo.
+* Link/URL.
+* Campos repetíveis.
+* Cadastro de produtos.
+* Cadastro de serviços.
+
+PERGUNTAS CONDICIONAIS
+
+Permitir configurar regras como:
+
+* Se possui perfil Google, exibir campo de link.
+* Se perdeu acesso ao perfil, orientar recuperação.
+* Se trabalha com agendamento, exibir detalhes.
+* Se aceita cartão, exibir bandeiras.
+* Se comercializa produtos, exibir cadastro de produtos.
+* Se deseja exibir Wi-Fi, exibir os campos correspondentes.
+* Se deseja apresentar a equipe, exibir campos de pessoas.
+* Se deseja enviar vídeos, exibir upload ou link.
+
+As regras devem funcionar na prévia e no formulário publicado.
+
+⸻
+
+9. EXPERIÊNCIA DO CLIENTE
+
+O formulário público deve:
+
+* Ser responsivo.
+* Funcionar bem em celular.
+* Ter duas páginas no onboarding geral.
+* Exibir apenas serviços contratados.
+* Exibir apenas perguntas ativas.
+* Respeitar a obrigatoriedade dos campos.
+* Respeitar as condições configuradas.
+* Apresentar indicadores de progresso.
+* Não repetir dados.
+* Permitir preencher campos opcionais sem bloquear o envio.
+* Manter a identidade visual atual da Localway.
+
+Não criar etapas desnecessárias.
+
+⸻
+
+10. INTEGRIDADE, PERSISTÊNCIA E SEGURANÇA DOS DADOS
+
+Antes de alterar a estrutura, verificar:
+
+* Como os campos estão armazenados no Firebase.
+* Como as respostas dos clientes estão vinculadas.
+* Como os serviços se relacionam com os formulários.
+* Como funciona a integração com Google Sheets.
+* Como as configurações do painel são persistidas.
+
+Regras obrigatórias:
+
+1. Preservar registros existentes.
+2. Preservar respostas antigas.
+3. Não apagar histórico de clientes.
+4. Não criar duplicações desnecessárias.
+5. Preservar identificadores de campos sempre que possível.
+6. Se for necessário alterar identificadores, criar migração segura.
+7. Preservar a integração com Google Sheets.
+8. Garantir que perguntas desativadas possam ser reativadas.
+9. Garantir que as mudanças administrativas sejam persistentes.
+10. Não armazenar configurações importantes apenas em estado local ou temporário.
+11. Respeitar as permissões administrativas e de acesso dos clientes.
+12. Não expor credenciais, chaves de API ou dados privados no frontend.
+
+Se alguma alteração exigir migração de dados, faça isso de maneira controlada, sem sobrescrever respostas existentes.
+
+⸻
+
+11. TESTES OBRIGATÓRIOS
+
+Antes de considerar a atualização concluída, testar os seguintes cenários:
+
+Cenário 1
+
+Cliente contrata somente Perfil da Empresa no Google.
+
+Deve responder ao geral e às perguntas específicas do Google.
+
+Cenário 2
+
+Cliente contrata somente site institucional.
+
+Deve responder ao geral e às perguntas específicas do site.
+
+Cenário 3
+
+Cliente contrata somente mini site.
+
+Deve responder ao geral e às perguntas específicas do mini site.
+
+Cenário 4
+
+Cliente contrata Google, site e mini site.
+
+Deve responder ao onboarding geral uma única vez e depois somente às perguntas específicas de cada serviço.
+
+Cenário 5
+
+Empresa que vende somente serviços.
+
+Não deve ser obrigada a cadastrar produtos.
+
+Cenário 6
+
+Empresa que vende produtos e presta serviços.
+
+Deve conseguir cadastrar ambos e reaproveitar os dados nos serviços contratados.
+
+Cenário 7
+
+Empresa sem estabelecimento físico.
+
+Não deve ser obrigada a informar endereço de atendimento presencial.
+
+Cenário 8
+
+Cliente sem perfil no Google.
+
+Não deve visualizar campo de link do perfil.
+
+Cenário 9
+
+Cliente sem catálogo digital.
+
+Não deve ser obrigado a enviar catálogo.
+
+Cenário 10
+
+Cliente que deseja exibir Wi-Fi e Pix no mini site.
+
+Devem aparecer somente os campos correspondentes às opções selecionadas.
+
+Testes administrativos
+
+* Arrastar campos e alterar sua ordem.
+* Ativar e desativar perguntas.
+* Alterar obrigatoriedade.
+* Editar textos e opções.
+* Criar perguntas condicionais.
+* Salvar alterações.
+* Atualizar a página.
+* Fazer novo login.
+* Confirmar que tudo permanece salvo.
+
+Testes de integração
+
+* Enviar um formulário de teste.
+* Verificar os dados no Firebase.
+* Verificar os dados no Google Sheets.
+* Confirmar que os dados gerais estão vinculados ao cliente.
+* Confirmar que os serviços reutilizam corretamente as informações gerais.
+
+⸻
+
+12. RELATÓRIO FINAL
+
+Ao concluir, apresentar um relatório claro contendo:
+
+1. Quais perguntas foram criadas.
+2. Quais perguntas foram atualizadas.
+3. Quais campos foram mantidos desativados.
+4. Como ficou a organização das duas páginas gerais.
+5. Como ficaram os formulários Google, site e mini site.
+6. Como funciona o reaproveitamento de dados.
+7. Como funciona o cadastro compartilhado de produtos e serviços.
+8. Se a reordenação de campos funciona na aplicação publicada.
+9. Se as configurações persistem no Firebase.
+10. Se Google Sheets continua funcionando.
+11. Quais testes foram realizados.
+12. Quais problemas ainda precisam de atenção.
+
+Não informe que algo foi concluído apenas porque aparece na prévia ou no código.
+
+Considere uma funcionalidade concluída somente depois de testar seu funcionamento real.
+
+INSTRUÇÃO FINAL
+
+Implemente as alterações diretamente no projeto existente, com cuidado para não comprometer os dados e funcionalidades atuais.
+
+Prioridades:
+
+1. Corrigir as perguntas e a distribuição dos formulários.
+2. Eliminar perguntas repetidas.
+3. Reaproveitar informações do onboarding geral.
+4. Organizar o onboarding geral em duas páginas.
+5. Tornar todos os campos editáveis e reordenáveis pela aplicação publicada.
+6. Garantir persistência e funcionamento das integrações.
+
+Não altere o menu principal da aplicação.
+
+Não crie novas páginas administrativas desnecessárias.
+
+Não modifique o design atual sem necessidade.
+
+Faça a implementação completa e apresente o relatório final, distinguindo claramente o que foi implementado, o que foi testado e o que ainda não está funcionando.

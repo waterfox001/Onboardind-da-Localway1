@@ -17,6 +17,8 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   facebookOutras: '',
 
   // 2. Endereço
+  enderecoSemLocalFisico: false,
+  cep: '',
   ruaAvenida: '',
   numero: '',
   complemento: '',
@@ -37,9 +39,12 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   trabalhaAgendamento: '',
   formasAgendamento: [],
   outroAgendamento: '',
+  possuiLinkAgendamento: '',
   contatoLinkAgendamento: '',
 
   // 4. Estrutura da Empresa
+  tipoEstabelecimento: '',
+  formaAtendimento: '',
   estacionamento: '',
   outroEstacionamento: '',
   idiomas: ['Português'],
@@ -53,6 +58,9 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   responsavelWhatsapp: '',
   responsavelEmail: '',
   responsavelCargo: '',
+
+  // Catálogo Compartilhado
+  catalogoCompartilhado: [],
 
   // 6. Serviços Contratados
   servicosContratados: [],
@@ -75,8 +83,10 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   googleJaPossuiPerfil: '',
   googleLinkPerfil: '',
   googleCorrecoesPerfil: '',
+  googleItensDestaqueIds: [],
+  googleItensCustom: [],
 
-  // Módulo: Site Profissional
+  // Módulo: Site Profissional (Site Institucional)
   siteJaPossui: '',
   siteLinkAtual: '',
   siteManterAtual: '',
@@ -87,6 +97,32 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   siteOutraPagina: '',
   siteReferencia: '',
   siteInfoObrigatoria: '',
+  siteHistoria: '',
+  siteApresentarResponsavel: '',
+  siteResponsavelNome: '',
+  siteResponsavelFuncao: '',
+  siteResponsavelFoto: '',
+  siteDiferenciais: [],
+  siteDiferenciaisOutro: '',
+  siteDiferenciaisDesc: '',
+  sitePublicoAlvo: [],
+  sitePublicoAlvoOutro: '',
+  sitePublicoAlvoDesc: '',
+  siteServicosSelecionadosIds: [],
+  siteComercializaProdutos: '',
+  siteProdutosSelecionadosIds: [],
+  siteProcessoAtendimento: [],
+  siteProcessoAtendimentoOutro: '',
+  siteOrientacaoPreContratacao: '',
+  siteApresentarEquipeTipo: '',
+  siteEquipePessoas: [],
+  sitePossuiVideos: '',
+  siteVideosLink: '',
+  siteVideosArquivo: '',
+  siteSecoesAdicionais: [],
+  siteSecoesAdicionaisOutro: '',
+  siteDuvidasFrequentes: '',
+  siteObjetivoPrincipal: '',
 
   // Módulo: Loja Virtual
   ecommerceProdutosVendidos: '',
@@ -127,13 +163,31 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   identidadeOutraPercepcao: '',
 
   // Módulo: Mini Site
-  minisiteInformacoes: ['WhatsApp', 'Instagram', 'Endereço'],
+  minisiteInformacoes: ['WhatsApp', 'Instagram', 'Localização / Como chegar'],
   minisiteOutraInfo: '',
   minisiteWhatsapp: '',
   minisiteInstagram: '',
+  minisiteFacebook: '',
   minisiteSite: '',
   minisiteEndereco: '',
+  minisiteGoogleReviews: '',
+  minisiteCatalogoBotao: '',
   minisiteInfoAdicional: '',
+  minisiteApresentacao: '',
+  minisiteItensDestaqueIds: [],
+  minisiteItensCustom: [],
+  minisiteCatalogoPossui: '',
+  minisiteCatalogoLink: '',
+  minisiteCatalogoArquivo: '',
+  minisiteCoresDesejadas: '',
+  minisiteCoresEvitar: '',
+  minisiteReferenciaVisual: '',
+  minisiteRecursosAdicionais: [],
+  minisiteWifiRede: '',
+  minisiteWifiSenha: '',
+  minisitePixChave: '',
+  minisitePixTitular: '',
+  minisiteRecursosOutros: '',
 
   // Módulo: SEO
   seoProdutosServicosImportantes: '',
@@ -153,7 +207,7 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   autoSistemaIntegrar: '',
   autoExemploReferencia: '',
 
-  // Módulo: WhatsApp Business (Refatorado)
+  // Módulo: WhatsApp Business
   whatsJaPossuiBusiness: '',
   whatsNumero: '',
   whatsNomeComercial: '',
@@ -208,7 +262,11 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   linksMateriais: '',
   linkTransferNow: '',
   observacoesMateriais: '',
+  materiaisArquivosNomes: [],
 
   // 24. Observações Finais
   observacoesFinais: '',
+
+  // Respostas personalizadas criadas pelo Admin
+  respostasPersonalizadas: {},
 };

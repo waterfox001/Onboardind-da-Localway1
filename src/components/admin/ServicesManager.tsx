@@ -125,7 +125,7 @@ export const ServicesManager: React.FC<ServicesManagerProps> = ({
               <Layers className="w-5 h-5" />
             </span>
             <h2 className="text-base sm:text-lg font-bold text-slate-900">
-              Gerenciamento dos 13 Serviços da Localway
+              Gerenciamento dos {servicesList.length} Serviços da Localway
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl leading-relaxed">

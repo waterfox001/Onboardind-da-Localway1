@@ -1,0 +1,2593 @@
+{
+  "schemaVersion": 2,
+  "companyFields": [
+    {
+      "id": "nomeFantasia",
+      "key": "nomeFantasia",
+      "label": "Nome Fantasia",
+      "placeholder": "Ex: Pizzaria Bella Italia",
+      "helper": "Nome pelo qual sua empresa é conhecida pelos clientes",
+      "type": "text",
+      "required": true,
+      "enabled": true,
+      "order": 1,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa"
+    },
+    {
+      "id": "razaoSocial",
+      "key": "razaoSocial",
+      "label": "Razão Social",
+      "placeholder": "Ex: Bella Italia Alimentos LTDA",
+      "helper": "Nome oficial registrado no CNPJ",
+      "type": "text",
+      "required": false,
+      "enabled": false,
+      "order": 2,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa"
+    },
+    {
+      "id": "cnpj",
+      "key": "cnpj",
+      "label": "CNPJ",
+      "placeholder": "00.000.000/0000-00",
+      "helper": "Cadastro Nacional de Pessoa Jurídica",
+      "type": "text",
+      "required": false,
+      "enabled": false,
+      "order": 3,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa"
+    },
+    {
+      "id": "dataAbertura",
+      "key": "dataAbertura",
+      "label": "Data de Abertura da Empresa",
+      "placeholder": "Ex: 15/03/2018",
+      "helper": "Importante para verificar autoridade e tempo de mercado",
+      "type": "text",
+      "required": false,
+      "enabled": false,
+      "order": 4,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa"
+    },
+    {
+      "id": "segmento",
+      "key": "segmento",
+      "label": "Segmento da Empresa",
+      "helper": "Define as perguntas personalizadas da sua área de atuação logo abaixo",
+      "type": "segment_select",
+      "required": true,
+      "enabled": true,
+      "order": 5,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa"
+    },
+    {
+      "id": "descricaoEmpresa",
+      "key": "descricaoEmpresa",
+      "label": "Descrição da Empresa",
+      "placeholder": "Conte brevemente sobre sua empresa, seus produtos ou serviços e diferenciais...",
+      "helper": "Resumo geral com foco em posicionamento e diferenciais",
+      "type": "textarea",
+      "required": true,
+      "enabled": true,
+      "order": 6,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa"
+    },
+    {
+      "id": "whatsapp",
+      "key": "whatsapp",
+      "label": "WhatsApp Principal",
+      "placeholder": "(11) 90000-0000",
+      "helper": "Canal oficial para contato direto com seus clientes (reutilizado automaticamente nos serviços)",
+      "type": "tel",
+      "required": true,
+      "enabled": true,
+      "order": 7,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa",
+      "colSpan": 1
+    },
+    {
+      "id": "telefone",
+      "key": "telefone",
+      "label": "Telefone Comercial",
+      "placeholder": "(11) 3000-0000",
+      "type": "tel",
+      "required": false,
+      "enabled": true,
+      "order": 8,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa",
+      "colSpan": 1
+    },
+    {
+      "id": "email",
+      "key": "email",
+      "label": "E-mail de Contato",
+      "placeholder": "contato@suaempresa.com.br",
+      "type": "email",
+      "required": true,
+      "enabled": true,
+      "order": 9,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa",
+      "colSpan": 1
+    },
+    {
+      "id": "site",
+      "key": "site",
+      "label": "Site Atual",
+      "placeholder": "https://suaempresa.com.br",
+      "type": "url",
+      "required": false,
+      "enabled": true,
+      "order": 10,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa",
+      "colSpan": 1
+    },
+    {
+      "id": "instagram",
+      "key": "instagram",
+      "label": "Instagram",
+      "placeholder": "@suaempresa",
+      "type": "text",
+      "required": false,
+      "enabled": true,
+      "order": 11,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa",
+      "colSpan": 1
+    },
+    {
+      "id": "facebookOutras",
+      "key": "facebookOutras",
+      "label": "Facebook e Outras Redes Sociais",
+      "placeholder": "facebook.com/suaempresa ou LinkedIn",
+      "type": "text",
+      "required": false,
+      "enabled": true,
+      "order": 12,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa",
+      "colSpan": 1
+    }
+  ],
+  "onboardingFields": [
+    {
+      "id": "nomeFantasia",
+      "key": "nomeFantasia",
+      "label": "Nome Fantasia",
+      "placeholder": "Ex: Pizzaria Bella Italia",
+      "helper": "Nome pelo qual sua empresa é conhecida pelos clientes",
+      "type": "text",
+      "required": true,
+      "enabled": true,
+      "order": 1,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa"
+    },
+    {
+      "id": "razaoSocial",
+      "key": "razaoSocial",
+      "label": "Razão Social",
+      "placeholder": "Ex: Bella Italia Alimentos LTDA",
+      "helper": "Nome oficial registrado no CNPJ",
+      "type": "text",
+      "required": false,
+      "enabled": false,
+      "order": 2,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa"
+    },
+    {
+      "id": "cnpj",
+      "key": "cnpj",
+      "label": "CNPJ",
+      "placeholder": "00.000.000/0000-00",
+      "helper": "Cadastro Nacional de Pessoa Jurídica",
+      "type": "text",
+      "required": false,
+      "enabled": false,
+      "order": 3,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa"
+    },
+    {
+      "id": "dataAbertura",
+      "key": "dataAbertura",
+      "label": "Data de Abertura da Empresa",
+      "placeholder": "Ex: 15/03/2018",
+      "helper": "Importante para verificar autoridade e tempo de mercado",
+      "type": "text",
+      "required": false,
+      "enabled": false,
+      "order": 4,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa"
+    },
+    {
+      "id": "segmento",
+      "key": "segmento",
+      "label": "Segmento da Empresa",
+      "helper": "Define as perguntas personalizadas da sua área de atuação logo abaixo",
+      "type": "segment_select",
+      "required": true,
+      "enabled": true,
+      "order": 5,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa"
+    },
+    {
+      "id": "descricaoEmpresa",
+      "key": "descricaoEmpresa",
+      "label": "Descrição da Empresa",
+      "placeholder": "Conte brevemente sobre sua empresa, seus produtos ou serviços e diferenciais...",
+      "helper": "Resumo geral com foco em posicionamento e diferenciais",
+      "type": "textarea",
+      "required": true,
+      "enabled": true,
+      "order": 6,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa"
+    },
+    {
+      "id": "whatsapp",
+      "key": "whatsapp",
+      "label": "WhatsApp Principal",
+      "placeholder": "(11) 90000-0000",
+      "helper": "Canal oficial para contato direto com seus clientes (reutilizado automaticamente nos serviços)",
+      "type": "tel",
+      "required": true,
+      "enabled": true,
+      "order": 7,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa",
+      "colSpan": 1
+    },
+    {
+      "id": "telefone",
+      "key": "telefone",
+      "label": "Telefone Comercial",
+      "placeholder": "(11) 3000-0000",
+      "type": "tel",
+      "required": false,
+      "enabled": true,
+      "order": 8,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa",
+      "colSpan": 1
+    },
+    {
+      "id": "email",
+      "key": "email",
+      "label": "E-mail de Contato",
+      "placeholder": "contato@suaempresa.com.br",
+      "type": "email",
+      "required": true,
+      "enabled": true,
+      "order": 9,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa",
+      "colSpan": 1
+    },
+    {
+      "id": "site",
+      "key": "site",
+      "label": "Site Atual",
+      "placeholder": "https://suaempresa.com.br",
+      "type": "url",
+      "required": false,
+      "enabled": true,
+      "order": 10,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa",
+      "colSpan": 1
+    },
+    {
+      "id": "instagram",
+      "key": "instagram",
+      "label": "Instagram",
+      "placeholder": "@suaempresa",
+      "type": "text",
+      "required": false,
+      "enabled": true,
+      "order": 11,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa",
+      "colSpan": 1
+    },
+    {
+      "id": "facebookOutras",
+      "key": "facebookOutras",
+      "label": "Facebook e Outras Redes Sociais",
+      "placeholder": "facebook.com/suaempresa ou LinkedIn",
+      "type": "text",
+      "required": false,
+      "enabled": true,
+      "order": 12,
+      "stepId": "company",
+      "pageId": "general_company",
+      "categoryId": "cat_company",
+      "category": "A. Empresa",
+      "colSpan": 1
+    },
+    {
+      "id": "enderecoSemLocalFisico",
+      "key": "enderecoSemLocalFisico",
+      "label": "Não possuo estabelecimento físico aberto ao público (atendimento online ou na região dos clientes)",
+      "helper": "Marque esta opção caso não atenda clientes em endereço físico fixo.",
+      "type": "no_physical_toggle",
+      "required": false,
+      "enabled": true,
+      "order": 13,
+      "stepId": "address",
+      "pageId": "general_company",
+      "categoryId": "cat_address",
+      "category": "B. Endereço"
+    },
+    {
+      "id": "cep",
+      "key": "cep",
+      "label": "CEP",
+      "placeholder": "00000-000",
+      "helper": "Digite o CEP para preencher rua, bairro, cidade e estado automaticamente.",
+      "type": "text",
+      "required": false,
+      "enabled": true,
+      "order": 14,
+      "stepId": "address",
+      "pageId": "general_company",
+      "categoryId": "cat_address",
+      "category": "B. Endereço",
+      "conditional": {
+        "dependsOn": "enderecoSemLocalFisico",
+        "operator": "not_equals",
+        "value": "true"
+      },
+      "colSpan": 1
+    },
+    {
+      "id": "ruaAvenida",
+      "key": "ruaAvenida",
+      "label": "Rua / Avenida",
+      "placeholder": "Ex: Av. Paulista",
+      "type": "text",
+      "required": true,
+      "enabled": true,
+      "order": 15,
+      "stepId": "address",
+      "pageId": "general_company",
+      "categoryId": "cat_address",
+      "category": "B. Endereço",
+      "conditional": {
+        "dependsOn": "enderecoSemLocalFisico",
+        "operator": "not_equals",
+        "value": "true"
+      },
+      "colSpan": 2
+    },
+    {
+      "id": "numero",
+      "key": "numero",
+      "label": "Número",
+      "placeholder": "Ex: 1000",
+      "type": "text",
+      "required": true,
+      "enabled": true,
+      "order": 16,
+      "stepId": "address",
+      "pageId": "general_company",
+      "categoryId": "cat_address",
+      "category": "B. Endereço",
+      "conditional": {
+        "dependsOn": "enderecoSemLocalFisico",
+        "operator": "not_equals",
+        "value": "true"
+      },
+      "colSpan": 1
+    },
+    {
+      "id": "complemento",
+      "key": "complemento",
+      "label": "Complemento",
+      "placeholder": "Ex: Sala 402, Bloco B, Próximo ao metrô",
+      "type": "text",
+      "required": false,
+      "enabled": true,
+      "order": 17,
+      "stepId": "address",
+      "pageId": "general_company",
+      "categoryId": "cat_address",
+      "category": "B. Endereço",
+      "conditional": {
+        "dependsOn": "enderecoSemLocalFisico",
+        "operator": "not_equals",
+        "value": "true"
+      },
+      "colSpan": 1
+    },
+    {
+      "id": "bairro",
+      "key": "bairro",
+      "label": "Bairro",
+      "placeholder": "Ex: Bela Vista",
+      "type": "text",
+      "required": true,
+      "enabled": true,
+      "order": 18,
+      "stepId": "address",
+      "pageId": "general_company",
+      "categoryId": "cat_address",
+      "category": "B. Endereço",
+      "conditional": {
+        "dependsOn": "enderecoSemLocalFisico",
+        "operator": "not_equals",
+        "value": "true"
+      },
+      "colSpan": 1
+    },
+    {
+      "id": "cidade",
+      "key": "cidade",
+      "label": "Cidade",
+      "placeholder": "Ex: São Paulo",
+      "type": "text",
+      "required": true,
+      "enabled": true,
+      "order": 19,
+      "stepId": "address",
+      "pageId": "general_company",
+      "categoryId": "cat_address",
+      "category": "B. Endereço",
+      "colSpan": 1
+    },
+    {
+      "id": "estado",
+      "key": "estado",
+      "label": "Estado (UF)",
+      "type": "select",
+      "required": true,
+      "enabled": true,
+      "order": 20,
+      "stepId": "address",
+      "pageId": "general_company",
+      "categoryId": "cat_address",
+      "category": "B. Endereço",
+      "options": [
+        "AC",
+        "AL",
+        "AP",
+        "AM",
+        "BA",
+        "CE",
+        "DF",
+        "ES",
+        "GO",
+        "MA",
+        "MT",
+        "MS",
+        "MG",
+        "PA",
+        "PB",
+        "PR",
+        "PE",
+        "PI",
+        "RJ",
+        "RN",
+        "RS",
+        "RO",
+        "RR",
+        "SC",
+        "SP",
+        "SE",
+        "TO"
+      ],
+      "colSpan": 1
+    },
+    {
+      "id": "horarios",
+      "key": "horarios",
+      "label": "Horários de Funcionamento (Segunda a Domingo)",
+      "helper": "Marque dias fechados ou adicione intervalo/segundo período por dia",
+      "type": "schedule_grid",
+      "required": true,
+      "enabled": true,
+      "order": 21,
+      "stepId": "hours",
+      "pageId": "general_company",
+      "categoryId": "cat_hours",
+      "category": "C. Horários de Funcionamento e Agendamento"
+    },
+    {
+      "id": "trabalhaAgendamento",
+      "key": "trabalhaAgendamento",
+      "label": "Trabalha com agendamento prévio?",
+      "helper": "Indica se os clientes precisam ou costumam agendar horário",
+      "type": "radio",
+      "required": true,
+      "enabled": true,
+      "order": 22,
+      "stepId": "hours",
+      "pageId": "general_company",
+      "categoryId": "cat_hours",
+      "category": "C. Horários de Funcionamento e Agendamento",
+      "options": [
+        "Sim",
+        "Não"
+      ]
+    },
+    {
+      "id": "formasAgendamento",
+      "key": "formasAgendamento",
+      "label": "Como funciona o agendamento?",
+      "type": "checkbox",
+      "required": false,
+      "enabled": true,
+      "order": 23,
+      "stepId": "hours",
+      "pageId": "general_company",
+      "categoryId": "cat_hours",
+      "category": "C. Horários de Funcionamento e Agendamento",
+      "options": [
+        "WhatsApp",
+        "Telefone",
+        "Direct do Instagram",
+        "Site / Plataforma online",
+        "Presencialmente",
+        "Outro"
+      ],
+      "allowOther": true,
+      "conditional": {
+        "dependsOn": "trabalhaAgendamento",
+        "operator": "equals",
+        "value": "Sim"
+      }
+    },
+    {
+      "id": "possuiLinkAgendamento",
+      "key": "possuiLinkAgendamento",
+      "label": "Possui link de agendamento?",
+      "type": "radio",
+      "required": false,
+      "enabled": true,
+      "order": 24,
+      "stepId": "hours",
+      "pageId": "general_company",
+      "categoryId": "cat_hours",
+      "category": "C. Horários de Funcionamento e Agendamento",
+      "options": [
+        "Sim",
+        "Não"
+      ],
+      "conditional": {
+        "dependsOn": "trabalhaAgendamento",
+        "operator": "equals",
+        "value": "Sim"
+      }
+    },
+    {
+      "id": "contatoLinkAgendamento",
+      "key": "contatoLinkAgendamento",
+      "label": "Informe o link de agendamento",
+      "placeholder": "Ex: https://calendly.com/suaempresa ou https://wa.me/55...",
+      "type": "url",
+      "required": false,
+      "enabled": true,
+      "order": 25,
+      "stepId": "hours",
+      "pageId": "general_company",
+      "categoryId": "cat_hours",
+      "category": "C. Horários de Funcionamento e Agendamento",
+      "conditional": {
+        "dependsOn": "possuiLinkAgendamento",
+        "operator": "equals",
+        "value": "Sim"
+      }
+    },
+    {
+      "id": "tipoEstabelecimento",
+      "key": "tipoEstabelecimento",
+      "label": "Tipo de Estabelecimento",
+      "helper": "Ajuda a definir o posicionamento do seu Perfil no Google e Site",
+      "type": "radio",
+      "required": false,
+      "enabled": true,
+      "order": 26,
+      "stepId": "structure",
+      "pageId": "general_structure",
+      "categoryId": "cat_structure",
+      "category": "A. Estrutura e Atendimento",
+      "options": [
+        "Loja de rua / Ponto comercial próprio",
+        "Sala comercial / Consultório / Escritório",
+        "Quiosque ou loja em shopping / galeria",
+        "Atendimento domiciliar / Sem ponto fixo aberto ao público",
+        "Operação 100% digital / Online"
+      ]
+    },
+    {
+      "id": "formaAtendimento",
+      "key": "formaAtendimento",
+      "label": "Forma de Atendimento",
+      "helper": "Será reaproveitada automaticamente nas configurações do Google e Site",
+      "type": "radio",
+      "required": true,
+      "enabled": true,
+      "order": 27,
+      "stepId": "structure",
+      "pageId": "general_structure",
+      "categoryId": "cat_structure",
+      "category": "A. Estrutura e Atendimento",
+      "options": [
+        "Atendemos clientes em nosso estabelecimento",
+        "Atendemos somente na região dos clientes",
+        "Trabalhamos das duas formas",
+        "Atendimento 100% online"
+      ]
+    },
+    {
+      "id": "estacionamento",
+      "key": "estacionamento",
+      "label": "Estacionamento para Clientes",
+      "type": "radio",
+      "required": false,
+      "enabled": true,
+      "order": 28,
+      "stepId": "structure",
+      "pageId": "general_structure",
+      "categoryId": "cat_structure",
+      "category": "A. Estrutura e Atendimento",
+      "options": [
+        "Estacionamento próprio gratuito no local",
+        "Estacionamento próprio pago",
+        "Estacionamento conveniado próximo",
+        "Vagas na rua / zona azul",
+        "Não possui estacionamento",
+        "Outro"
+      ],
+      "allowOther": true,
+      "conditional": {
+        "dependsOn": "formaAtendimento",
+        "operator": "not_equals",
+        "value": "Atendimento 100% online"
+      }
+    },
+    {
+      "id": "idiomas",
+      "key": "idiomas",
+      "label": "Idiomas de Atendimento",
+      "type": "checkbox",
+      "required": false,
+      "enabled": true,
+      "order": 29,
+      "stepId": "structure",
+      "pageId": "general_structure",
+      "categoryId": "cat_structure",
+      "category": "A. Estrutura e Atendimento",
+      "options": [
+        "Português",
+        "Inglês",
+        "Espanhol",
+        "LIBRAS (Língua Brasileira de Sinais)"
+      ]
+    },
+    {
+      "id": "formasPagamento",
+      "key": "formasPagamento",
+      "label": "Formas de Pagamento Aceitas",
+      "type": "checkbox",
+      "required": true,
+      "enabled": true,
+      "order": 30,
+      "stepId": "structure",
+      "pageId": "general_structure",
+      "categoryId": "cat_payment",
+      "category": "B. Formas de Pagamento",
+      "options": [
+        "Pix",
+        "Dinheiro",
+        "Cartão de Crédito",
+        "Cartão de Débito",
+        "Boleto",
+        "Transferência Bancária",
+        "Outros"
+      ],
+      "allowOther": true
+    },
+    {
+      "id": "bandeirasCartao",
+      "key": "bandeirasCartao",
+      "label": "Bandeiras de Cartão Aceitas",
+      "type": "checkbox",
+      "required": false,
+      "enabled": true,
+      "order": 31,
+      "stepId": "structure",
+      "pageId": "general_structure",
+      "categoryId": "cat_payment",
+      "category": "B. Formas de Pagamento",
+      "options": [
+        "Visa",
+        "Mastercard",
+        "Elo",
+        "Hipercard",
+        "American Express (Amex)",
+        "Outra"
+      ],
+      "allowOther": true,
+      "conditional": {
+        "dependsOn": "formasPagamento",
+        "operator": "includes",
+        "value": "Cartão"
+      }
+    },
+    {
+      "id": "responsavelNome",
+      "key": "responsavelNome",
+      "label": "Nome do Responsável",
+      "placeholder": "Ex: Carlos Alberto da Silva",
+      "type": "text",
+      "required": true,
+      "enabled": true,
+      "order": 32,
+      "stepId": "manager",
+      "pageId": "general_structure",
+      "categoryId": "cat_manager",
+      "category": "C. Responsável pelo Projeto",
+      "colSpan": 1
+    },
+    {
+      "id": "responsavelCargo",
+      "key": "responsavelCargo",
+      "label": "Cargo / Função na Empresa",
+      "placeholder": "Ex: Proprietário, Diretor, Gerente...",
+      "type": "text",
+      "required": false,
+      "enabled": true,
+      "order": 33,
+      "stepId": "manager",
+      "pageId": "general_structure",
+      "categoryId": "cat_manager",
+      "category": "C. Responsável pelo Projeto",
+      "colSpan": 1
+    },
+    {
+      "id": "responsavelWhatsapp",
+      "key": "responsavelWhatsapp",
+      "label": "WhatsApp do Responsável",
+      "placeholder": "(11) 90000-0000",
+      "type": "tel",
+      "required": true,
+      "enabled": true,
+      "order": 34,
+      "stepId": "manager",
+      "pageId": "general_structure",
+      "categoryId": "cat_manager",
+      "category": "C. Responsável pelo Projeto",
+      "colSpan": 1
+    },
+    {
+      "id": "responsavelEmail",
+      "key": "responsavelEmail",
+      "label": "E-mail do Responsável",
+      "placeholder": "responsavel@suaempresa.com.br",
+      "type": "email",
+      "required": true,
+      "enabled": true,
+      "order": 35,
+      "stepId": "manager",
+      "pageId": "general_structure",
+      "categoryId": "cat_manager",
+      "category": "C. Responsável pelo Projeto",
+      "colSpan": 1
+    },
+    {
+      "id": "catalogoCompartilhado",
+      "key": "catalogoCompartilhado",
+      "label": "Produtos e Serviços da Empresa",
+      "helper": "Opcional: cadastre uma vez e escolha onde exibir (Perfil no Google, Site Institucional ou Mini Site). Empresas que prestam apenas serviços não precisam cadastrar produtos.",
+      "type": "shared_catalog",
+      "required": false,
+      "enabled": true,
+      "order": 36,
+      "stepId": "general_structure",
+      "pageId": "general_structure",
+      "categoryId": "cat_catalog",
+      "category": "D. Cadastro Compartilhado de Produtos e Serviços (Opcional)"
+    },
+    {
+      "id": "possuiMateriais",
+      "key": "possuiMateriais",
+      "label": "Já possui arquivos ou materiais digitais para compartilhar agora?",
+      "helper": "Não é obrigatório possuir os materiais neste momento.",
+      "type": "radio",
+      "required": false,
+      "enabled": true,
+      "order": 37,
+      "stepId": "materials",
+      "pageId": "general_structure",
+      "categoryId": "cat_materials",
+      "category": "E. Arquivos e Materiais Digitais",
+      "options": [
+        "Sim",
+        "Não possuo materiais no momento"
+      ]
+    },
+    {
+      "id": "tiposMateriais",
+      "key": "tiposMateriais",
+      "label": "Quais materiais deseja enviar?",
+      "type": "checkbox",
+      "required": false,
+      "enabled": true,
+      "order": 38,
+      "stepId": "materials",
+      "pageId": "general_structure",
+      "categoryId": "cat_materials",
+      "category": "E. Arquivos e Materiais Digitais",
+      "options": [
+        "Logotipo",
+        "Fotos do estabelecimento",
+        "Fotos da equipe",
+        "Fotos de produtos e serviços",
+        "Outros materiais relevantes"
+      ],
+      "conditional": {
+        "dependsOn": "possuiMateriais",
+        "operator": "equals",
+        "value": "Sim"
+      }
+    },
+    {
+      "id": "linkTransferNow",
+      "key": "linkTransferNow",
+      "label": "Link de Envio de Arquivos (TransferNow)",
+      "placeholder": "https://www.transfernow.net/dl/...",
+      "type": "url",
+      "required": false,
+      "enabled": true,
+      "order": 39,
+      "stepId": "materials",
+      "pageId": "general_structure",
+      "categoryId": "cat_materials",
+      "category": "E. Arquivos e Materiais Digitais",
+      "conditional": {
+        "dependsOn": "possuiMateriais",
+        "operator": "equals",
+        "value": "Sim"
+      },
+      "colSpan": 1
+    },
+    {
+      "id": "linksMateriais",
+      "key": "linksMateriais",
+      "label": "Link do Google Drive / Dropbox / OneDrive",
+      "placeholder": "https://drive.google.com/drive/folders/...",
+      "type": "url",
+      "required": false,
+      "enabled": true,
+      "order": 40,
+      "stepId": "materials",
+      "pageId": "general_structure",
+      "categoryId": "cat_materials",
+      "category": "E. Arquivos e Materiais Digitais",
+      "conditional": {
+        "dependsOn": "possuiMateriais",
+        "operator": "equals",
+        "value": "Sim"
+      },
+      "colSpan": 1
+    },
+    {
+      "id": "observacoesMateriais",
+      "key": "observacoesMateriais",
+      "label": "Observações sobre os Materiais",
+      "placeholder": "Ex: Pastas organizadas por serviços, logotipo em alta resolução...",
+      "type": "textarea",
+      "required": false,
+      "enabled": true,
+      "order": 41,
+      "stepId": "materials",
+      "pageId": "general_structure",
+      "categoryId": "cat_materials",
+      "category": "E. Arquivos e Materiais Digitais"
+    },
+    {
+      "id": "observacoesFinais",
+      "key": "observacoesFinais",
+      "label": "Observações Finais para a Equipe Localway",
+      "placeholder": "Alguma informação importante, expectativa ou prioridade que gostaria de ressaltar?",
+      "helper": "Campo opcional — compartilhe qualquer orientação adicional com nossa equipe",
+      "type": "textarea",
+      "required": false,
+      "enabled": true,
+      "order": 42,
+      "stepId": "final_notes",
+      "pageId": "general_structure",
+      "categoryId": "cat_final_notes",
+      "category": "F. Observações Finais"
+    }
+  ],
+  "categoriesConfig": [
+    {
+      "id": "cat_company",
+      "title": "A. Empresa",
+      "subtitle": "Dados cadastrais e canais principais de contato",
+      "pageId": "general_company",
+      "order": 1,
+      "icon": "Building2"
+    },
+    {
+      "id": "cat_address",
+      "title": "B. Endereço",
+      "subtitle": "Localização do negócio ou atendimento em região dos clientes",
+      "pageId": "general_company",
+      "order": 2,
+      "icon": "MapPin"
+    },
+    {
+      "id": "cat_hours",
+      "title": "C. Horários de Funcionamento e Agendamento",
+      "subtitle": "Dias, horários de atendimento e política de agendamento prévio",
+      "pageId": "general_company",
+      "order": 3,
+      "icon": "Clock"
+    },
+    {
+      "id": "cat_structure",
+      "title": "A. Estrutura e Atendimento",
+      "subtitle": "Formato de operação, acessibilidade e idiomas",
+      "pageId": "general_structure",
+      "order": 4,
+      "icon": "Layers"
+    },
+    {
+      "id": "cat_payment",
+      "title": "B. Formas de Pagamento",
+      "subtitle": "Modalidades aceitas e bandeiras de cartão",
+      "pageId": "general_structure",
+      "order": 5,
+      "icon": "CreditCard"
+    },
+    {
+      "id": "cat_manager",
+      "title": "C. Responsável pelo Projeto",
+      "subtitle": "Pessoa de contato principal para aprovações com a Localway",
+      "pageId": "general_structure",
+      "order": 6,
+      "icon": "UserCheck"
+    },
+    {
+      "id": "cat_catalog",
+      "title": "D. Cadastro Compartilhado de Produtos e Serviços (Opcional)",
+      "subtitle": "Cadastre seus itens uma única vez para reaproveitar em Google, Site e Mini Site",
+      "pageId": "general_structure",
+      "order": 7,
+      "icon": "PackagePlus"
+    },
+    {
+      "id": "cat_materials",
+      "title": "E. Arquivos e Materiais Digitais",
+      "subtitle": "Logotipo, fotos e links de pastas na nuvem",
+      "pageId": "general_structure",
+      "order": 8,
+      "icon": "FolderUp"
+    },
+    {
+      "id": "cat_final_notes",
+      "title": "F. Observações Finais",
+      "subtitle": "Orientações ou prioridades adicionais para nossa equipe",
+      "pageId": "general_structure",
+      "order": 9,
+      "icon": "MessageCircleHeart"
+    }
+  ],
+  "segmentsConfig": {
+    "Fotografia": {
+      "name": "Fotografia",
+      "category": "Artes Visuais",
+      "description": "Especialidades fotográficas, estilo de ensaios e formato de entrega",
+      "questions": [
+        {
+          "id": "foto_tipos_ensaios",
+          "label": "Quais são os principais tipos de ensaios e coberturas que você realiza?",
+          "type": "checkbox",
+          "options": [
+            "Casamentos e pré-wedding",
+            "Ensaios femininos / masculinos",
+            "Gestantes, parto e newborn",
+            "Eventos corporativos e institucionais",
+            "Formaturas e 15 anos",
+            "Fotografia gastronômica e produtos",
+            "Família e aniversários infantis",
+            "Outro tipo"
+          ],
+          "otherLabel": "Outro tipo",
+          "otherPlaceholder": "Qual outro tipo de ensaio ou cobertura?",
+          "helper": "Selecione todas as modalidades atendidas pelo estúdio/fotógrafo."
+        },
+        {
+          "id": "foto_formato_atendimento",
+          "label": "O atendimento é feito em estúdio próprio, externo ou ambos?",
+          "type": "radio",
+          "options": [
+            "Estúdio próprio com cenários",
+            "Locações externas e domicílio do cliente",
+            "Ambos (estúdio próprio e locações externas)",
+            "Outro formato de atendimento"
+          ],
+          "otherLabel": "Outro formato de atendimento",
+          "otherPlaceholder": "Qual outro formato de atendimento?"
+        },
+        {
+          "id": "foto_entrega_material",
+          "label": "Como funciona a entrega das fotos para os clientes?",
+          "type": "checkbox",
+          "options": [
+            "Galeria online com link para download em alta resolução",
+            "Pen drive ou mídia física personalizada",
+            "Álbuns fotográficos encadernados e impressos",
+            "Caixa com fotos reveladas em papel fine art",
+            "Outro formato de entrega"
+          ],
+          "otherLabel": "Outro formato de entrega",
+          "otherPlaceholder": "Qual outro formato de entrega?"
+        },
+        {
+          "id": "foto_prazo_entrega",
+          "label": "Qual é o prazo médio de entrega do material final tratado?",
+          "type": "radio",
+          "options": [
+            "Até 7 dias úteis",
+            "De 8 a 15 dias úteis",
+            "De 16 a 30 dias úteis",
+            "Mais de 30 dias (projetos editoriais / casamentos)",
+            "Outro prazo"
+          ],
+          "otherLabel": "Outro prazo",
+          "otherPlaceholder": "Qual o prazo de entrega?"
+        },
+        {
+          "id": "foto_atende_outras_cidades",
+          "label": "Atende em outras cidades ou estados além da sua sede?",
+          "type": "radio",
+          "options": [
+            "Sim, viajo para qualquer cidade/estado (com custos de deslocamento)",
+            "Sim, atendo na região metropolitana / cidades vizinhas",
+            "Não, atendo exclusivamente na cidade sede",
+            "Outra região de atendimento"
+          ],
+          "otherLabel": "Outra região de atendimento",
+          "otherPlaceholder": "Qual outra região ou abrangência?"
+        },
+        {
+          "id": "foto_diferenciais",
+          "label": "Algum diferencial marcante no seu estilo fotográfico ou direção?",
+          "placeholder": "Ex: Estilo documental espontâneo, edição com tons quentes e naturais, direção leve para quem nunca posou...",
+          "type": "text"
+        }
+      ]
+    },
+    "Barbearia": {
+      "name": "Barbearia",
+      "category": "Beleza Masculina",
+      "description": "Serviços de corte e barba, profissionais e experiência do cliente",
+      "questions": [
+        {
+          "id": "barba_principais_servicos",
+          "label": "Quais são os principais serviços oferecidos na barbearia?",
+          "type": "checkbox",
+          "options": [
+            "Corte de cabelo masculino tradicional / degradê",
+            "Barba completa com toalha quente e navalha",
+            "Pigmentação e camuflagem de fios brancos",
+            "Selagem, hidratação e alisamento capilar",
+            "Sobrancelha na navalha ou pinça",
+            "Dia do Noivo com pacote exclusivo",
+            "Limpeza de pele masculina / vapor de ozônio",
+            "Outro serviço"
+          ],
+          "otherLabel": "Outro serviço",
+          "otherPlaceholder": "Qual outro serviço?"
+        },
+        {
+          "id": "barba_modo_atendimento",
+          "label": "Como funciona o fluxo de atendimento?",
+          "type": "radio",
+          "options": [
+            "Apenas com agendamento prévio (app ou WhatsApp)",
+            "Por ordem de chegada e agendamento prévio",
+            "Exclusivamente por ordem de chegada",
+            "Outro formato de atendimento"
+          ],
+          "otherLabel": "Outro formato de atendimento",
+          "otherPlaceholder": "Como funciona o atendimento?"
+        },
+        {
+          "id": "barba_quantidade_profissionais",
+          "label": "Quantos barbeiros atendem na bancada?",
+          "type": "radio",
+          "options": [
+            "1 a 2 barbeiros",
+            "3 a 5 barbeiros",
+            "6 ou mais barbeiros"
+          ]
+        },
+        {
+          "id": "barba_venda_produtos",
+          "label": "Possui venda de produtos de cuidado masculino no balcão?",
+          "type": "radio",
+          "options": [
+            "Sim (pomadas modeladoras, óleos para barba, shampoos específicos)",
+            "Não comercializa produtos"
+          ]
+        },
+        {
+          "id": "barba_experiencia_cliente",
+          "label": "Quais comodidades a barbearia oferece aos clientes?",
+          "type": "checkbox",
+          "options": [
+            "Cerveja ou chopp artesanal cortesia",
+            "Café expresso especial",
+            "Videogame (PlayStation/Xbox) ou mesa de sinuca",
+            "Ambiente climatizado com TV e esportes",
+            "Wi-Fi liberado de alta velocidade",
+            "Outra comodidade"
+          ],
+          "otherLabel": "Outra comodidade",
+          "otherPlaceholder": "Qual outra comodidade ou diferencial?"
+        }
+      ]
+    },
+    "Locadora de veículos": {
+      "name": "Locadora de Veículos",
+      "category": "Mobilidade & Transporte",
+      "description": "Categorias de veículos, tipos de locação e requisitos exigidos",
+      "questions": [
+        {
+          "id": "loc_categorias_frota",
+          "label": "Quais categorias de veículos compõem a sua frota?",
+          "type": "checkbox",
+          "options": [
+            "Carros populares e econômicos (Hatch / Sedan 1.0)",
+            "Sedans médios e executivos",
+            "SUVs compactos e médios",
+            "Pick-ups e utilitários para carga/frete",
+            "Vans e minivans para transporte de passageiros",
+            "Veículos premium e blindados",
+            "Outra categoria de veículo"
+          ],
+          "otherLabel": "Outra categoria de veículo",
+          "otherPlaceholder": "Qual outra categoria de veículo?"
+        },
+        {
+          "id": "loc_foco_locacao",
+          "label": "Qual é o foco principal dos contratos de aluguel?",
+          "type": "checkbox",
+          "options": [
+            "Diárias para turismo e viagens familiares",
+            "Aluguel mensal para motoristas de aplicativo (Uber/99)",
+            "Terceirização e gestão de frotas para empresas (Pessoa Jurídica)",
+            "Locação mensal para pessoa física (assinatura)",
+            "Outro formato de locação"
+          ],
+          "otherLabel": "Outro formato de locação",
+          "otherPlaceholder": "Qual outro formato ou modalidade de locação?"
+        },
+        {
+          "id": "loc_entrega_aeroporto",
+          "label": "Realiza entrega e retirada de veículos fora da loja?",
+          "type": "radio",
+          "options": [
+            "Sim, entregamos e recolhemos no aeroporto, hotéis ou domicílio",
+            "Apenas retirada e devolução na sede da locadora",
+            "Outra forma de entrega/devolução"
+          ],
+          "otherLabel": "Outra forma de entrega/devolução",
+          "otherPlaceholder": "Como funciona a entrega e devolução?"
+        },
+        {
+          "id": "loc_requisitos_minimos",
+          "label": "Quais são os requisitos mínimos para o cliente alugar?",
+          "type": "checkbox",
+          "options": [
+            "CNH definitiva válida há pelo menos 2 anos",
+            "Idade mínima de 21 anos",
+            "Cartão de crédito em nome do titular para caução",
+            "Caução facilitada aceita via Pix ou depósito",
+            "Comprovante de residência recente",
+            "Outro requisito"
+          ],
+          "otherLabel": "Outro requisito",
+          "otherPlaceholder": "Qual outro requisito exigido?"
+        },
+        {
+          "id": "loc_coberturas_inclusas",
+          "label": "Quais coberturas e opcionais estão disponíveis?",
+          "type": "checkbox",
+          "options": [
+            "Proteção básica contra colisão, furto e roubo",
+            "Proteção para terceiros (danos materiais e corporais)",
+            "Opção de quilometragem livre (KM livre)",
+            "Condutor adicional gratuito",
+            "Cadeirinha para bebê / assento de elevação",
+            "Outro opcional ou cobertura"
+          ],
+          "otherLabel": "Outro opcional ou cobertura",
+          "otherPlaceholder": "Qual outro opcional ou proteção?"
+        }
+      ]
+    },
+    "Loja / concessionária de motos": {
+      "name": "Loja / Concessionária de Motos",
+      "category": "Veículos & Motocicletas",
+      "description": "Modelos comercializados, facilidades de compra e pós-venda",
+      "questions": [
+        {
+          "id": "moto_tipos_comercializados",
+          "label": "Quais tipos de motocicletas a loja comercializa?",
+          "type": "checkbox",
+          "options": [
+            "Motos novas (0 km)",
+            "Motos seminovas e usadas revisadas",
+            "Baixa cilindrada (até 160cc - para trabalho e dia a dia)",
+            "Média e alta cilindrada (trail, esportivas, custom, naked)",
+            "Scooters urbanas e motos elétricas",
+            "Outro tipo de veículo"
+          ],
+          "otherLabel": "Outro tipo de veículo",
+          "otherPlaceholder": "Qual outro tipo ou categoria?"
+        },
+        {
+          "id": "moto_marcas_principais",
+          "label": "Quais as marcas mais frequentes no estoque?",
+          "type": "checkbox",
+          "options": [
+            "Honda",
+            "Yamaha",
+            "BMW Motorrad",
+            "Shineray",
+            "Royal Enfield",
+            "Kawasaki",
+            "Triumph",
+            "Multimarcas em geral",
+            "Outra marca"
+          ],
+          "otherLabel": "Outra marca",
+          "otherPlaceholder": "Qual outra marca presente no estoque?"
+        },
+        {
+          "id": "moto_facilidades_compra",
+          "label": "Quais facilidades de compra e pagamento são oferecidas?",
+          "type": "checkbox",
+          "options": [
+            "Financiamento bancário em até 48x ou 60x",
+            "Aceitamos moto ou carro usado na troca com avaliação rápida",
+            "Venda e contemplação de consórcio",
+            "Parcelamento de entrada ou moto no cartão de crédito em até 18x/21x",
+            "Troca com troco",
+            "Outra facilidade de pagamento"
+          ],
+          "otherLabel": "Outra facilidade de pagamento",
+          "otherPlaceholder": "Qual outra facilidade oferecida?"
+        },
+        {
+          "id": "moto_oficina_acessorios",
+          "label": "A loja possui boutique de acessórios ou oficina mecânica?",
+          "type": "checkbox",
+          "options": [
+            "Venda de capacetes, jaquetas, luvas e capas",
+            "Oficina própria para revisão, revisões de garantia e pós-venda",
+            "Venda de peças de reposição e pneus",
+            "Não possui oficina (apenas showroom e vendas)",
+            "Outro serviço ou produto"
+          ],
+          "otherLabel": "Outro serviço ou produto",
+          "otherPlaceholder": "Qual outro serviço ou produto oferecido?"
+        },
+        {
+          "id": "moto_entrega_domicilio",
+          "label": "Realiza entrega da moto em domicílio ou envio regional?",
+          "type": "radio",
+          "options": [
+            "Sim, entregamos na residência do cliente via guincho ou carretinha",
+            "Apenas retirada presencial na concessionária",
+            "Outro formato de entrega"
+          ],
+          "otherLabel": "Outro formato de entrega",
+          "otherPlaceholder": "Como funciona o envio ou entrega?"
+        }
+      ]
+    },
+    "Moda / Loja de roupas": {
+      "name": "Moda / Loja de Roupas",
+      "category": "Vestuário & Moda",
+      "description": "Público da moda, canais de venda e política de provador",
+      "questions": [
+        {
+          "id": "moda_segmento_vestuario",
+          "label": "Qual é o nicho principal de vestuário da loja?",
+          "type": "checkbox",
+          "options": [
+            "Moda feminina casual e moderna",
+            "Moda masculina (casual, alfaiataria, streetwear)",
+            "Moda infantil e infanto-juvenil",
+            "Moda fitness e beachwear (praia)",
+            "Moda plus size",
+            "Moda festa, vestidos e ternos",
+            "Moda evangélica / modesta",
+            "Outro nicho de vestuário"
+          ],
+          "otherLabel": "Outro nicho de vestuário",
+          "otherPlaceholder": "Qual outro nicho de vestuário?"
+        },
+        {
+          "id": "moda_modelo_vendas",
+          "label": "Qual é o modelo principal de comercialização?",
+          "type": "radio",
+          "options": [
+            "Loja física com atendimento presencial e balcão",
+            "Loja física + Delivery local rápido (malinha / condicional)",
+            "Loja física + E-commerce com envio para todo o Brasil",
+            "100% online (atendimento via WhatsApp / Instagram)",
+            "Outro modelo de vendas"
+          ],
+          "otherLabel": "Outro modelo de vendas",
+          "otherPlaceholder": "Qual outro modelo de vendas?"
+        },
+        {
+          "id": "moda_origem_produtos",
+          "label": "Trabalha com confecção própria ou revenda multimarcas?",
+          "type": "radio",
+          "options": [
+            "Marca própria / confecção e fabricação exclusiva",
+            "Revenda multimarcas de marcas parceiras",
+            "Misto (marca própria + multimarcas selecionadas)",
+            "Outro formato de produção/revenda"
+          ],
+          "otherLabel": "Outro formato de produção/revenda",
+          "otherPlaceholder": "Como funciona a origem das peças?"
+        },
+        {
+          "id": "moda_frequencia_novidades",
+          "label": "Com que frequência chegam novas peças e coleções?",
+          "type": "radio",
+          "options": [
+            "Semanalmente (toda semana tem novidades no cabide)",
+            "A cada 15 dias",
+            "Mensalmente",
+            "Por grandes coleções de estações (Primavera/Verão e Outono/Inverno)",
+            "Outra frequência"
+          ],
+          "otherLabel": "Outra frequência",
+          "otherPlaceholder": "Com que frequência chegam novidades?"
+        },
+        {
+          "id": "moda_mala_condicional",
+          "label": "Oferece serviço de mala condicional (provador em domicílio)?",
+          "type": "radio",
+          "options": [
+            "Sim, enviamos mala de roupas para o cliente provar em casa sem compromisso",
+            "Não, as provas acontecem exclusivamente nos provadores da loja física"
+          ]
+        }
+      ]
+    },
+    "Semijoias, bijuterias e maquiagem": {
+      "name": "Semijoias, Bijuterias e Maquiagem",
+      "category": "Acessórios & Beleza",
+      "description": "Garantia de banho, produtos em destaque e canais de revenda",
+      "questions": [
+        {
+          "id": "semi_linhas_destaque",
+          "label": "Quais são as principais linhas de produtos comercializadas?",
+          "type": "checkbox",
+          "options": [
+            "Semijoias banhadas a ouro 18k e ródio branco",
+            "Prata 925 legítima",
+            "Bijuterias finas e tendências da moda",
+            "Maquiagens profissionais e dermocosméticos",
+            "Acessórios para cabelo, presilhas e tiaras",
+            "Bolsas, carteiras e nécessaires",
+            "Outro produto ou linha"
+          ],
+          "otherLabel": "Outro produto ou linha",
+          "otherPlaceholder": "Qual outra linha de produtos?"
+        },
+        {
+          "id": "semi_garantia_banho",
+          "label": "As semijoias contam com garantia do banho?",
+          "type": "radio",
+          "options": [
+            "Sim, com certificado de garantia de 6 meses a 1 ano",
+            "Sim, com garantia vitalícia no banho",
+            "São peças hipoalergênicas livres de níquel (níquel free)",
+            "Não se aplica (comércio exclusivo de bijuterias / maquiagem)",
+            "Outro tipo de garantia"
+          ],
+          "otherLabel": "Outro tipo de garantia",
+          "otherPlaceholder": "Como funciona a garantia?"
+        },
+        {
+          "id": "semi_canais_venda",
+          "label": "Quais são os principais canais de atendimento e venda?",
+          "type": "checkbox",
+          "options": [
+            "Loja física, quiosque ou showroom privativo",
+            "Vendas online pelo WhatsApp e direct do Instagram",
+            "Loja virtual própria com checkout online",
+            "Revendedoras parceiras (venda direta / consignada)",
+            "Outro canal de atendimento/venda"
+          ],
+          "otherLabel": "Outro canal de atendimento/venda",
+          "otherPlaceholder": "Qual outro canal de atendimento ou venda?"
+        },
+        {
+          "id": "semi_embalagens_presente",
+          "label": "A loja oferece embalagens especiais presenteáveis?",
+          "type": "radio",
+          "options": [
+            "Sim, todas as compras acompanham sacola e embalagem presenteável elegante",
+            "Sim, disponíveis como opção avulsa para presente",
+            "Apenas saquinhos protetores padrão"
+          ]
+        },
+        {
+          "id": "semi_venda_atacado",
+          "label": "A empresa também atua com venda no atacado ou revenda?",
+          "type": "radio",
+          "options": [
+            "Sim, temos condições e tabela especial para revendedoras e lojistas no atacado",
+            "Não, atuamos exclusivamente no varejo direto para o consumidor final"
+          ]
+        }
+      ]
+    }
+  },
+  "servicesConfig": {
+    "google": {
+      "id": "google",
+      "title": "Perfil da Empresa no Google",
+      "shortTitle": "Perfil no Google",
+      "tagline": "Presença no Google Maps e pesquisas locais",
+      "enabled": true,
+      "iconName": "MapPin",
+      "themeColor": "#2563EB",
+      "bgLight": "bg-blue-50/60",
+      "borderLight": "border-blue-500",
+      "textColor": "text-blue-600",
+      "ringColor": "ring-blue-500/20",
+      "questions": [
+        {
+          "id": "google_ja_possui",
+          "storageKey": "googleJaPossuiPerfil",
+          "label": "Sua empresa já possui um Perfil da Empresa no Google cadastrado?",
+          "type": "radio",
+          "options": [
+            "Sim, já temos e somos administradores",
+            "Sim, mas perdemos o acesso e precisamos recuperá-lo",
+            "Não possuímos perfil ou não temos certeza"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 1,
+          "category": "Situação Atual"
+        },
+        {
+          "id": "google_link_perfil",
+          "storageKey": "googleLinkPerfil",
+          "label": "Informe o link do seu Perfil da Empresa no Google",
+          "type": "url",
+          "placeholder": "https://maps.app.goo.gl/... ou https://www.google.com/maps/place/...",
+          "helper": "Cole o link do perfil atual para nossa equipe acessar ou verificar.",
+          "required": false,
+          "enabled": true,
+          "order": 2,
+          "category": "Link do Perfil",
+          "conditional": {
+            "dependsOn": "googleJaPossuiPerfil",
+            "operator": "includes",
+            "value": "Sim"
+          }
+        },
+        {
+          "id": "google_forma_atendimento",
+          "storageKey": "formaAtendimento",
+          "label": "Como funciona o atendimento da sua empresa?",
+          "type": "radio",
+          "options": [
+            "Atendemos clientes em nosso estabelecimento",
+            "Atendemos somente na região dos clientes",
+            "Trabalhamos das duas formas"
+          ],
+          "helper": "Reaproveitado automaticamente do onboarding geral quando já informado.",
+          "required": true,
+          "enabled": true,
+          "order": 3,
+          "category": "Atendimento"
+        },
+        {
+          "id": "google_area_atendimento",
+          "storageKey": "googleAreaAtendimento",
+          "label": "Quais bairros, cidades ou regiões sua empresa atende?",
+          "type": "text",
+          "placeholder": "Ex: Toda a cidade e bairros vizinhos (Centro, Aldeota, Meireles...)",
+          "helper": "Exibido para empresas que realizam atendimento na região dos clientes ou cobertura externa.",
+          "required": false,
+          "enabled": true,
+          "order": 4,
+          "category": "Área de Atendimento",
+          "conditional": {
+            "dependsOn": "formaAtendimento",
+            "operator": "not_equals",
+            "value": "Atendemos clientes em nosso estabelecimento"
+          }
+        },
+        {
+          "id": "google_destaques_catalogo",
+          "storageKey": "googleItensDestaqueIds",
+          "label": "Quais produtos ou serviços você gostaria de destacar no seu Perfil da Empresa no Google? (até 3 itens)",
+          "type": "services_catalog",
+          "helper": "Selecione itens do cadastro compartilhado ou adicione até 3 destaques opcionais.",
+          "required": false,
+          "enabled": true,
+          "order": 5,
+          "category": "Principais Produtos e Serviços"
+        },
+        {
+          "id": "google_info_adicionais",
+          "storageKey": "googleInfoAdicionais",
+          "label": "Informações complementares específicas para o Perfil no Google (opcional)",
+          "type": "textarea",
+          "placeholder": "Ex: Diferenciais, acessibilidade, atendimento bilíngue, correções urgentes no perfil atual...",
+          "required": false,
+          "enabled": true,
+          "order": 6,
+          "category": "Complementos"
+        }
+      ]
+    },
+    "site": {
+      "id": "site",
+      "title": "Site Institucional",
+      "shortTitle": "Site Institucional",
+      "tagline": "Apresentação completa da empresa, serviços, produtos e botões de contato (sem checkout)",
+      "enabled": true,
+      "iconName": "Globe",
+      "themeColor": "#EA580C",
+      "bgLight": "bg-orange-50/60",
+      "borderLight": "border-orange-500",
+      "textColor": "text-orange-600",
+      "ringColor": "ring-orange-500/20",
+      "questions": [
+        {
+          "id": "site_historia",
+          "storageKey": "siteHistoria",
+          "label": "Conte um pouco sobre a história da sua empresa",
+          "type": "textarea",
+          "placeholder": "Como surgiu, quando começou e como chegou até aqui...",
+          "helper": "Campo opcional — ajuda a construir uma página Sobre Nós autêntica.",
+          "required": false,
+          "enabled": true,
+          "order": 1,
+          "category": "A. História e Apresentação"
+        },
+        {
+          "id": "site_apresentar_responsavel",
+          "storageKey": "siteApresentarResponsavel",
+          "label": "Quem é o proprietário ou profissional responsável pela empresa? Deseja apresentar essa pessoa no site?",
+          "type": "yes_no",
+          "helper": "Reutiliza automaticamente os dados do responsável informados no onboarding geral.",
+          "required": false,
+          "enabled": true,
+          "order": 2,
+          "category": "A. História e Apresentação"
+        },
+        {
+          "id": "site_diferenciais",
+          "storageKey": "siteDiferenciais",
+          "label": "Quais são os principais diferenciais da sua empresa?",
+          "type": "checkbox",
+          "options": [
+            "Experiência e tradição",
+            "Atendimento personalizado",
+            "Qualidade",
+            "Agilidade",
+            "Praticidade",
+            "Preço competitivo",
+            "Profissionais especializados",
+            "Variedade de produtos e serviços",
+            "Outro"
+          ],
+          "allowOther": true,
+          "required": false,
+          "enabled": true,
+          "order": 3,
+          "category": "A. História e Apresentação"
+        },
+        {
+          "id": "site_publico_alvo",
+          "storageKey": "sitePublicoAlvo",
+          "label": "Quem são os principais clientes que sua empresa deseja alcançar?",
+          "type": "checkbox",
+          "options": [
+            "Famílias",
+            "Turistas",
+            "Homens",
+            "Mulheres",
+            "Crianças",
+            "Empresas",
+            "Público de determinada faixa etária",
+            "Outros"
+          ],
+          "allowOther": true,
+          "required": false,
+          "enabled": true,
+          "order": 4,
+          "category": "A. História e Apresentação"
+        },
+        {
+          "id": "site_servicos_lista",
+          "storageKey": "siteServicosSelecionadosIds",
+          "label": "Quais serviços sua empresa oferece?",
+          "type": "services_catalog",
+          "helper": "Cadastre ou selecione quantos serviços desejar, sem limite de quantidade.",
+          "required": false,
+          "enabled": true,
+          "order": 5,
+          "category": "B. Serviços"
+        },
+        {
+          "id": "site_comercializa_produtos",
+          "storageKey": "siteComercializaProdutos",
+          "label": "Sua empresa também comercializa produtos?",
+          "type": "yes_no",
+          "helper": "Empresas que prestam somente serviços podem marcar Não.",
+          "required": false,
+          "enabled": true,
+          "order": 6,
+          "category": "C. Produtos"
+        },
+        {
+          "id": "site_produtos_lista",
+          "storageKey": "siteProdutosSelecionadosIds",
+          "label": "Quais produtos deseja apresentar no site?",
+          "type": "products_catalog",
+          "helper": "Selecione produtos já cadastrados ou adicione novos com preço/valor inicial e variações.",
+          "required": false,
+          "enabled": true,
+          "order": 7,
+          "category": "C. Produtos",
+          "conditional": {
+            "dependsOn": "siteComercializaProdutos",
+            "operator": "equals",
+            "value": "Sim"
+          }
+        },
+        {
+          "id": "site_processo_atendimento",
+          "storageKey": "siteProcessoAtendimento",
+          "label": "Como funciona o processo de atendimento ou contratação dos seus serviços e produtos?",
+          "type": "checkbox",
+          "options": [
+            "O cliente entra em contato pelo WhatsApp",
+            "O cliente agenda um horário",
+            "O cliente solicita um orçamento",
+            "O cliente vai até o estabelecimento",
+            "A empresa realiza entregas",
+            "O cliente solicita informações pelo site",
+            "Outro"
+          ],
+          "allowOther": true,
+          "required": false,
+          "enabled": true,
+          "order": 8,
+          "category": "D. Atendimento e Contratação"
+        },
+        {
+          "id": "site_orientacao_pre_contratacao",
+          "storageKey": "siteOrientacaoPreContratacao",
+          "label": "Existe alguma orientação importante que o cliente precisa conhecer antes de contratar um serviço ou adquirir um produto?",
+          "type": "textarea",
+          "placeholder": "Ex: Necessidade de agendamento, prazos, condições de entrega, documentação necessária...",
+          "required": false,
+          "enabled": true,
+          "order": 9,
+          "category": "D. Atendimento e Contratação"
+        },
+        {
+          "id": "site_apresentar_equipe",
+          "storageKey": "siteApresentarEquipeTipo",
+          "label": "Você gostaria de apresentar o proprietário, os profissionais ou a equipe no site?",
+          "type": "radio",
+          "options": [
+            "Somente o proprietário",
+            "Somente a equipe",
+            "Proprietário e equipe",
+            "Não desejo apresentar pessoas"
+          ],
+          "required": false,
+          "enabled": true,
+          "order": 10,
+          "category": "E. Materiais e Apresentação"
+        },
+        {
+          "id": "site_possui_videos",
+          "storageKey": "sitePossuiVideos",
+          "label": "Possui vídeos que gostaria de utilizar no site?",
+          "type": "radio",
+          "options": [
+            "Sim, tenho vídeos para compartilhar",
+            "Não tenho",
+            "Gostaria de produzir futuramente"
+          ],
+          "required": false,
+          "enabled": true,
+          "order": 11,
+          "category": "E. Materiais e Apresentação"
+        },
+        {
+          "id": "site_secoes_adicionais",
+          "storageKey": "siteSecoesAdicionais",
+          "label": "Quais seções adicionais você gostaria de ter no site, além da estrutura padrão da Localway?",
+          "type": "checkbox",
+          "options": [
+            "Sobre nós",
+            "Nossa equipe",
+            "Galeria de fotos",
+            "Perguntas frequentes",
+            "Depoimentos de clientes",
+            "Portfólio de trabalhos realizados",
+            "Blog",
+            "Outras"
+          ],
+          "allowOther": true,
+          "required": false,
+          "enabled": true,
+          "order": 12,
+          "category": "F. Seções Complementares"
+        },
+        {
+          "id": "site_duvidas_frequentes",
+          "storageKey": "siteDuvidasFrequentes",
+          "label": "Quais dúvidas seus clientes costumam ter antes de contratar ou comprar?",
+          "type": "textarea",
+          "placeholder": "Liste as perguntas mais comuns para criarmos uma seção de Perguntas Frequentes...",
+          "required": false,
+          "enabled": true,
+          "order": 13,
+          "category": "F. Seções Complementares"
+        },
+        {
+          "id": "site_objetivo_principal",
+          "storageKey": "siteObjetivoPrincipal",
+          "label": "Qual é o principal objetivo que você espera alcançar com o site?",
+          "type": "radio",
+          "options": [
+            "Receber contatos pelo WhatsApp",
+            "Receber pedidos de orçamento",
+            "Gerar agendamentos",
+            "Apresentar a empresa e seus serviços",
+            "Gerar vendas",
+            "Fortalecer a presença digital da empresa"
+          ],
+          "required": false,
+          "enabled": true,
+          "order": 14,
+          "category": "F. Seções Complementares"
+        }
+      ]
+    },
+    "minisite": {
+      "id": "minisite",
+      "title": "Mini Site",
+      "shortTitle": "Mini Site",
+      "tagline": "Página rápida para bio, links estratégicos, destaques, Wi-Fi e Pix",
+      "enabled": true,
+      "iconName": "Smartphone",
+      "themeColor": "#16A34A",
+      "bgLight": "bg-green-50/60",
+      "borderLight": "border-green-500",
+      "textColor": "text-green-600",
+      "ringColor": "ring-green-500/20",
+      "questions": [
+        {
+          "id": "minisite_botoes",
+          "storageKey": "minisiteInformacoes",
+          "label": "Quais links e botões você deseja destacar no seu mini site?",
+          "type": "checkbox",
+          "options": [
+            "WhatsApp",
+            "Instagram",
+            "Facebook",
+            "Site oficial",
+            "Localização / Como chegar",
+            "Avaliações no Google",
+            "Catálogo / Cardápio",
+            "Outros"
+          ],
+          "helper": "Os dados já informados no onboarding geral serão reaproveitados automaticamente.",
+          "allowOther": true,
+          "required": true,
+          "enabled": true,
+          "order": 1,
+          "category": "Links e Botões"
+        },
+        {
+          "id": "minisite_apresentacao",
+          "storageKey": "minisiteApresentacao",
+          "label": "Qual frase de apresentação, slogan ou descrição você gostaria de utilizar no mini site?",
+          "type": "textarea",
+          "placeholder": "Deixe em branco caso queira que a Localway crie uma apresentação profissional para você.",
+          "helper": "Se não possuir slogan, a equipe Localway pode criar uma apresentação personalizada.",
+          "required": false,
+          "enabled": true,
+          "order": 2,
+          "category": "Apresentação"
+        },
+        {
+          "id": "minisite_destaques",
+          "storageKey": "minisiteItensDestaqueIds",
+          "label": "Quais produtos ou serviços você deseja destacar no mini site? (até 3 destaques)",
+          "type": "services_catalog",
+          "helper": "Selecione itens do cadastro compartilhado ou adicione até 3 destaques opcionais.",
+          "required": false,
+          "enabled": true,
+          "order": 3,
+          "category": "Destaques"
+        },
+        {
+          "id": "minisite_catalogo_possui",
+          "storageKey": "minisiteCatalogoPossui",
+          "label": "Sua empresa possui catálogo digital, cardápio ou lista de produtos e serviços?",
+          "type": "radio",
+          "options": [
+            "Sim, tenho um link",
+            "Sim, tenho um arquivo ou PDF",
+            "Não possuo"
+          ],
+          "required": false,
+          "enabled": true,
+          "order": 4,
+          "category": "Catálogo Digital"
+        },
+        {
+          "id": "minisite_catalogo_link",
+          "storageKey": "minisiteCatalogoLink",
+          "label": "Informe o link do catálogo ou cardápio digital",
+          "type": "url",
+          "placeholder": "https://...",
+          "required": false,
+          "enabled": true,
+          "order": 5,
+          "category": "Catálogo Digital",
+          "conditional": {
+            "dependsOn": "minisiteCatalogoPossui",
+            "operator": "equals",
+            "value": "Sim, tenho um link"
+          }
+        },
+        {
+          "id": "minisite_catalogo_arquivo",
+          "storageKey": "minisiteCatalogoArquivo",
+          "label": "Envie ou informe o arquivo/PDF do catálogo",
+          "type": "file",
+          "required": false,
+          "enabled": true,
+          "order": 6,
+          "category": "Catálogo Digital",
+          "conditional": {
+            "dependsOn": "minisiteCatalogoPossui",
+            "operator": "equals",
+            "value": "Sim, tenho um arquivo ou PDF"
+          }
+        },
+        {
+          "id": "minisite_cores_desejadas",
+          "storageKey": "minisiteCoresDesejadas",
+          "label": "Quais cores gostaria de utilizar no mini site?",
+          "type": "text",
+          "placeholder": "Ex: Azul escuro e branco, tons neutros...",
+          "required": false,
+          "enabled": true,
+          "order": 7,
+          "category": "Preferências Visuais"
+        },
+        {
+          "id": "minisite_cores_evitar",
+          "storageKey": "minisiteCoresEvitar",
+          "label": "Quais cores prefere evitar?",
+          "type": "text",
+          "placeholder": "Ex: Amarelo neon, roxo...",
+          "required": false,
+          "enabled": true,
+          "order": 8,
+          "category": "Preferências Visuais"
+        },
+        {
+          "id": "minisite_referencia",
+          "storageKey": "minisiteReferenciaVisual",
+          "label": "Existe algum site ou mini site que você utiliza como referência?",
+          "type": "url",
+          "placeholder": "https://...",
+          "required": false,
+          "enabled": true,
+          "order": 9,
+          "category": "Referência Visual"
+        },
+        {
+          "id": "minisite_recursos_adicionais",
+          "storageKey": "minisiteRecursosAdicionais",
+          "label": "Quais recursos adicionais você gostaria de disponibilizar no mini site?",
+          "type": "checkbox",
+          "options": [
+            "Wi-Fi",
+            "Pix",
+            "Horários de funcionamento",
+            "Endereço e localização",
+            "Outros"
+          ],
+          "allowOther": true,
+          "required": false,
+          "enabled": true,
+          "order": 10,
+          "category": "Recursos Adicionais"
+        }
+      ]
+    },
+    "ecommerce": {
+      "id": "ecommerce",
+      "title": "Loja Virtual / E-commerce",
+      "shortTitle": "Loja Virtual",
+      "tagline": "Vendas de produtos na internet com checkout",
+      "enabled": false,
+      "iconName": "ShoppingBag",
+      "themeColor": "#0D9488",
+      "bgLight": "bg-teal-50/60",
+      "borderLight": "border-teal-500",
+      "textColor": "text-teal-600",
+      "ringColor": "ring-teal-500/20",
+      "questions": [
+        {
+          "id": "ecommerce_qtd_produtos",
+          "label": "Quantidade estimada de produtos no catálogo inicial",
+          "type": "number",
+          "placeholder": "Ex: 50",
+          "required": true,
+          "enabled": true,
+          "order": 1
+        },
+        {
+          "id": "ecommerce_fotos",
+          "label": "Possui fotos individuais dos produtos em boa qualidade?",
+          "type": "yes_no",
+          "required": true,
+          "enabled": true,
+          "order": 2
+        },
+        {
+          "id": "ecommerce_variacoes",
+          "label": "Os produtos possuem variações de tamanho, cor ou modelo?",
+          "type": "radio",
+          "options": [
+            "Sim, grades com tamanhos e cores diferentes",
+            "Não, produtos de modelo único",
+            "Apenas alguns itens específicos"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 3
+        },
+        {
+          "id": "ecommerce_pagamentos",
+          "label": "Meios de pagamento prioritários para a loja",
+          "type": "checkbox",
+          "options": [
+            "Pix automático com confirmação imediata",
+            "Cartão de crédito parcelado",
+            "Boleto bancário",
+            "Link de pagamento Mercado Pago / Asaas / PagSeguro"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 4
+        },
+        {
+          "id": "ecommerce_frete",
+          "label": "Modalidade principal de entrega e logística",
+          "type": "radio",
+          "options": [
+            "Correios e transportadoras com cálculo automático",
+            "Entrega própria por motoboy na cidade",
+            "Retirada presencial na loja física",
+            "Produtos digitais / download sem frete"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 5
+        }
+      ]
+    },
+    "plaquinha": {
+      "id": "plaquinha",
+      "title": "Plaquinha Inteligente QR Code / NFC",
+      "shortTitle": "Plaquinha Inteligente",
+      "tagline": "Plaquinha interativa para balcão direcionando para Google, Instagram ou WhatsApp",
+      "enabled": false,
+      "iconName": "QrCode",
+      "themeColor": "#D97706",
+      "bgLight": "bg-amber-50/60",
+      "borderLight": "border-amber-500",
+      "textColor": "text-amber-600",
+      "ringColor": "ring-amber-500/20",
+      "questions": [
+        {
+          "id": "plaquinha_destino",
+          "label": "Qual é o destino prioritário da Plaquinha Inteligente?",
+          "type": "radio",
+          "options": [
+            "Avaliações no Google Maps (Aumenta o ranking local)",
+            "Instagram oficial da empresa",
+            "WhatsApp direto de atendimento",
+            "Mini Site com todos os canais"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 1
+        },
+        {
+          "id": "plaquinha_qtd",
+          "label": "Quantidade de plaquinhas para o estabelecimento",
+          "type": "number",
+          "placeholder": "Ex: 2",
+          "required": true,
+          "enabled": true,
+          "order": 2
+        },
+        {
+          "id": "plaquinha_obs",
+          "label": "Observações de instalação ou localização das plaquinhas",
+          "type": "textarea",
+          "placeholder": "Ex: Uma no balcão de checkout e outra na recepção...",
+          "required": false,
+          "enabled": true,
+          "order": 3
+        }
+      ]
+    },
+    "trafego": {
+      "id": "trafego",
+      "title": "Tráfego Pago",
+      "shortTitle": "Tráfego Pago",
+      "tagline": "Anúncios no Google Ads, Instagram e Facebook",
+      "enabled": false,
+      "iconName": "TrendingUp",
+      "themeColor": "#4F46E5",
+      "bgLight": "bg-indigo-50/60",
+      "borderLight": "border-indigo-500",
+      "textColor": "text-indigo-600",
+      "ringColor": "ring-indigo-500/20",
+      "questions": [
+        {
+          "id": "trafego_plataformas",
+          "label": "Plataformas de anúncios prioritárias para sua estratégia",
+          "type": "checkbox",
+          "options": [
+            "Google Ads (Pesquisa no Google e Maps)",
+            "Instagram e Facebook (Meta Ads)",
+            "YouTube Ads",
+            "TikTok Ads",
+            "Recomendação estratégica da equipe Localway"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 1
+        },
+        {
+          "id": "trafego_orcamento",
+          "label": "Investimento mensal estimado em mídia (anúncios)",
+          "type": "radio",
+          "options": [
+            "R$ 500 a R$ 1.500/mês",
+            "R$ 1.500 a R$ 3.000/mês",
+            "R$ 3.000 a R$ 6.000/mês",
+            "Acima de R$ 6.000/mês"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 2
+        },
+        {
+          "id": "trafego_ja_anunciou",
+          "label": "Sua empresa já realizou anúncios pagos anteriormente?",
+          "type": "yes_no",
+          "required": true,
+          "enabled": true,
+          "order": 3
+        },
+        {
+          "id": "trafego_publico",
+          "label": "Descrição do cliente ideal (público-alvo, faixa etária, localização)",
+          "type": "textarea",
+          "placeholder": "Ex: Homens e mulheres de 25 a 55 anos residentes nos bairros...",
+          "required": true,
+          "enabled": true,
+          "order": 4
+        }
+      ]
+    },
+    "identidade": {
+      "id": "identidade",
+      "title": "Identidade Visual",
+      "shortTitle": "Identidade Visual",
+      "tagline": "Logotipo, paleta de cores e padrões visuais",
+      "enabled": false,
+      "iconName": "Palette",
+      "themeColor": "#DC2626",
+      "bgLight": "bg-red-50/60",
+      "borderLight": "border-red-500",
+      "textColor": "text-red-600",
+      "ringColor": "ring-red-500/20",
+      "questions": [
+        {
+          "id": "identidade_situacao",
+          "label": "Qual é o momento atual da marca?",
+          "type": "radio",
+          "options": [
+            "Criação de logotipo do zero absoluto",
+            "Redesign e modernização de marca existente",
+            "Vetorização e padronização em alta resolução"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 1
+        },
+        {
+          "id": "identidade_cores_desejadas",
+          "label": "Cores de preferência para a identidade visual",
+          "type": "text",
+          "placeholder": "Ex: Azul marinho, dourado e tons neutros",
+          "required": false,
+          "enabled": true,
+          "order": 2
+        },
+        {
+          "id": "identidade_percepcao",
+          "label": "Qual percepção a marca deve transmitir ao público?",
+          "type": "checkbox",
+          "options": [
+            "Modernidade e inovação tecnológica",
+            "Sofisticação, requinte e alto padrão",
+            "Acolhimento, calor humano e proximidade",
+            "Tradição, solidez e segurança jurídica",
+            "Custo-benefício, rapidez e eficiência"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 3
+        },
+        {
+          "id": "identidade_referencias",
+          "label": "Upload de referências visuais ou marcas que admira",
+          "type": "file",
+          "helper": "Envie imagens ou arquivos que representem o estilo visual que deseja.",
+          "required": false,
+          "enabled": true,
+          "order": 4
+        }
+      ]
+    },
+    "seo": {
+      "id": "seo",
+      "title": "SEO Local",
+      "shortTitle": "SEO Local",
+      "tagline": "Otimização orgânica para motores de busca",
+      "enabled": false,
+      "iconName": "Search",
+      "themeColor": "#9333EA",
+      "bgLight": "bg-purple-50/60",
+      "borderLight": "border-purple-500",
+      "textColor": "text-purple-600",
+      "ringColor": "ring-purple-500/20",
+      "questions": [
+        {
+          "id": "seo_termos",
+          "label": "Principais termos e palavras-chave que seus clientes usam na busca",
+          "type": "textarea",
+          "placeholder": "Ex: pizzaria delivery perto de mim, conserto de ar condicionado em...",
+          "required": true,
+          "enabled": true,
+          "order": 1
+        },
+        {
+          "id": "seo_concorrentes",
+          "label": "Quais concorrentes aparecem primeiro nas buscas da sua região?",
+          "type": "textarea",
+          "placeholder": "Cite os nomes ou sites que disputam o topo com você...",
+          "required": false,
+          "enabled": true,
+          "order": 2
+        },
+        {
+          "id": "seo_raio",
+          "label": "Região geográfica de prioridade para ranqueamento",
+          "type": "radio",
+          "options": [
+            "Apenas o bairro e arredores imediatos",
+            "Toda a cidade",
+            "Região metropolitana / cidades vizinhas",
+            "Nível estadual ou nacional"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 3
+        }
+      ]
+    },
+    "automacoes": {
+      "id": "automacoes",
+      "title": "Sistemas e Automações",
+      "shortTitle": "Sistemas & Automações",
+      "tagline": "Integrações, fluxos inteligentes e ferramentas",
+      "enabled": false,
+      "iconName": "Cpu",
+      "themeColor": "#0284C7",
+      "bgLight": "bg-sky-50/60",
+      "borderLight": "border-sky-500",
+      "textColor": "text-sky-600",
+      "ringColor": "ring-sky-500/20",
+      "questions": [
+        {
+          "id": "automacoes_processo",
+          "label": "Qual fluxo ou rotina você mais precisa automatizar?",
+          "type": "textarea",
+          "placeholder": "Descreva a tarefa repetitiva que consome tempo da sua equipe...",
+          "required": true,
+          "enabled": true,
+          "order": 1
+        },
+        {
+          "id": "automacoes_ferramentas",
+          "label": "Quais sistemas, CRMs ou ferramentas sua empresa já utiliza?",
+          "type": "text",
+          "placeholder": "Ex: Trello, Google Sheets, WhatsApp, Asaas, Tiny, Bling...",
+          "required": false,
+          "enabled": true,
+          "order": 2
+        },
+        {
+          "id": "automacoes_objetivo",
+          "label": "Objetivo prioritário da automação",
+          "type": "radio",
+          "options": [
+            "Atendimento e triagem 24h no WhatsApp",
+            "Sincronização de pedidos com planilha/sistema",
+            "Lembretes automáticos de agendamento e pós-venda",
+            "Notificações em tempo real para a equipe"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 3
+        }
+      ]
+    },
+    "whatsapp": {
+      "id": "whatsapp",
+      "title": "WhatsApp Business",
+      "shortTitle": "WhatsApp Business",
+      "tagline": "Configuração profissional, catálogo e mensagens",
+      "enabled": false,
+      "iconName": "MessageSquare",
+      "themeColor": "#22C55E",
+      "bgLight": "bg-emerald-50/60",
+      "borderLight": "border-emerald-500",
+      "textColor": "text-emerald-600",
+      "ringColor": "ring-emerald-500/20",
+      "questions": [
+        {
+          "id": "whatsapp_ja_possui",
+          "label": "O número já está em formato WhatsApp Business no aplicativo?",
+          "type": "yes_no",
+          "required": true,
+          "enabled": true,
+          "order": 1
+        },
+        {
+          "id": "whatsapp_numero",
+          "label": "Número de WhatsApp a ser configurado",
+          "type": "text",
+          "placeholder": "(00) 00000-0000",
+          "required": true,
+          "enabled": true,
+          "order": 2
+        },
+        {
+          "id": "whatsapp_catalogo",
+          "label": "Deseja que a Localway cadastre catálogo de produtos/serviços no WhatsApp?",
+          "type": "radio",
+          "options": [
+            "Sim, cadastrar catálogo completo com fotos e preços",
+            "Apenas configurar perfil profissional e mensagens automáticas",
+            "Já possuímos catálogo montado"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 3
+        }
+      ]
+    },
+    "email": {
+      "id": "email",
+      "title": "E-mail Profissional",
+      "shortTitle": "E-mail Corporativo",
+      "tagline": "Caixas de e-mail com o domínio da sua empresa",
+      "enabled": false,
+      "iconName": "Mail",
+      "themeColor": "#0891B2",
+      "bgLight": "bg-cyan-50/60",
+      "borderLight": "border-cyan-500",
+      "textColor": "text-cyan-600",
+      "ringColor": "ring-cyan-500/20",
+      "questions": [
+        {
+          "id": "email_dominio",
+          "label": "Domínio utilizado para as contas de e-mail",
+          "type": "text",
+          "placeholder": "suaempresa.com.br",
+          "required": true,
+          "enabled": true,
+          "order": 1
+        },
+        {
+          "id": "email_qtd",
+          "label": "Quantidade de caixas de e-mail necessárias",
+          "type": "number",
+          "placeholder": "Ex: 3",
+          "required": true,
+          "enabled": true,
+          "order": 2
+        },
+        {
+          "id": "email_contas",
+          "label": "Nomes das contas desejadas (uma por linha)",
+          "type": "textarea",
+          "placeholder": "contato@suaempresa.com.br\nvendas@suaempresa.com.br",
+          "required": true,
+          "enabled": true,
+          "order": 3
+        }
+      ]
+    },
+    "assinatura_email": {
+      "id": "assinatura_email",
+      "title": "Assinatura de E-mail Profissional",
+      "shortTitle": "Assinatura de E-mail",
+      "tagline": "Assinaturas padronizadas e elegantes para sua equipe",
+      "enabled": false,
+      "iconName": "FileSignature",
+      "themeColor": "#0EA5E9",
+      "bgLight": "bg-sky-50/60",
+      "borderLight": "border-sky-500",
+      "textColor": "text-sky-600",
+      "ringColor": "ring-sky-500/20",
+      "questions": [
+        {
+          "id": "assinatura_qtd",
+          "label": "Quantas pessoas da equipe receberão assinatura padronizada?",
+          "type": "number",
+          "placeholder": "Ex: 4",
+          "required": true,
+          "enabled": true,
+          "order": 1
+        },
+        {
+          "id": "assinatura_elementos",
+          "label": "Quais informações devem constar na assinatura?",
+          "type": "checkbox",
+          "options": [
+            "Nome completo e Cargo",
+            "Telefone comercial / WhatsApp",
+            "E-mail corporativo",
+            "Logotipo da empresa",
+            "Link do site e redes sociais",
+            "Endereço físico da empresa"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 2
+        }
+      ]
+    },
+    "registro_marca": {
+      "id": "registro_marca",
+      "title": "Registro de Marca",
+      "shortTitle": "Registro de Marca",
+      "tagline": "Proteção jurídica e exclusividade no INPI",
+      "enabled": false,
+      "iconName": "ShieldCheck",
+      "themeColor": "#9F1239",
+      "bgLight": "bg-rose-50/60",
+      "borderLight": "border-rose-600",
+      "textColor": "text-rose-700",
+      "ringColor": "ring-rose-500/20",
+      "questions": [
+        {
+          "id": "marca_nome",
+          "label": "Qual é o nome exato da marca a ser protegida no INPI?",
+          "type": "text",
+          "placeholder": "Ex: Localway",
+          "required": true,
+          "enabled": true,
+          "order": 1
+        },
+        {
+          "id": "marca_segmento",
+          "label": "Qual o ramo ou atividade comercial em que a marca atua?",
+          "type": "text",
+          "placeholder": "Ex: Comércio varejista de vestuário e calçados",
+          "required": true,
+          "enabled": true,
+          "order": 2
+        },
+        {
+          "id": "marca_busca_previa",
+          "label": "Já realizou alguma pesquisa prévia de anterioridade no INPI?",
+          "type": "yes_no",
+          "required": true,
+          "enabled": true,
+          "order": 3
+        }
+      ]
+    },
+    "registro_dominio": {
+      "id": "registro_dominio",
+      "title": "Registro de Domínio",
+      "shortTitle": "Registro de Domínio",
+      "tagline": "Garantia do seu endereço .com.br ou .com na internet",
+      "enabled": false,
+      "iconName": "AtSign",
+      "themeColor": "#334155",
+      "bgLight": "bg-slate-100/60",
+      "borderLight": "border-slate-500",
+      "textColor": "text-slate-700",
+      "ringColor": "ring-slate-500/20",
+      "questions": [
+        {
+          "id": "dominio_nome",
+          "label": "Nome de domínio desejado para registro",
+          "type": "text",
+          "placeholder": "Ex: nomedasuaempresa",
+          "required": true,
+          "enabled": true,
+          "order": 1
+        },
+        {
+          "id": "dominio_extensao",
+          "label": "Extensão de domínio prioritária",
+          "type": "radio",
+          "options": [
+            ".com.br (Recomendado para o Brasil)",
+            ".com (Internacional)",
+            ".com.br e .com (Registrar ambos para proteção)",
+            "Outra extensão específica (.adv.br, .med.br, .org)"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 2
+        },
+        {
+          "id": "dominio_documento",
+          "label": "CNPJ ou CPF do titular para o registro oficial no Registro.br",
+          "type": "text",
+          "placeholder": "00.000.000/0000-00",
+          "required": false,
+          "enabled": true,
+          "order": 3
+        }
+      ]
+    },
+    "catalogo": {
+      "id": "catalogo",
+      "title": "Catálogo de Produtos e Serviços",
+      "shortTitle": "Catálogo Digital",
+      "tagline": "Apresentação estruturada de produtos, fotos e valores para clientes",
+      "enabled": false,
+      "iconName": "BookOpen",
+      "themeColor": "#059669",
+      "bgLight": "bg-emerald-50/60",
+      "borderLight": "border-emerald-500",
+      "textColor": "text-emerald-600",
+      "ringColor": "ring-emerald-500/20",
+      "questions": [
+        {
+          "id": "catalogo_formato",
+          "label": "Formato preferido para o catálogo",
+          "type": "radio",
+          "options": [
+            "Catálogo em PDF de alta resolução para envio no WhatsApp",
+            "Catálogo interativo online com links diretos",
+            "Apresentação institucional completa"
+          ],
+          "required": true,
+          "enabled": true,
+          "order": 1
+        },
+        {
+          "id": "catalogo_qtd",
+          "label": "Quantidade estimada de produtos/serviços no catálogo",
+          "type": "number",
+          "placeholder": "Ex: 20",
+          "required": true,
+          "enabled": true,
+          "order": 2
+        },
+        {
+          "id": "catalogo_precos",
+          "label": "Deseja exibir os preços de forma visível no catálogo?",
+          "type": "yes_no",
+          "required": true,
+          "enabled": true,
+          "order": 3
+        }
+      ]
+    }
+  },
+  "settings": {
+    "googleScriptUrl": "https://script.google.com/macros/s/AKfycbyuYdO4N3qStGn8W7dwXjd4AuVS627iIKJxxD0S6XED9Xv71Gn4zRo86v4-Ag2KdOE9cQ/exec",
+    "transferNowUrl": "https://www.transfernow.net",
+    "supabaseUrl": "",
+    "supabaseAnonKey": ""
+  }
+}

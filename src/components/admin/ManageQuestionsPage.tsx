@@ -38,14 +38,24 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { CompanyDataEditor } from './CompanyDataEditor';
-import { OnboardingFieldsManager } from './OnboardingFieldsManager';
-import { SegmentsAndQuestionsManager } from './SegmentsAndQuestionsManager';
 import { ServicesManager } from './ServicesManager';
-import { UniversalQuestionsManager } from './UniversalQuestionsManager';
+import { CentralFormManager } from './CentralFormManager';
 import { LocalAIChat } from './LocalAIChat';
 import { DEFAULT_SERVICES_CONFIG } from '../../constants/services';
 import { ManagedServiceConfig, ServiceId } from '../../types';
-import { DEFAULT_ONBOARDING_FIELDS, OnboardingFieldConfig } from '../../constants/formSchema';
+import {
+  DEFAULT_ONBOARDING_FIELDS,
+  DEFAULT_CATEGORIES_CONFIG,
+  FormCategoryConfig,
+  OnboardingFieldConfig,
+  migrateSchema,
+} from '../../constants/formSchema';
+import {
+  saveSchemaToFirestore,
+  saveSettingsToFirestore,
+  loadSettingsFromFirestore,
+  loadSubmissionsFromFirestore,
+} from '../../services/firebaseDb';
 import { initGoogleAuth, googleSignIn, googleLogout } from '../../services/googleAuth';
 import { listUserSpreadsheets, createOnboardingSpreadsheet, GoogleSheetFile } from '../../services/googleSheets';
 import { GoogleSignInButton } from '../GoogleSignInButton';
@@ -81,7 +91,7 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
   const normalizeTab = (
     tab: AdminTabType
   ): 'services' | 'questions' | 'local-ai' | 'fields' | 'segments' | 'submissions' | 'settings' => {
-    if (tab === 'companyFields') return 'fields';
+    if (tab === 'companyFields' || tab === 'fields') return 'questions';
     return tab;
   };
 
@@ -89,8 +99,17 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
     'services' | 'questions' | 'local-ai' | 'fields' | 'segments' | 'submissions' | 'settings'
   >(normalizeTab(initialTab));
 
+  const [centralInitialScope, setCentralInitialScope] = useState<
+    'general' | 'google' | 'site' | 'minisite' | 'other_service' | 'segment'
+  >(initialTab === 'segments' ? 'segment' : 'general');
+  const [questionsTargetServiceId, setQuestionsTargetServiceId] = useState<string>('google');
+
   React.useEffect(() => {
-    if (initialTab) setActiveTab(normalizeTab(initialTab));
+    if (initialTab) {
+      setActiveTab(normalizeTab(initialTab));
+      if (initialTab === 'segments') setCentralInitialScope('segment');
+      else if (initialTab === 'fields' || initialTab === 'companyFields') setCentralInitialScope('general');
+    }
   }, [initialTab]);
 
   // Copy of schema for live editing
@@ -99,7 +118,6 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
       ? schema.servicesConfig
       : DEFAULT_SERVICES_CONFIG
   );
-  const [questionsTargetServiceId, setQuestionsTargetServiceId] = useState<string>('google');
 
   React.useEffect(() => {
     if (schema.servicesConfig && Object.keys(schema.servicesConfig).length > 0) {
@@ -111,6 +129,11 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
     schema.onboardingFields && schema.onboardingFields.length > 0
       ? schema.onboardingFields
       : DEFAULT_ONBOARDING_FIELDS
+  );
+  const [editableCategories, setEditableCategories] = useState<FormCategoryConfig[]>(
+    schema.categoriesConfig && schema.categoriesConfig.length > 0
+      ? schema.categoriesConfig
+      : DEFAULT_CATEGORIES_CONFIG
   );
   const [editableSegments, setEditableSegments] = useState<Record<string, SegmentConfig>>(
     schema.segmentsConfig
@@ -337,20 +360,27 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
     setAiInstructions('');
   };
 
-  // Load submissions with local cache fallback
+  // Load submissions with API + Firestore + local cache merge
   const fetchSubmissions = async () => {
     setIsLoadingSubmissions(true);
     let apiList: any[] = [];
+    let firestoreList: any[] = [];
     try {
-      const res = await fetch('/api/submissions');
-      if (res.ok) {
-        const data = await res.json();
+      const [apiRes, fsRes] = await Promise.all([
+        fetch('/api/submissions').catch(() => null),
+        loadSubmissionsFromFirestore().catch(() => []),
+      ]);
+      if (apiRes && apiRes.ok) {
+        const data = await apiRes.json();
         if (data.success && Array.isArray(data.submissions)) {
           apiList = data.submissions;
         }
       }
+      if (Array.isArray(fsRes)) {
+        firestoreList = fsRes;
+      }
     } catch (err) {
-      console.warn('API /api/submissions unavailable, loading local cache:', err);
+      console.warn('Erro ao consultar servidor/Firestore, usando cache local:', err);
     }
 
     let cachedList: any[] = [];
@@ -363,6 +393,10 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
 
     const map = new Map<string, any>();
     for (const item of cachedList) {
+      const key = item.codigoCliente || item.payload?.rowData?.['Código do cliente'] || item.timestamp;
+      if (key) map.set(key, item);
+    }
+    for (const item of firestoreList) {
       const key = item.codigoCliente || item.payload?.rowData?.['Código do cliente'] || item.timestamp;
       if (key) map.set(key, item);
     }
@@ -390,15 +424,20 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
     }
   }, [activeTab]);
 
-  // Load settings
+  // Load settings from API + Firestore
   React.useEffect(() => {
     const loadSettings = async () => {
       try {
-        const res = await fetch('/api/admin/settings');
-        const data = await res.json();
-        if (data.success && data.settings) {
-          setEditableSettings((prev: any) => ({ ...prev, ...data.settings }));
-        }
+        const [res, fsSettings] = await Promise.all([
+          fetch('/api/admin/settings').catch(() => null),
+          loadSettingsFromFirestore().catch(() => null),
+        ]);
+        const data = res && res.ok ? await res.json().catch(() => null) : null;
+        setEditableSettings((prev: any) => ({
+          ...prev,
+          ...(data?.success && data.settings ? data.settings : {}),
+          ...(fsSettings || {}),
+        }));
       } catch (err) {
         console.warn('Usando configurações padrão:', err);
       }
@@ -712,28 +751,45 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
   // ================= SAVE ALL =================
   const handleSaveAll = async () => {
     setIsSaving(true);
-    const updatedSchema: FormSchemaState = {
+    const updatedSchema: FormSchemaState = migrateSchema({
       ...schema,
+      schemaVersion: 2,
       onboardingFields: editableOnboardingFields,
+      categoriesConfig: editableCategories,
       companyFields: editableCompanyFields,
       segmentsConfig: editableSegments,
       servicesConfig: editableServices,
       settings: editableSettings,
-    };
-
+    });
 
     onUpdateSchema(updatedSchema);
-    localStorage.setItem('localway_form_schema_v1', JSON.stringify(updatedSchema));
+    try {
+      localStorage.setItem('localway_form_schema_v1', JSON.stringify(updatedSchema));
+    } catch {
+      // ignore
+    }
 
     try {
-      await fetch('/api/admin/schema', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedSchema),
-      });
-      showToast('Todas as alterações foram salvas com sucesso no servidor!');
+      const [apiResult, fsSaved] = await Promise.all([
+        fetch('/api/admin/schema', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedSchema),
+        })
+          .then((r) => r.ok)
+          .catch(() => false),
+        saveSchemaToFirestore(updatedSchema).catch(() => false),
+      ]);
+
+      if (fsSaved && apiResult) {
+        showToast('Todas as alterações foram salvas e sincronizadas com o Firebase!');
+      } else if (fsSaved || apiResult) {
+        showToast('Alterações salvas com sucesso na nuvem/servidor!');
+      } else {
+        showToast('Alterações salvas localmente no navegador.');
+      }
     } catch (err) {
-      console.error('Erro ao salvar schema no servidor:', err);
+      console.error('Erro ao salvar schema:', err);
       showToast('Salvo localmente no navegador (backup seguro).');
     } finally {
       setIsSaving(false);
@@ -829,13 +885,13 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
               type="button"
               onClick={() => setActiveTab('questions')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                activeTab === 'questions' || activeTab === 'segments'
+                activeTab === 'questions' || activeTab === 'segments' || activeTab === 'fields'
                   ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <Sliders className="w-4 h-4 text-indigo-600" />
-              <span>Perguntas (8 Tipos)</span>
+              <span>Gerenciador Central de Perguntas</span>
             </button>
 
             <button
@@ -849,19 +905,6 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
             >
               <Sparkles className="w-4 h-4 text-amber-500" />
               <span>Local AI</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('fields')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                activeTab === 'fields'
-                  ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Database className="w-4 h-4 text-slate-600" />
-              <span>Campos da Empresa</span>
             </button>
 
             <button
@@ -892,7 +935,7 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
           </div>
 
           <div className="text-xs text-slate-500 font-medium hidden md:block">
-            Alterações no catálogo são refletidas no formulário público instantaneamente.
+            Clique em &ldquo;Salvar Alterações&rdquo; para publicar no formulário oficial.
           </div>
         </div>
 
@@ -903,20 +946,38 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
             onChange={(updated) => setEditableServices(updated)}
             onManageServiceQuestions={(svcId) => {
               setQuestionsTargetServiceId(svcId);
+              if (svcId === 'google' || svcId === 'site' || svcId === 'minisite') {
+                setCentralInitialScope(svcId);
+              } else {
+                setCentralInitialScope('other_service');
+              }
               setActiveTab('questions');
             }}
           />
         )}
 
-        {/* ================= TAB 2: PERGUNTAS (SERVIÇOS E SEGMENTOS) ================= */}
-        {(activeTab === 'questions' || activeTab === 'segments') && (
-          <UniversalQuestionsManager
-            servicesConfig={editableServices}
-            segmentsConfig={editableSegments}
-            onUpdateServices={(updated) => setEditableServices(updated)}
-            onUpdateSegments={(updated) => setEditableSegments(updated)}
-            initialTarget={activeTab === 'segments' ? 'segment' : 'service'}
+        {/* ================= TAB 2: GERENCIADOR CENTRAL (GERAL, SERVIÇOS E SEGMENTOS) ================= */}
+        {(activeTab === 'questions' || activeTab === 'segments' || activeTab === 'fields') && (
+          <CentralFormManager
+            schema={{
+              ...schema,
+              schemaVersion: 2,
+              onboardingFields: editableOnboardingFields,
+              categoriesConfig: editableCategories,
+              companyFields: editableCompanyFields,
+              segmentsConfig: editableSegments,
+              servicesConfig: editableServices,
+              settings: editableSettings,
+            }}
+            initialScope={centralInitialScope}
             initialServiceId={questionsTargetServiceId}
+            onChangeSchema={(next) => {
+              if (next.onboardingFields) setEditableOnboardingFields(next.onboardingFields);
+              if (next.categoriesConfig) setEditableCategories(next.categoriesConfig);
+              if (next.companyFields) setEditableCompanyFields(next.companyFields);
+              if (next.segmentsConfig) setEditableSegments(next.segmentsConfig);
+              if (next.servicesConfig) setEditableServices(next.servicesConfig);
+            }}
           />
         )}
 
@@ -936,17 +997,6 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
               onUpdateSchema(newSchema);
             }}
             onNavigateToTab={(tab) => setActiveTab(tab as any)}
-          />
-        )}
-
-
-        {/* ================= TAB 1: CAMPOS DO ONBOARDING ================= */}
-        {activeTab === 'fields' && (
-          <OnboardingFieldsManager
-            fields={editableOnboardingFields}
-            onChange={(updated) => {
-              setEditableOnboardingFields(updated);
-            }}
           />
         )}
 
@@ -1416,12 +1466,15 @@ export const ManageQuestionsPage: React.FC<ManageQuestionsPageProps> = ({
                   type="button"
                   onClick={async () => {
                     try {
-                      await fetch('/api/admin/settings', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(editableSettings),
-                      });
-                      showToast('Configurações salvas com sucesso!');
+                      await Promise.all([
+                        fetch('/api/admin/settings', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(editableSettings),
+                        }).catch(() => null),
+                        saveSettingsToFirestore(editableSettings).catch(() => false),
+                      ]);
+                      showToast('Configurações salvas e sincronizadas com sucesso!');
                     } catch {
                       showToast('Erro ao salvar configurações.');
                     }

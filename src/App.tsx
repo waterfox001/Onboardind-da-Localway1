@@ -1,21 +1,17 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { OnboardingData, StepType } from './types';
+import { OnboardingData, ServiceId, StepType } from './types';
 import { INITIAL_ONBOARDING_DATA } from './constants/initialData';
-import { getActiveSteps } from './utils/stepManager';
+import { getActiveSteps, normalizeStepId } from './utils/stepManager';
 import { formatSpreadsheetPayload } from './utils/formatSpreadsheetRow';
 
 import { HeaderProgress } from './components/HeaderProgress';
 import { WelcomeCover } from './components/WelcomeCover';
 import { StepNavigation } from './components/StepNavigation';
 
-import { StepCompanyData } from './components/steps/StepCompanyData';
-import { StepAddress } from './components/steps/StepAddress';
-import { StepHours } from './components/steps/StepHours';
-import { StepStructure } from './components/steps/StepStructure';
-import { StepManager } from './components/steps/StepManager';
 import { StepServicesSelection } from './components/steps/StepServicesSelection';
+import { StepGeneralPage } from './components/steps/StepGeneralPage';
 
 import { ModuleGoogleProfile } from './components/steps/modules/ModuleGoogleProfile';
 import { ModuleWebsite } from './components/steps/modules/ModuleWebsite';
@@ -34,16 +30,26 @@ import { ModuleSmartCard } from './components/steps/modules/ModuleSmartCard';
 import { ModuleCatalog } from './components/steps/modules/ModuleCatalog';
 
 import { StepSegmentDetails } from './components/steps/StepSegmentDetails';
-import { StepMaterials } from './components/steps/StepMaterials';
-import { StepFinalNotes } from './components/steps/StepFinalNotes';
 import { StepSummary } from './components/steps/StepSummary';
 import { StepSuccess } from './components/steps/StepSuccess';
 import { GoogleAccentDots } from './components/GoogleAccentDots';
 import { LocalwayLogo } from './components/LocalwayLogo';
-import { AdminPanel } from './components/AdminPanel';
 import { ManageQuestionsPage } from './components/admin/ManageQuestionsPage';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
-import { INITIAL_SCHEMA, FormSchemaState } from './constants/formSchema';
+import {
+  INITIAL_SCHEMA,
+  FormSchemaState,
+  migrateSchema,
+  evaluateCondition,
+} from './constants/formSchema';
+import {
+  testFirestoreConnection,
+  loadSchemaFromFirestore,
+  saveSchemaToFirestore,
+  loadSettingsFromFirestore,
+  saveSubmissionToFirestore,
+  loadSubmissionsFromFirestore,
+} from './services/firebaseDb';
 
 const DRAFT_KEY = 'localway_onboarding_draft_v1';
 const SCHEMA_KEY = 'localway_form_schema_v1';
@@ -58,7 +64,8 @@ export default function App() {
       const started = localStorage.getItem(STARTED_KEY);
       if (started === 'true') return true;
       const savedStep = localStorage.getItem(STEP_KEY);
-      if (savedStep && savedStep !== 'company') return true;
+      const normalized = normalizeStepId(savedStep);
+      if (savedStep && normalized !== 'services') return true;
       const draft = localStorage.getItem(DRAFT_KEY);
       if (draft) {
         const parsed = JSON.parse(draft);
@@ -77,20 +84,21 @@ export default function App() {
     }
     return false;
   });
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [adminInitialTab, setAdminInitialTab] = useState<'submissions' | 'fields' | 'segments' | 'services' | 'settings'>('submissions');
-  const [adminPageTab, setAdminPageTab] = useState<'fields' | 'segments' | 'services' | 'submissions' | 'settings'>('fields');
+
+  const [adminPageTab, setAdminPageTab] = useState<
+    'services' | 'questions' | 'local-ai' | 'fields' | 'segments' | 'submissions' | 'settings'
+  >('questions');
   const [isAdminAuth, setIsAdminAuth] = useState<boolean>(() => {
     return localStorage.getItem('localway_admin_auth') === 'true';
   });
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  // Dynamic Schema & Configurations (fields order, mandatory flags, segments, settings)
+  // Dynamic Schema & Configurations (auto-migrated safely to v2)
   const [schema, setSchema] = useState<FormSchemaState>(() => {
     try {
       const saved = localStorage.getItem(SCHEMA_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        return migrateSchema(JSON.parse(saved));
       }
     } catch {
       // ignore
@@ -112,13 +120,14 @@ export default function App() {
 
   const [currentStepId, setCurrentStepId] = useState<StepType>(() => {
     try {
-      const savedStep = localStorage.getItem(STEP_KEY) as StepType;
-      if (savedStep) return savedStep;
+      const savedStep = localStorage.getItem(STEP_KEY);
+      return normalizeStepId(savedStep);
     } catch {
       // ignore
     }
-    return 'company';
+    return 'services';
   });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -131,32 +140,73 @@ export default function App() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Load server-persisted schema and settings on mount
+  // Load Firestore + server-persisted schema, settings, and submissions on mount
   useEffect(() => {
     const loadRemoteConfig = async () => {
       try {
-        const [schemaRes, settingsRes] = await Promise.all([
-          fetch('/api/admin/schema'),
-          fetch('/api/admin/settings'),
+        // Run non-blocking Firestore connection check
+        testFirestoreConnection().catch(() => {});
+
+        const [schemaRes, settingsRes, fsSchema, fsSettings, fsSubs] = await Promise.all([
+          fetch('/api/admin/schema').catch(() => null),
+          fetch('/api/admin/settings').catch(() => null),
+          loadSchemaFromFirestore().catch(() => null),
+          loadSettingsFromFirestore().catch(() => null),
+          loadSubmissionsFromFirestore().catch(() => []),
         ]);
 
-        const schemaData = await schemaRes.json();
-        const settingsData = await settingsRes.json();
+        const apiSchemaJson = schemaRes && schemaRes.ok ? await schemaRes.json().catch(() => null) : null;
+        const apiSettingsJson = settingsRes && settingsRes.ok ? await settingsRes.json().catch(() => null) : null;
+
+        // Prioritize Firestore (when populated with schemaVersion >= 2 or updatedAt newer) or server schema
+        const remoteSchema =
+          fsSchema && (Number(fsSchema.schemaVersion || 1) >= 2 || !apiSchemaJson?.schema)
+            ? fsSchema
+            : apiSchemaJson?.success && apiSchemaJson.schema
+            ? apiSchemaJson.schema
+            : fsSchema || null;
 
         setSchema((prev) => {
-          const merged = { ...prev };
-          if (schemaData.success && schemaData.schema) {
-            merged.companyFields = schemaData.schema.companyFields || merged.companyFields;
-            merged.segmentsConfig = schemaData.schema.segmentsConfig || merged.segmentsConfig;
-            merged.servicesConfig = schemaData.schema.servicesConfig || merged.servicesConfig;
-            merged.onboardingFields = schemaData.schema.onboardingFields || merged.onboardingFields;
+          const base = remoteSchema ? migrateSchema(remoteSchema) : prev;
+          const mergedSettings = {
+            ...base.settings,
+            ...(apiSettingsJson?.success && apiSettingsJson.settings ? apiSettingsJson.settings : {}),
+            ...(fsSettings || {}),
+          };
+          const finalSchema: FormSchemaState = {
+            ...base,
+            settings: mergedSettings,
+          };
+          try {
+            localStorage.setItem(SCHEMA_KEY, JSON.stringify(finalSchema));
+          } catch {
+            // ignore
           }
-
-          if (settingsData.success && settingsData.settings) {
-            merged.settings = { ...merged.settings, ...settingsData.settings };
-          }
-          return merged;
+          return finalSchema;
         });
+
+        // Merge Firestore submissions into local admin cache
+        if (Array.isArray(fsSubs) && fsSubs.length > 0) {
+          try {
+            const raw = localStorage.getItem(ADMIN_CACHE_KEY);
+            const cachedList = raw ? JSON.parse(raw) : [];
+            const map = new Map<string, any>();
+            for (const item of cachedList) {
+              const key = item.codigoCliente || item.payload?.rowData?.['Código do cliente'] || item.timestamp;
+              if (key) map.set(key, item);
+            }
+            for (const item of fsSubs) {
+              const key = item.codigoCliente || item.payload?.rowData?.['Código do cliente'] || item.timestamp;
+              if (key) map.set(key, item);
+            }
+            const merged = Array.from(map.values()).sort(
+              (a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime()
+            );
+            localStorage.setItem(ADMIN_CACHE_KEY, JSON.stringify(merged));
+          } catch {
+            // ignore
+          }
+        }
       } catch (err) {
         console.warn('Using local schema defaults:', err);
       }
@@ -165,7 +215,7 @@ export default function App() {
     loadRemoteConfig();
   }, []);
 
-  // Active dynamic steps
+  // Active dynamic steps: Serviços -> Onboarding Geral Pág 1 -> Onboarding Geral Pág 2 -> Módulos -> Resumo
   const activeSteps = useMemo(() => {
     return getActiveSteps(formData.servicosContratados);
   }, [formData.servicosContratados]);
@@ -215,7 +265,6 @@ export default function App() {
       ...prev,
       [field]: value,
     }));
-    // Clear error for that field if exists
     if (errors[field as string]) {
       setErrors((prev) => {
         const next = { ...prev };
@@ -229,68 +278,9 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Validation rules per step
+  // Schema-driven validation rules per step
   const validateCurrentStep = (): boolean => {
     const stepErrors: Record<string, string> = {};
-
-    if (currentStepId === 'company') {
-      schema.companyFields.forEach((field) => {
-        if (!field.enabled || !field.required) return;
-        const val = (formData as any)[field.key];
-        if (field.type === 'segment_select') {
-          if (!formData.segmento) {
-            stepErrors.segmento = 'Selecione o segmento de atuação.';
-          }
-        } else if (!val || !String(val).trim()) {
-          stepErrors[field.key] = `Por favor, informe ${field.label.toLowerCase()}.`;
-        }
-      });
-    }
-
-    if (currentStepId === 'address') {
-      if (!formData.ruaAvenida.trim()) {
-        stepErrors.ruaAvenida = 'Informe a rua ou avenida.';
-      }
-      if (!formData.numero.trim()) {
-        stepErrors.numero = 'Informe o número.';
-      }
-      if (!formData.bairro.trim()) {
-        stepErrors.bairro = 'Informe o bairro.';
-      }
-      if (!formData.cidade.trim()) {
-        stepErrors.cidade = 'Informe a cidade.';
-      }
-      if (!formData.estado) {
-        stepErrors.estado = 'Selecione o estado.';
-      }
-    }
-
-    if (currentStepId === 'hours') {
-      if (!formData.trabalhaAgendamento) {
-        stepErrors.trabalhaAgendamento = 'Informe se trabalha com agendamento.';
-      }
-    }
-
-    if (currentStepId === 'structure') {
-      if (!formData.estacionamento) {
-        stepErrors.estacionamento = 'Selecione uma opção de estacionamento.';
-      }
-    }
-
-    if (currentStepId === 'manager') {
-      if (!formData.responsavelNome.trim()) {
-        stepErrors.responsavelNome = 'Informe o nome do responsável pelo projeto.';
-      }
-      if (!formData.responsavelCargo.trim()) {
-        stepErrors.responsavelCargo = 'Informe o cargo ou função.';
-      }
-      if (!formData.responsavelWhatsapp.trim()) {
-        stepErrors.responsavelWhatsapp = 'Informe o WhatsApp do responsável.';
-      }
-      if (!formData.responsavelEmail.trim()) {
-        stepErrors.responsavelEmail = 'Informe o e-mail do responsável.';
-      }
-    }
 
     if (currentStepId === 'services') {
       if (formData.servicosContratados.length === 0) {
@@ -298,132 +288,141 @@ export default function App() {
       }
     }
 
-    if (currentStepId === 'module_google') {
-      if (!formData.googleJaPossuiPerfil) {
-        stepErrors.googleJaPossuiPerfil = 'Informe se já possui perfil no Google.';
-      }
-      if (!formData.googleCategoriaPrincipal.trim()) {
-        stepErrors.googleCategoriaPrincipal = 'Informe a categoria principal no Google.';
-      }
-      if (!formData.googlePrincipaisServicos.trim()) {
-        stepErrors.googlePrincipaisServicos = 'Informe os principais serviços.';
-      }
+    if (currentStepId === 'general_company' || currentStepId === 'general_structure') {
+      const pageFields = (schema.onboardingFields || []).filter((f) => {
+        const fPage =
+          f.pageId ||
+          (['structure', 'manager', 'materials', 'final_notes', 'general_structure'].includes(f.stepId)
+            ? 'general_structure'
+            : 'general_company');
+        return fPage === currentStepId;
+      });
+
+      pageFields.forEach((field) => {
+        if (field.enabled === false) return;
+        if (!evaluateCondition(field.conditional, formData as Record<string, any>)) return;
+
+        // When no_physical_toggle is true, skip physical street/number/bairro fields even if schema had them required
+        if (
+          formData.enderecoSemLocalFisico &&
+          ['cep', 'ruaAvenida', 'numero', 'complemento', 'bairro'].includes(field.key || field.id)
+        ) {
+          return;
+        }
+
+        if (field.type === 'schedule_grid' || field.type === 'no_physical_toggle' || field.type === 'shared_catalog') {
+          return;
+        }
+
+        if (field.type === 'segment_select') {
+          if (field.required && !formData.segmento) {
+            stepErrors.segmento = 'Selecione o segmento de atuação.';
+          } else if (formData.segmento === 'Outro' && !formData.outroSegmento?.trim()) {
+            stepErrors.outroSegmento = 'Informe o nome do seu segmento.';
+          }
+          return;
+        }
+
+        if (!field.required) return;
+
+        const key = field.key || field.id;
+        const val = key in formData ? (formData as any)[key] : formData.respostasPersonalizadas?.[field.id];
+
+        if (Array.isArray(val)) {
+          if (val.length === 0) {
+            stepErrors[key] = `Selecione ao menos uma opção em "${field.label}".`;
+          }
+        } else if (!val || !String(val).trim()) {
+          stepErrors[key] = `Por favor, informe ${field.label.toLowerCase()}.`;
+        }
+      });
     }
 
-    if (currentStepId === 'module_site') {
-      if (!formData.siteJaPossui) {
-        stepErrors.siteJaPossui = 'Informe se já possui site.';
-      }
-    }
+    // Dynamic validation for module steps configured via Admin
+    if (currentStepId.startsWith('module_')) {
+      const svcId = currentStepId.replace('module_', '') as ServiceId;
+      const svcCfg = schema.servicesConfig?.[svcId];
+      if (svcCfg && Array.isArray(svcCfg.questions)) {
+        svcCfg.questions.forEach((q) => {
+          if (q.enabled === false) return;
+          if (!q.required) return;
+          if (!evaluateCondition(q.conditional, formData as Record<string, any>)) return;
 
-    if (currentStepId === 'module_ecommerce') {
-      if (!formData.ecommerceProdutosVendidos.trim()) {
-        stepErrors.ecommerceProdutosVendidos = 'Informe os tipos de produtos.';
-      }
-      if (!formData.ecommercePossuiFotos) {
-        stepErrors.ecommercePossuiFotos = 'Informe se já possui fotos dos produtos.';
-      }
-      if (!formData.ecommercePossuiCadastro) {
-        stepErrors.ecommercePossuiCadastro = 'Informe se já possui cadastro dos produtos.';
-      }
-    }
+          const key = q.storageKey || q.key || q.id;
+          const val = key in formData ? (formData as any)[key] : formData.respostasPersonalizadas?.[q.id];
 
-    if (currentStepId === 'module_trafego') {
-      if (!formData.trafegoObjetivo) {
-        stepErrors.trafegoObjetivo = 'Selecione o objetivo dos anúncios.';
+          if (Array.isArray(val)) {
+            if (val.length === 0) {
+              stepErrors[key] = `Selecione ao menos uma opção em "${q.label}".`;
+            }
+          } else if (!val || !String(val).trim()) {
+            stepErrors[key] = `Por favor, preencha "${q.label}".`;
+          }
+        });
       }
-      if (!formData.trafegoProdutoServicoPrimeiro.trim()) {
-        stepErrors.trafegoProdutoServicoPrimeiro = 'Informe o produto/serviço prioritário.';
-      }
-      if (!formData.trafegoCidade.trim()) {
-        stepErrors.trafegoCidade = 'Informe a cidade de veiculação.';
-      }
-      if (!formData.trafegoPublicoAlvo.trim()) {
-        stepErrors.trafegoPublicoAlvo = 'Descreva seu público-alvo.';
-      }
-      if (!formData.trafegoJaAnuncia) {
-        stepErrors.trafegoJaAnuncia = 'Informe se já anunciou antes.';
-      }
-    }
 
-    if (currentStepId === 'module_identidade') {
-      if (!formData.identidadeJaPossui) {
+      // Specific legacy module safeguards when optional secondary modules are enabled
+      if (currentStepId === 'module_ecommerce') {
+        if (!formData.ecommerceProdutosVendidos.trim()) {
+          stepErrors.ecommerceProdutosVendidos = 'Informe os tipos de produtos.';
+        }
+        if (!formData.ecommercePossuiFotos) {
+          stepErrors.ecommercePossuiFotos = 'Informe se já possui fotos dos produtos.';
+        }
+        if (!formData.ecommercePossuiCadastro) {
+          stepErrors.ecommercePossuiCadastro = 'Informe se já possui cadastro dos produtos.';
+        }
+      }
+      if (currentStepId === 'module_trafego') {
+        if (!formData.trafegoObjetivo) stepErrors.trafegoObjetivo = 'Selecione o objetivo dos anúncios.';
+        if (!formData.trafegoProdutoServicoPrimeiro.trim()) {
+          stepErrors.trafegoProdutoServicoPrimeiro = 'Informe o produto/serviço prioritário.';
+        }
+        if (!formData.trafegoCidade.trim()) stepErrors.trafegoCidade = 'Informe a cidade de veiculação.';
+        if (!formData.trafegoPublicoAlvo.trim()) stepErrors.trafegoPublicoAlvo = 'Descreva seu público-alvo.';
+        if (!formData.trafegoJaAnuncia) stepErrors.trafegoJaAnuncia = 'Informe se já anunciou antes.';
+      }
+      if (currentStepId === 'module_identidade' && !formData.identidadeJaPossui) {
         stepErrors.identidadeJaPossui = 'Informe se já possui logotipo.';
       }
-    }
-
-    if (currentStepId === 'module_seo') {
-      if (!formData.seoProdutosServicosImportantes.trim()) {
-        stepErrors.seoProdutosServicosImportantes = 'Informe os serviços mais importantes.';
+      if (currentStepId === 'module_seo') {
+        if (!formData.seoProdutosServicosImportantes.trim()) {
+          stepErrors.seoProdutosServicosImportantes = 'Informe os serviços mais importantes.';
+        }
+        if (!formData.seoCidadesRegioes.trim()) stepErrors.seoCidadesRegioes = 'Informe as cidades prioritárias.';
+        if (!formData.seoTermosPesquisa.trim()) stepErrors.seoTermosPesquisa = 'Informe termos que clientes pesquisam.';
       }
-      if (!formData.seoCidadesRegioes.trim()) {
-        stepErrors.seoCidadesRegioes = 'Informe as cidades prioritárias.';
+      if (currentStepId === 'module_automacoes') {
+        if (!formData.autoProcessoAutomatizar.trim()) {
+          stepErrors.autoProcessoAutomatizar = 'Informe qual processo deseja automatizar.';
+        }
+        if (!formData.autoComoFunciona.trim()) stepErrors.autoComoFunciona = 'Descreva como funciona hoje.';
+        if (!formData.autoProblemaResolver.trim()) stepErrors.autoProblemaResolver = 'Descreva o problema a resolver.';
       }
-      if (!formData.seoTermosPesquisa.trim()) {
-        stepErrors.seoTermosPesquisa = 'Informe termos que clientes pesquisam.';
+      if (currentStepId === 'module_whatsapp') {
+        if (!formData.whatsNumero.trim() && !formData.whatsapp.trim()) {
+          stepErrors.whatsNumero = 'Informe o número do WhatsApp comercial.';
+        }
+        if (!formData.whatsJaPossuiBusiness) stepErrors.whatsJaPossuiBusiness = 'Informe se já utiliza WhatsApp Business.';
+        if (!formData.whatsNomeComercial.trim()) stepErrors.whatsNomeComercial = 'Informe o nome comercial para o perfil.';
+        if (!formData.whatsDescricaoPerfil.trim()) stepErrors.whatsDescricaoPerfil = 'Informe a descrição da empresa para o perfil.';
       }
-    }
-
-    if (currentStepId === 'module_automacoes') {
-      if (!formData.autoProcessoAutomatizar.trim()) {
-        stepErrors.autoProcessoAutomatizar = 'Informe qual processo deseja automatizar.';
-      }
-      if (!formData.autoComoFunciona.trim()) {
-        stepErrors.autoComoFunciona = 'Descreva como funciona hoje.';
-      }
-      if (!formData.autoProblemaResolver.trim()) {
-        stepErrors.autoProblemaResolver = 'Descreva o problema a resolver.';
-      }
-    }
-
-    if (currentStepId === 'module_whatsapp') {
-      if (!formData.whatsNumero.trim() && !formData.whatsapp.trim()) {
-        stepErrors.whatsNumero = 'Informe o número do WhatsApp comercial.';
-      }
-      if (!formData.whatsJaPossuiBusiness) {
-        stepErrors.whatsJaPossuiBusiness = 'Informe se já utiliza WhatsApp Business.';
-      }
-      if (!formData.whatsNomeComercial.trim()) {
-        stepErrors.whatsNomeComercial = 'Informe o nome comercial para o perfil.';
-      }
-      if (!formData.whatsDescricaoPerfil.trim()) {
-        stepErrors.whatsDescricaoPerfil = 'Informe a descrição da empresa para o perfil.';
-      }
-    }
-
-    if (currentStepId === 'module_email') {
-      if (!formData.emailDominio.trim()) {
+      if (currentStepId === 'module_email' && !formData.emailDominio.trim()) {
         stepErrors.emailDominio = 'Informe o domínio utilizado para os e-mails.';
       }
-    }
-
-    if (currentStepId === 'module_registro_marca') {
-      if (!formData.marcaJaPossuiRegistro) {
-        stepErrors.marcaJaPossuiRegistro = 'Informe se já possui registro da marca no INPI.';
+      if (currentStepId === 'module_registro_marca') {
+        if (!formData.marcaJaPossuiRegistro) stepErrors.marcaJaPossuiRegistro = 'Informe se já possui registro da marca no INPI.';
+        if (!formData.marcaNomeRegistrar.trim()) stepErrors.marcaNomeRegistrar = 'Informe o nome exato da marca que deseja registrar.';
       }
-      if (!formData.marcaNomeRegistrar.trim()) {
-        stepErrors.marcaNomeRegistrar = 'Informe o nome exato da marca que deseja registrar.';
-      }
-    }
-
-    if (currentStepId === 'module_registro_dominio') {
-      if (!formData.dominioJaPossui) {
-        stepErrors.dominioJaPossui = 'Informe se já possui um domínio registrado.';
-      } else if (formData.dominioJaPossui === 'Sim' && !formData.dominioAtual.trim()) {
-        stepErrors.dominioAtual = 'Informe o domínio atual.';
-      } else if (formData.dominioJaPossui === 'Não') {
-        if (!formData.dominioDesejado.trim()) {
-          stepErrors.dominioDesejado = 'Informe o nome de domínio que gostaria de registrar.';
+      if (currentStepId === 'module_registro_dominio') {
+        if (!formData.dominioJaPossui) {
+          stepErrors.dominioJaPossui = 'Informe se já possui um domínio registrado.';
+        } else if (formData.dominioJaPossui === 'Sim' && !formData.dominioAtual.trim()) {
+          stepErrors.dominioAtual = 'Informe o domínio atual.';
+        } else if (formData.dominioJaPossui === 'Não') {
+          if (!formData.dominioDesejado.trim()) stepErrors.dominioDesejado = 'Informe o nome de domínio que gostaria de registrar.';
+          if (!formData.dominioExtensao) stepErrors.dominioExtensao = 'Selecione a extensão de domínio de interesse.';
         }
-        if (!formData.dominioExtensao) {
-          stepErrors.dominioExtensao = 'Selecione a extensão de domínio de interesse.';
-        }
-      }
-    }
-
-    if (currentStepId === 'materials') {
-      if (!formData.possuiMateriais) {
-        stepErrors.possuiMateriais = 'Informe se possui materiais para enviar agora.';
       }
     }
 
@@ -437,7 +436,6 @@ export default function App() {
       return;
     }
 
-    // If on summary step, submit
     if (currentStepId === 'summary') {
       handleSubmit();
       return;
@@ -459,7 +457,7 @@ export default function App() {
   };
 
   const handleJumpToStep = (stepId: StepType) => {
-    setCurrentStepId(stepId);
+    setCurrentStepId(normalizeStepId(stepId));
     scrollToTop();
   };
 
@@ -490,7 +488,7 @@ export default function App() {
         sheetSyncError: syncError,
         payload: {
           rowData,
-          raw: formData,
+          raw: { ...formData, codigoCliente: clientCode },
           dataHora: rowData['Data e hora'] || new Date().toLocaleString('pt-BR'),
         },
       };
@@ -510,9 +508,13 @@ export default function App() {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      const payload = formatSpreadsheetPayload(formData, schema.segmentsConfig);
+      const payload = formatSpreadsheetPayload(
+        formData,
+        schema.segmentsConfig,
+        schema.servicesConfig,
+        schema.onboardingFields
+      );
 
-      // 1. Maintain client code deduplication
       let clientCodeAssigned = formData.codigoCliente || (payload.rowData['Código do cliente'] || '').trim();
       if (!clientCodeAssigned || !/^LW-\d+$/i.test(clientCodeAssigned)) {
         try {
@@ -528,7 +530,7 @@ export default function App() {
       payload.rowData['Status do Onboarding'] = 'Finalizado';
       payload.rowData['Data de finalização'] = new Date().toLocaleString('pt-BR');
 
-      let targetScriptUrl =
+      const targetScriptUrl =
         schema.settings?.googleScriptUrl ||
         'https://script.google.com/macros/s/AKfycbyuYdO4N3qStGn8W7dwXjd4AuVS627iIKJxxD0S6XED9Xv71Gn4zRo86v4-Ag2KdOE9cQ/exec';
 
@@ -536,13 +538,11 @@ export default function App() {
       let sheetSuccess = false;
       let errorMsg = '';
 
-      // 2. Primary submission attempt: Backend API (/api/submit-onboarding)
+      // 1. Primary submission attempt: Backend API (/api/submit-onboarding)
       try {
         const res = await fetch('/api/submit-onboarding', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
 
@@ -560,7 +560,10 @@ export default function App() {
           } else if (json.dbSaved) {
             submissionSuccess = true;
             sheetSuccess = false;
-            errorMsg = json.warning || json.error || 'A sincronização com a planilha do Google retornou uma pendência.';
+            errorMsg =
+              json.warning ||
+              json.error ||
+              'A sincronização com a planilha do Google retornou uma pendência.';
           } else {
             errorMsg = json.error || 'Erro ao processar envio no servidor.';
           }
@@ -570,7 +573,6 @@ export default function App() {
       } catch (backendErr) {
         console.warn('Backend unavailable or timed out, executing direct client resilience fallback:', backendErr);
 
-        // Fallback Client Resilience: Direct dispatch to Google Apps Script Web App
         try {
           const directBody = {
             respostas: payload.rowData,
@@ -585,9 +587,7 @@ export default function App() {
 
           const sheetRes = await fetch(targetScriptUrl, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'text/plain;charset=utf-8',
-            },
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(directBody),
           });
 
@@ -608,17 +608,35 @@ export default function App() {
           }
         } catch (directErr) {
           console.warn('Direct Google Apps Script sync error:', directErr);
-          submissionSuccess = true; // Data is permanently secured in client local storage
+          submissionSuccess = true;
           sheetSuccess = false;
-          errorMsg = 'Suas informações foram salvas com segurança no sistema, mas a planilha do Google não respondeu no momento.';
+          errorMsg =
+            'Suas informações foram salvas com segurança no sistema, mas a planilha do Google não respondeu no momento.';
         }
       }
 
-      // Always update local admin cache so responses immediately appear in the Admin Panel
+      // 2. Always persist directly to Firestore (ensuring serverless durability even if local disk clears)
+      const nowIso = new Date().toISOString();
+      saveSubmissionToFirestore({
+        timestamp: nowIso,
+        codigoCliente: clientCodeAssigned,
+        lastModified: nowIso,
+        finalized: true,
+        status: 'Finalizado',
+        finalizedAt: nowIso,
+        sheetSyncStatus: sheetSuccess ? 'synced' : 'pending',
+        sheetSyncError: sheetSuccess ? undefined : errorMsg,
+        payload: {
+          rowData: payload.rowData,
+          raw: { ...formData, codigoCliente: clientCodeAssigned },
+          dataHora: payload.rowData['Data e hora'] || new Date().toLocaleString('pt-BR'),
+        },
+      }).catch((e) => console.warn('Firestore direct submission persist error:', e));
+
+      // 3. Always update local admin cache
       syncToAdminCache(clientCodeAssigned, payload.rowData, sheetSuccess, sheetSuccess ? undefined : errorMsg);
 
       if (submissionSuccess && sheetSuccess) {
-        // Clear local draft only after full confirmed success
         try {
           localStorage.removeItem(DRAFT_KEY);
           localStorage.removeItem(STEP_KEY);
@@ -629,7 +647,6 @@ export default function App() {
         setIsSuccess(true);
         scrollToTop();
       } else if (submissionSuccess) {
-        // Data protection: Saved in DB/storage, but sheet sync is pending
         setSubmitError({
           message:
             errorMsg ||
@@ -664,18 +681,26 @@ export default function App() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
-      const payload = formatSpreadsheetPayload(formData, schema.segmentsConfig);
-      const clientCode = formData.codigoCliente || submitError?.clientCode || payload.rowData['Código do cliente'] || 'LW-01';
+      const payload = formatSpreadsheetPayload(
+        formData,
+        schema.segmentsConfig,
+        schema.servicesConfig,
+        schema.onboardingFields
+      );
+      const clientCode =
+        formData.codigoCliente ||
+        submitError?.clientCode ||
+        payload.rowData['Código do cliente'] ||
+        'LW-01';
       payload.rowData['Código do cliente'] = clientCode;
       payload.rowData['Status do Onboarding'] = 'Finalizado';
 
-      let targetScriptUrl =
+      const targetScriptUrl =
         schema.settings?.googleScriptUrl ||
         'https://script.google.com/macros/s/AKfycbyuYdO4N3qStGn8W7dwXjd4AuVS627iIKJxxD0S6XED9Xv71Gn4zRo86v4-Ag2KdOE9cQ/exec';
 
       let synced = false;
 
-      // 1. Try server resync
       try {
         const res = await fetch('/api/admin/sync-submission', {
           method: 'POST',
@@ -692,7 +717,6 @@ export default function App() {
         // fallback to direct script dispatch
       }
 
-      // 2. Direct fallback if server route failed
       if (!synced) {
         try {
           const directBody = {
@@ -719,6 +743,22 @@ export default function App() {
 
       if (synced) {
         syncToAdminCache(clientCode, payload.rowData, true);
+        const nowIso = new Date().toISOString();
+        saveSubmissionToFirestore({
+          timestamp: nowIso,
+          codigoCliente: clientCode,
+          lastModified: nowIso,
+          finalized: true,
+          status: 'Finalizado',
+          finalizedAt: nowIso,
+          sheetSyncStatus: 'synced',
+          payload: {
+            rowData: payload.rowData,
+            raw: { ...formData, codigoCliente: clientCode },
+            dataHora: payload.rowData['Data e hora'] || new Date().toLocaleString('pt-BR'),
+          },
+        }).catch(() => {});
+
         setSubmitError(null);
         try {
           localStorage.removeItem(DRAFT_KEY);
@@ -749,7 +789,6 @@ export default function App() {
     }
   };
 
-  // If successfully submitted, show final confirmation
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-[#F4F7FB] py-8 sm:py-16 px-4">
@@ -766,7 +805,7 @@ export default function App() {
             setFormData(INITIAL_ONBOARDING_DATA);
             setIsSuccess(false);
             setHasStarted(false);
-            setCurrentStepId('company');
+            setCurrentStepId('services');
           }}
         />
       </div>
@@ -785,15 +824,21 @@ export default function App() {
     setViewMode('form');
   };
 
-  const handleOpenAdminWithTab = (tab: 'submissions' | 'fields' | 'segments' | 'services' | 'settings' = 'fields') => {
-    const tabMap: Record<string, 'fields' | 'segments' | 'services' | 'submissions' | 'settings'> = {
+  const handleOpenAdminWithTab = (
+    tab: 'submissions' | 'fields' | 'segments' | 'services' | 'settings' | 'questions' = 'questions'
+  ) => {
+    const tabMap: Record<
+      string,
+      'services' | 'questions' | 'local-ai' | 'fields' | 'segments' | 'submissions' | 'settings'
+    > = {
       segments: 'segments',
       fields: 'fields',
+      questions: 'questions',
       services: 'services',
       submissions: 'submissions',
       settings: 'settings',
     };
-    const target = tabMap[tab] || 'fields';
+    const target = tabMap[tab] || 'questions';
     setAdminPageTab(target);
 
     if (isAdminAuth) {
@@ -803,15 +848,20 @@ export default function App() {
     }
   };
 
-  // If dedicated questions manager page is open
   if (viewMode === 'manage-questions') {
     return (
       <ManageQuestionsPage
         schema={schema}
         initialTab={adminPageTab}
         onUpdateSchema={(newS) => {
-          setSchema(newS);
-          localStorage.setItem(SCHEMA_KEY, JSON.stringify(newS));
+          const normalized = migrateSchema(newS);
+          setSchema(normalized);
+          try {
+            localStorage.setItem(SCHEMA_KEY, JSON.stringify(normalized));
+          } catch {
+            // ignore
+          }
+          saveSchemaToFirestore(normalized).catch(() => {});
         }}
         onBack={() => setViewMode('form')}
         onLogout={handleLogout}
@@ -819,15 +869,14 @@ export default function App() {
     );
   }
 
-  // Cover Screen before form begins
   if (!hasStarted) {
     const hasExistingDraft = Boolean(
       formData.nomeFantasia ||
-      formData.whatsapp ||
-      formData.razaoSocial ||
-      formData.email ||
-      (formData.servicosContratados && formData.servicosContratados.length > 0) ||
-      currentStepId !== 'company'
+        formData.whatsapp ||
+        formData.razaoSocial ||
+        formData.email ||
+        (formData.servicosContratados && formData.servicosContratados.length > 0) ||
+        currentStepId !== 'services'
     );
     return (
       <>
@@ -837,7 +886,7 @@ export default function App() {
             scrollToTop();
           }}
           onOpenAdmin={handleOpenAdminWithTab}
-          onOpenManageQuestions={() => handleOpenAdminWithTab('segments')}
+          onOpenManageQuestions={() => handleOpenAdminWithTab('questions')}
           isAuthenticated={isAdminAuth}
           hasDraft={hasExistingDraft}
         />
@@ -853,21 +902,18 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F4F7FB] flex flex-col justify-between" ref={containerRef}>
       <div>
-        {/* Sticky Header with Progress Bar & Step counter */}
         <HeaderProgress
           currentStepIndex={currentStepIndex}
           totalSteps={activeSteps.length}
           currentStep={currentStep}
           onResetToCover={() => setHasStarted(false)}
           onOpenAdmin={handleOpenAdminWithTab}
-          onOpenManageQuestions={() => handleOpenAdminWithTab('segments')}
+          onOpenManageQuestions={() => handleOpenAdminWithTab('questions')}
           isAuthenticated={isAdminAuth}
         />
 
-        {/* Main Step Container */}
         <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-[0_4px_24px_rgba(15,23,42,0.04)] p-5 sm:p-8 md:p-10 relative">
-            {/* Auto-save subtle indicator */}
             <div className="absolute top-4 right-5 sm:top-6 sm:right-8 flex items-center gap-1.5 text-[11px] font-medium text-slate-400 select-none">
               <span
                 className={`w-2 h-2 rounded-full transition-colors duration-300 ${
@@ -879,7 +925,6 @@ export default function App() {
               </span>
             </div>
 
-            {/* Current Step Content */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentStepId}
@@ -888,52 +933,6 @@ export default function App() {
                 exit={{ opacity: 0, x: -8 }}
                 transition={{ duration: 0.25, ease: 'easeOut' }}
               >
-                {currentStepId === 'company' && (
-                  <StepCompanyData
-                    data={formData}
-                    onChange={updateField}
-                    errors={errors}
-                    fields={schema.companyFields}
-                    availableSegments={Object.keys(schema.segmentsConfig || {})}
-                  />
-                )}
-
-                {currentStepId === 'address' && (
-                  <StepAddress
-                    data={formData}
-                    onChange={updateField}
-                    errors={errors}
-                    fieldsConfig={schema.onboardingFields}
-                  />
-                )}
-
-                {currentStepId === 'hours' && (
-                  <StepHours
-                    data={formData}
-                    onChange={updateField}
-                    errors={errors}
-                    fieldsConfig={schema.onboardingFields}
-                  />
-                )}
-
-                {currentStepId === 'structure' && (
-                  <StepStructure
-                    data={formData}
-                    onChange={updateField}
-                    errors={errors}
-                    fieldsConfig={schema.onboardingFields}
-                  />
-                )}
-
-                {currentStepId === 'manager' && (
-                  <StepManager
-                    data={formData}
-                    onChange={updateField}
-                    errors={errors}
-                    fieldsConfig={schema.onboardingFields}
-                  />
-                )}
-
                 {currentStepId === 'services' && (
                   <StepServicesSelection
                     data={formData}
@@ -943,6 +942,25 @@ export default function App() {
                   />
                 )}
 
+                {currentStepId === 'general_company' && (
+                  <StepGeneralPage
+                    pageId="general_company"
+                    data={formData}
+                    onChange={updateField}
+                    errors={errors}
+                    schema={schema}
+                  />
+                )}
+
+                {currentStepId === 'general_structure' && (
+                  <StepGeneralPage
+                    pageId="general_structure"
+                    data={formData}
+                    onChange={updateField}
+                    errors={errors}
+                    schema={schema}
+                  />
+                )}
 
                 {/* Dynamic Service Modules */}
                 {currentStepId === 'module_google' && (
@@ -950,6 +968,7 @@ export default function App() {
                     data={formData}
                     onChange={updateField}
                     errors={errors}
+                    serviceConfig={schema.servicesConfig?.google}
                   />
                 )}
 
@@ -958,6 +977,16 @@ export default function App() {
                     data={formData}
                     onChange={updateField}
                     errors={errors}
+                    serviceConfig={schema.servicesConfig?.site}
+                  />
+                )}
+
+                {currentStepId === 'module_minisite' && (
+                  <ModuleMiniSite
+                    data={formData}
+                    onChange={updateField}
+                    errors={errors}
+                    serviceConfig={schema.servicesConfig?.minisite}
                   />
                 )}
 
@@ -979,14 +1008,6 @@ export default function App() {
 
                 {currentStepId === 'module_identidade' && (
                   <ModuleVisualIdentity
-                    data={formData}
-                    onChange={updateField}
-                    errors={errors}
-                  />
-                )}
-
-                {currentStepId === 'module_minisite' && (
-                  <ModuleMiniSite
                     data={formData}
                     onChange={updateField}
                     errors={errors}
@@ -1074,25 +1095,6 @@ export default function App() {
                   />
                 )}
 
-                {currentStepId === 'materials' && (
-                  <StepMaterials
-                    data={formData}
-                    onChange={updateField}
-                    errors={errors}
-                    transferNowUrl={schema.settings?.transferNowUrl}
-                    fieldsConfig={schema.onboardingFields}
-                  />
-                )}
-
-                {currentStepId === 'final_notes' && (
-                  <StepFinalNotes
-                    data={formData}
-                    onChange={updateField}
-                    errors={errors}
-                    fieldsConfig={schema.onboardingFields}
-                  />
-                )}
-
                 {currentStepId === 'summary' && (
                   <>
                     {submitError && (
@@ -1129,13 +1131,13 @@ export default function App() {
                     <StepSummary
                       data={formData}
                       onJumpToStep={handleJumpToStep}
+                      schema={schema}
                     />
                   </>
                 )}
               </motion.div>
             </AnimatePresence>
 
-            {/* Navigation Buttons: Back and Next */}
             <StepNavigation
               onBack={currentStepIndex > 0 ? handleBack : undefined}
               onNext={handleNext}
@@ -1147,7 +1149,6 @@ export default function App() {
         </main>
       </div>
 
-      {/* Global Minimalist Footer */}
       <footer className="py-6 border-t border-slate-200/80 bg-white/70 text-center text-xs text-slate-500">
         <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">

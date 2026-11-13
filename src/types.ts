@@ -24,10 +24,22 @@ export type UniversalQuestionType =
   | 'yes_no'
   | 'date'
   | 'file'
-  | 'select';
+  | 'select'
+  | 'url'
+  | 'repeatable'
+  | 'products_catalog'
+  | 'services_catalog';
+
+export interface ConditionalRule {
+  dependsOn: string;
+  operator: 'equals' | 'not_equals' | 'includes' | 'not_empty';
+  value?: string;
+}
 
 export interface UniversalQuestion {
   id: string;
+  key?: string;
+  storageKey?: string;
   label: string;
   placeholder?: string;
   type: UniversalQuestionType;
@@ -36,8 +48,11 @@ export interface UniversalQuestion {
   required?: boolean;
   enabled?: boolean;
   order?: number;
+  category?: string;
+  allowOther?: boolean;
   otherLabel?: string;
   otherPlaceholder?: string;
+  conditional?: ConditionalRule;
 }
 
 export interface ManagedServiceConfig {
@@ -61,11 +76,11 @@ export interface ServiceOption {
   shortTitle: string;
   tagline: string;
   iconName: string;
-  themeColor: string; // Hex color
-  bgLight: string; // Tailwind class
-  borderLight: string; // Tailwind class
-  textColor: string; // Tailwind class
-  ringColor: string; // Tailwind class
+  themeColor: string;
+  bgLight: string;
+  borderLight: string;
+  textColor: string;
+  ringColor: string;
   enabled?: boolean;
   questions?: UniversalQuestion[];
 }
@@ -86,6 +101,27 @@ export interface DaySchedule {
   temIntervalo?: boolean;
   abertura2?: string;
   fechamento2?: string;
+}
+
+export interface SharedCatalogItem {
+  id: string;
+  tipo: 'produto' | 'servico';
+  nome: string;
+  descricao: string;
+  tipoPreco: 'fixo' | 'a_partir' | 'sob_consulta';
+  preco?: string;
+  duracao?: string;
+  variacoes?: string;
+  fotoLink?: string;
+  destinos: ('google' | 'site' | 'minisite')[];
+}
+
+export interface WebsitePersonItem {
+  id: string;
+  nome: string;
+  funcao: string;
+  fotoLink?: string;
+  useGeneralPhoto?: boolean;
 }
 
 export interface WhatsAppCatalogItem {
@@ -126,6 +162,8 @@ export interface OnboardingData {
   facebookOutras: string;
 
   // 2. Endereço
+  enderecoSemLocalFisico?: boolean;
+  cep?: string;
   ruaAvenida: string;
   numero: string;
   complemento: string;
@@ -138,9 +176,12 @@ export interface OnboardingData {
   trabalhaAgendamento: string; // 'Sim' | 'Não' | ''
   formasAgendamento: string[];
   outroAgendamento: string;
+  possuiLinkAgendamento?: string; // 'Sim' | 'Não' | ''
   contatoLinkAgendamento: string;
 
   // 4. Estrutura da Empresa
+  tipoEstabelecimento?: string;
+  formaAtendimento?: string;
   estacionamento: string;
   outroEstacionamento: string;
   idiomas: string[];
@@ -154,6 +195,9 @@ export interface OnboardingData {
   responsavelWhatsapp: string;
   responsavelEmail: string;
   responsavelCargo: string;
+
+  // Cadastro Compartilhado de Produtos e Serviços
+  catalogoCompartilhado?: SharedCatalogItem[];
 
   // 6. Serviços Contratados
   servicosContratados: ServiceId[];
@@ -173,11 +217,13 @@ export interface OnboardingData {
   googleInstagram: string;
   googlePrincipaisProdutosServicos: string;
   googleInfoAdicionais: string;
-  googleJaPossuiPerfil: string; // 'Sim' | 'Não' | 'Não sei' | ''
+  googleJaPossuiPerfil: string;
   googleLinkPerfil: string;
   googleCorrecoesPerfil: string;
+  googleItensDestaqueIds?: string[];
+  googleItensCustom?: SharedCatalogItem[];
 
-  // Módulo: Site Profissional
+  // Módulo: Site Profissional (Site Institucional)
   siteJaPossui: string; // 'Sim' | 'Não' | ''
   siteLinkAtual: string;
   siteManterAtual: string;
@@ -188,13 +234,40 @@ export interface OnboardingData {
   siteOutraPagina: string;
   siteReferencia: string;
   siteInfoObrigatoria: string;
+  // Novos campos estruturados — Site Institucional
+  siteHistoria?: string;
+  siteApresentarResponsavel?: string;
+  siteResponsavelNome?: string;
+  siteResponsavelFuncao?: string;
+  siteResponsavelFoto?: string;
+  siteDiferenciais?: string[];
+  siteDiferenciaisOutro?: string;
+  siteDiferenciaisDesc?: string;
+  sitePublicoAlvo?: string[];
+  sitePublicoAlvoOutro?: string;
+  sitePublicoAlvoDesc?: string;
+  siteServicosSelecionadosIds?: string[];
+  siteComercializaProdutos?: string;
+  siteProdutosSelecionadosIds?: string[];
+  siteProcessoAtendimento?: string[];
+  siteProcessoAtendimentoOutro?: string;
+  siteOrientacaoPreContratacao?: string;
+  siteApresentarEquipeTipo?: string;
+  siteEquipePessoas?: WebsitePersonItem[];
+  sitePossuiVideos?: string;
+  siteVideosLink?: string;
+  siteVideosArquivo?: string;
+  siteSecoesAdicionais?: string[];
+  siteSecoesAdicionaisOutro?: string;
+  siteDuvidasFrequentes?: string;
+  siteObjetivoPrincipal?: string;
 
   // Módulo: Loja Virtual
   ecommerceProdutosVendidos: string;
   ecommerceQuantidadeProdutos: string;
-  ecommercePossuiFotos: string; // 'Sim' | 'Não' | ''
-  ecommercePossuiCadastro: string; // 'Sim' | 'Não' | ''
-  ecommercePossuiVariacoes: string; // 'Sim' | 'Não' | ''
+  ecommercePossuiFotos: string;
+  ecommercePossuiCadastro: string;
+  ecommercePossuiVariacoes: string;
   ecommerceControleEstoque: string;
   ecommerceFormasPagamento: string[];
   ecommerceEntrega: string;
@@ -210,7 +283,7 @@ export interface OnboardingData {
   trafegoCidade: string;
   trafegoBairrosRegioes: string;
   trafegoPublicoAlvo: string;
-  trafegoJaAnuncia: string; // 'Sim' | 'Não' | ''
+  trafegoJaAnuncia: string;
   trafegoPlataformas: string[];
   trafegoOutraPlataforma: string;
   trafegoCampanhasAtuais: string;
@@ -218,9 +291,9 @@ export interface OnboardingData {
   trafegoPeriodoPromocao: string;
 
   // Módulo: Identidade Visual
-  identidadeJaPossui: string; // 'Sim' | 'Não' | ''
+  identidadeJaPossui: string;
   identidadeElementosManter: string;
-  identidadePossuiLogoAlta: string; // 'Sim' | 'Não' | ''
+  identidadePossuiLogoAlta: string;
   identidadeCoresDesejadas: string;
   identidadeCoresNaoDesejadas: string;
   identidadeMarcasReferencia: string;
@@ -232,9 +305,27 @@ export interface OnboardingData {
   minisiteOutraInfo: string;
   minisiteWhatsapp: string;
   minisiteInstagram: string;
+  minisiteFacebook?: string;
   minisiteSite: string;
   minisiteEndereco: string;
+  minisiteGoogleReviews?: string;
+  minisiteCatalogoBotao?: string;
   minisiteInfoAdicional: string;
+  minisiteApresentacao?: string;
+  minisiteItensDestaqueIds?: string[];
+  minisiteItensCustom?: SharedCatalogItem[];
+  minisiteCatalogoPossui?: string;
+  minisiteCatalogoLink?: string;
+  minisiteCatalogoArquivo?: string;
+  minisiteCoresDesejadas?: string;
+  minisiteCoresEvitar?: string;
+  minisiteReferenciaVisual?: string;
+  minisiteRecursosAdicionais?: string[];
+  minisiteWifiRede?: string;
+  minisiteWifiSenha?: string;
+  minisitePixChave?: string;
+  minisitePixTitular?: string;
+  minisiteRecursosOutros?: string;
 
   // Módulo: SEO
   seoProdutosServicosImportantes: string;
@@ -254,20 +345,20 @@ export interface OnboardingData {
   autoSistemaIntegrar: string;
   autoExemploReferencia: string;
 
-  // Módulo: WhatsApp Business (Refatorado)
-  whatsJaPossuiBusiness: string; // 'Sim' | 'Não' | 'Está usando WhatsApp comum' | ''
+  // Módulo: WhatsApp Business
+  whatsJaPossuiBusiness: string;
   whatsNumero: string;
   whatsNomeComercial: string;
   whatsDescricaoPerfil: string;
-  whatsPossuiEnderecoFisico: string; // 'Sim' | 'Não' | ''
+  whatsPossuiEnderecoFisico: string;
   whatsObsLocalizacao: string;
-  whatsLinks: string[]; // ['Site', 'Instagram', 'Facebook', 'Outro link']
+  whatsLinks: string[];
   whatsLinkSite: string;
   whatsLinkInstagram: string;
   whatsLinkFacebook: string;
   whatsLinkOutro: string;
   whatsUsuarioDesejado: string;
-  whatsDesejaCatalogo: string; // 'Sim' | 'Não' | 'Já possui um catálogo' | ''
+  whatsDesejaCatalogo: string;
   whatsCatalogoItens: WhatsAppCatalogItem[];
 
   // Módulo: E-mail Profissional
@@ -278,19 +369,19 @@ export interface OnboardingData {
   assinaturaPessoas: EmailSignaturePerson[];
 
   // Módulo: Registro de Domínio
-  dominioJaPossui: string; // 'Sim' | 'Não' | ''
+  dominioJaPossui: string;
   dominioAtual: string;
   dominioDesejado: string;
-  dominioExtensao: string; // '.com.br' | '.com' | 'Ainda não sei' | 'Outra' | ''
+  dominioExtensao: string;
   dominioOutraExtensao: string;
 
   // Módulo: Registro de Marca
-  marcaJaPossuiRegistro: string; // 'Sim' | 'Não' | 'Não sei' | ''
+  marcaJaPossuiRegistro: string;
   marcaNomeRegistrar: string;
   marcaVariacoesNome: string;
 
   // Módulo: Plaquinha Inteligente QR Code / NFC
-  plaquinhaDestino: string; // 'google' | 'instagram' | 'whatsapp' | 'minisite' | string
+  plaquinhaDestino: string;
   plaquinhaQuantidade: string;
   plaquinhaLocalInstalacao: string;
   plaquinhaObservacoes: string;
@@ -304,17 +395,23 @@ export interface OnboardingData {
   segmentoRespostas: Record<string, any>;
 
   // 23. Materiais
-  possuiMateriais: string; // 'Sim' | 'Não' | ''
+  possuiMateriais: string;
   tiposMateriais: string[];
   linksMateriais: string;
   linkTransferNow: string;
   observacoesMateriais: string;
+  materiaisArquivosNomes?: string[];
 
   // 24. Observações Finais
   observacoesFinais: string;
+
+  // Respostas de campos/perguntas customizadas criadas no Painel Admin
+  respostasPersonalizadas?: Record<string, any>;
 }
 
 export type StepType =
+  | 'general_company'
+  | 'general_structure'
   | 'company'
   | 'address'
   | 'hours'

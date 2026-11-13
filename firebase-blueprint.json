@@ -1,0 +1,109 @@
+{
+  "entities": {
+    "AppConfig": {
+      "title": "AppConfig",
+      "description": "Configuração dinâmica do formulário, campos do onboarding geral, categorias, regras condicionais, serviços e segmentos.",
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "description": "Versão do esquema de configuração do onboarding"
+        },
+        "companyFields": {
+          "type": "array",
+          "description": "Campos da empresa (compatibilidade)"
+        },
+        "onboardingFields": {
+          "type": "array",
+          "description": "Lista completa de campos do onboarding geral ordenados"
+        },
+        "categoriesConfig": {
+          "type": "array",
+          "description": "Categorias das páginas do onboarding geral com ordem"
+        },
+        "segmentsConfig": {
+          "type": "object",
+          "description": "Configurações e perguntas por segmento comercial"
+        },
+        "servicesConfig": {
+          "type": "object",
+          "description": "Configurações, status ativo/inativo e perguntas dos serviços"
+        },
+        "settings": {
+          "type": "object",
+          "description": "URLs operacionais públicas (TransferNow, Apps Script)"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp ISO da última atualização administrativa"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Identificador do autor da atualização",
+          "maxLength": 80
+        }
+      },
+      "required": ["updatedAt", "updatedBy"]
+    },
+    "OnboardingSubmission": {
+      "title": "OnboardingSubmission",
+      "description": "Submissão de onboarding enviada pelo cliente com dados gerais, catálogo compartilhado e respostas dos serviços contratados.",
+      "type": "object",
+      "properties": {
+        "codigoCliente": {
+          "type": "string",
+          "description": "Código sequencial do cliente (ex: LW-01)",
+          "pattern": "^LW-[0-9]{1,6}$",
+          "maxLength": 16
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Data/hora ISO da criação",
+          "maxLength": 64
+        },
+        "lastModified": {
+          "type": "string",
+          "description": "Data/hora ISO da última modificação",
+          "maxLength": 64
+        },
+        "finalized": {
+          "type": "boolean",
+          "description": "Indica se o onboarding foi finalizado"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Rascunho", "Finalizado"],
+          "maxLength": 32
+        },
+        "sheetSyncStatus": {
+          "type": "string",
+          "enum": ["synced", "pending", "error"],
+          "maxLength": 32
+        },
+        "sheetSyncError": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "finalizedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "payload": {
+          "type": "object",
+          "description": "Objeto contendo rowData formatado, raw OnboardingData e dataHora"
+        }
+      },
+      "required": ["codigoCliente", "timestamp", "payload"]
+    }
+  },
+  "firestore": {
+    "/app_config/{configId}": {
+      "schema": { "$ref": "#/entities/AppConfig" },
+      "description": "Armazena onboarding_schema e admin_settings de forma persistente."
+    },
+    "/onboarding_submissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/OnboardingSubmission" },
+      "description": "Armazena todas as respostas enviadas pelos clientes indexadas por codigoCliente."
+    }
+  }
+}

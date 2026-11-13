@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helpers
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    // Boot connection check required for Firestore health validation
+    match /test/connection {
+      allow get: if true;
+    }
+
+    // App Configuration (Form schema, fields order, categories, conditionals, services toggles)
+    // Contains NO PII or API secrets.
+    function isValidAppConfig(data) {
+      return data.keys().hasAll(['updatedAt', 'updatedBy'])
+        && data.keys().hasOnly([
+          'schemaVersion',
+          'companyFields',
+          'onboardingFields',
+          'categoriesConfig',
+          'segmentsConfig',
+          'servicesConfig',
+          'settings',
+          'googleScriptUrl',
+          'transferNowUrl',
+          'updatedAt',
+          'updatedBy'
+        ])
+        && data.updatedAt is string && data.updatedAt.size() <= 64
+        && data.updatedBy is string && data.updatedBy.size() >= 1 && data.updatedBy.size() <= 80
+        && (!('schemaVersion' in data) || data.schemaVersion is number)
+        && (!('companyFields' in data) || (data.companyFields is list && data.companyFields.size() <= 200))
+        && (!('onboardingFields' in data) || (data.onboardingFields is list && data.onboardingFields.size() <= 300))
+        && (!('categoriesConfig' in data) || (data.categoriesConfig is list && data.categoriesConfig.size() <= 50))
+        && (!('segmentsConfig' in data) || data.segmentsConfig is map)
+        && (!('servicesConfig' in data) || data.servicesConfig is map)
+        && (!('settings' in data) || data.settings is map)
+        && (!('googleScriptUrl' in data) || (data.googleScriptUrl is string && data.googleScriptUrl.size() <= 500))
+        && (!('transferNowUrl' in data) || (data.transferNowUrl is string && data.transferNowUrl.size() <= 500));
+    }
+
+    match /app_config/{configId} {
+      allow get: if isValidId(configId) && configId in ['onboarding_schema', 'admin_settings'];
+      allow list: if false;
+      allow create, update: if isValidId(configId)
+        && configId in ['onboarding_schema', 'admin_settings']
+        && isValidAppConfig(incoming());
+      allow delete: if false;
+    }
+
+    // Client Onboarding Submissions
+    function isValidSubmission(data) {
+      return data.keys().hasAll(['codigoCliente', 'timestamp', 'payload'])
+        && data.keys().hasOnly([
+          'codigoCliente',
+          'timestamp',
+          'lastModified',
+          'finalized',
+          'status',
+          'sheetSyncStatus',
+          'sheetSyncError',
+          'finalizedAt',
+          'payload'
+        ])
+        && data.codigoCliente is string
+        && data.codigoCliente.size() >= 4
+        && data.codigoCliente.size() <= 16
+        && data.codigoCliente.matches('^LW-[0-9]{1,6}$')
+        && data.timestamp is string && data.timestamp.size() <= 64
+        && (!('lastModified' in data) || (data.lastModified is string && data.lastModified.size() <= 64))
+        && (!('finalized' in data) || data.finalized is bool)
+        && (!('status' in data) || (data.status is string && data.status in ['Rascunho', 'Finalizado']))
+        && (!('sheetSyncStatus' in data) || (data.sheetSyncStatus is string && data.sheetSyncStatus in ['synced', 'pending', 'error']))
+        && (!('sheetSyncError' in data) || data.sheetSyncError == null || (data.sheetSyncError is string && data.sheetSyncError.size() <= 1000))
+        && (!('finalizedAt' in data) || data.finalizedAt == null || (data.finalizedAt is string && data.finalizedAt.size() <= 64))
+        && data.payload is map
+        && data.payload.keys().hasOnly(['rowData', 'raw', 'dataHora'])
+        && data.payload.rowData is map;
+    }
+
+    match /onboarding_submissions/{submissionId} {
+      allow get: if isValidId(submissionId);
+      allow list: if resource.data.codigoCliente is string && resource.data.codigoCliente.matches('^LW-[0-9]{1,6}$');
+      allow create, update: if isValidId(submissionId)
+        && submissionId.matches('^LW-[0-9]{1,6}$')
+        && isValidSubmission(incoming())
+        && incoming().codigoCliente == submissionId;
+      allow delete: if isValidId(submissionId);
+    }
+  }
+}

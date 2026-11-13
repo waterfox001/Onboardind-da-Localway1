@@ -1,3 +1,5 @@
+import { ConditionalRule } from '../types';
+
 export type QuestionType =
   | 'text'
   | 'textarea'
@@ -7,7 +9,8 @@ export type QuestionType =
   | 'yes_no'
   | 'date'
   | 'file'
-  | 'select';
+  | 'select'
+  | 'url';
 
 export interface SegmentQuestion {
   id: string;
@@ -21,6 +24,7 @@ export interface SegmentQuestion {
   required?: boolean;
   enabled?: boolean;
   order?: number;
+  conditional?: ConditionalRule;
 }
 
 export interface SegmentConfig {

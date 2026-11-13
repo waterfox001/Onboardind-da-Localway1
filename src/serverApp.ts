@@ -4,8 +4,200 @@ import fs from 'fs';
 import dotenv from 'dotenv';
 import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai';
 import seedSubmissions from '../data/submissions.json';
+import firebaseConfig from '../firebase-applet-config.json';
 
 dotenv.config();
+
+const FIRESTORE_PROJECT_ID = firebaseConfig.projectId;
+const FIRESTORE_DATABASE_ID =
+  (firebaseConfig as { firestoreDatabaseId?: string }).firestoreDatabaseId || '(default)';
+const FIRESTORE_API_KEY = firebaseConfig.apiKey || '';
+const FIRESTORE_BASE_URL = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(
+  FIRESTORE_PROJECT_ID
+)}/databases/${encodeURIComponent(FIRESTORE_DATABASE_ID)}/documents`;
+
+function toFirestoreValue(val: any): any {
+  if (val === null || val === undefined) return { nullValue: null };
+  if (typeof val === 'boolean') return { booleanValue: val };
+  if (typeof val === 'number') {
+    return Number.isInteger(val) ? { integerValue: String(val) } : { doubleValue: val };
+  }
+  if (typeof val === 'string') return { stringValue: val };
+  if (Array.isArray(val)) {
+    return {
+      arrayValue: {
+        values: val.filter((v) => v !== undefined).map((v) => toFirestoreValue(v)),
+      },
+    };
+  }
+  if (typeof val === 'object') {
+    const fields: Record<string, any> = {};
+    for (const [k, v] of Object.entries(val)) {
+      if (v !== undefined) {
+        fields[k] = toFirestoreValue(v);
+      }
+    }
+    return { mapValue: { fields } };
+  }
+  return { stringValue: String(val) };
+}
+
+function fromFirestoreValue(val: any): any {
+  if (!val || typeof val !== 'object') return null;
+  if ('nullValue' in val) return null;
+  if ('booleanValue' in val) return Boolean(val.booleanValue);
+  if ('integerValue' in val) return Number(val.integerValue);
+  if ('doubleValue' in val) return Number(val.doubleValue);
+  if ('stringValue' in val) return String(val.stringValue);
+  if ('timestampValue' in val) return String(val.timestampValue);
+  if ('arrayValue' in val) {
+    const vals = val.arrayValue?.values;
+    return Array.isArray(vals) ? vals.map((item: any) => fromFirestoreValue(item)) : [];
+  }
+  if ('mapValue' in val) {
+    const fields = val.mapValue?.fields || {};
+    const out: Record<string, any> = {};
+    for (const [k, v] of Object.entries(fields)) {
+      out[k] = fromFirestoreValue(v);
+    }
+    return out;
+  }
+  return null;
+}
+
+function fromFirestoreDocument(doc: any): Record<string, any> | null {
+  if (!doc || !doc.fields) return null;
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(doc.fields)) {
+    out[k] = fromFirestoreValue(v);
+  }
+  return out;
+}
+
+async function firestoreGetDoc(collectionName: string, docId: string): Promise<Record<string, any> | null> {
+  try {
+    const url = `${FIRESTORE_BASE_URL}/${encodeURIComponent(collectionName)}/${encodeURIComponent(
+      docId
+    )}?key=${encodeURIComponent(FIRESTORE_API_KEY)}`;
+    const res = await fetch(url, { method: 'GET' });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return fromFirestoreDocument(json);
+  } catch (err) {
+    console.warn(`Firestore REST GET ${collectionName}/${docId} failed:`, err);
+    return null;
+  }
+}
+
+async function firestoreSetDoc(
+  collectionName: string,
+  docId: string,
+  data: Record<string, any>
+): Promise<boolean> {
+  try {
+    const fields: Record<string, any> = {};
+    for (const [k, v] of Object.entries(data)) {
+      if (v !== undefined) {
+        fields[k] = toFirestoreValue(v);
+      }
+    }
+    const url = `${FIRESTORE_BASE_URL}/${encodeURIComponent(collectionName)}/${encodeURIComponent(
+      docId
+    )}?key=${encodeURIComponent(FIRESTORE_API_KEY)}`;
+    const res = await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields }),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      console.warn(`Firestore REST SET ${collectionName}/${docId} returned ${res.status}: ${text.slice(0, 200)}`);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn(`Firestore REST SET ${collectionName}/${docId} failed:`, err);
+    return false;
+  }
+}
+
+async function firestoreListCollection(collectionName: string): Promise<any[]> {
+  try {
+    const url = `${FIRESTORE_BASE_URL}/${encodeURIComponent(
+      collectionName
+    )}?pageSize=200&key=${encodeURIComponent(FIRESTORE_API_KEY)}`;
+    const res = await fetch(url, { method: 'GET' });
+    if (!res.ok) return [];
+    const json: any = await res.json();
+    if (!Array.isArray(json.documents)) return [];
+    return json.documents
+      .map((d: any) => fromFirestoreDocument(d))
+      .filter((d: any) => Boolean(d));
+  } catch (err) {
+    console.warn(`Firestore REST LIST ${collectionName} failed:`, err);
+    return [];
+  }
+}
+
+async function firestoreDeleteDoc(collectionName: string, docId: string): Promise<boolean> {
+  try {
+    const url = `${FIRESTORE_BASE_URL}/${encodeURIComponent(collectionName)}/${encodeURIComponent(
+      docId
+    )}?key=${encodeURIComponent(FIRESTORE_API_KEY)}`;
+    const res = await fetch(url, { method: 'DELETE' });
+    return res.ok;
+  } catch (err) {
+    console.warn(`Firestore REST DELETE ${collectionName}/${docId} failed:`, err);
+    return false;
+  }
+}
+
+function toFirestoreSubmissionPayload(record: StoredSubmission): Record<string, any> {
+  const safeRowData: Record<string, string> = {};
+  for (const [k, v] of Object.entries(record.payload?.rowData || {})) {
+    safeRowData[k] = v == null ? '' : String(v);
+  }
+  return {
+    codigoCliente: String(record.codigoCliente || 'LW-01').toUpperCase(),
+    timestamp: record.timestamp || new Date().toISOString(),
+    lastModified: record.lastModified || new Date().toISOString(),
+    finalized: Boolean(record.finalized ?? true),
+    status: record.status === 'Rascunho' ? 'Rascunho' : 'Finalizado',
+    sheetSyncStatus: record.sheetSyncStatus || 'pending',
+    sheetSyncError: record.sheetSyncError ?? null,
+    finalizedAt: record.finalizedAt ?? null,
+    payload: {
+      rowData: safeRowData,
+      raw: record.payload?.raw ?? null,
+      dataHora: record.payload?.dataHora || safeRowData['Data e hora'] || '',
+    },
+  };
+}
+
+async function getMergedSubmissions(): Promise<StoredSubmission[]> {
+  const local = readLocalSubmissions();
+  const remote = await firestoreListCollection('onboarding_submissions');
+  const map = new Map<string, StoredSubmission>();
+  for (const item of local) {
+    const key = item.codigoCliente || item.payload?.rowData?.['Código do cliente'] || item.timestamp;
+    if (key) map.set(key, item);
+  }
+  for (const item of remote) {
+    const key = item.codigoCliente || item.payload?.rowData?.['Código do cliente'] || item.timestamp;
+    if (key) {
+      const prev = map.get(key);
+      const prevTime = new Date(prev?.lastModified || prev?.timestamp || 0).getTime();
+      const nextTime = new Date(item.lastModified || item.timestamp || 0).getTime();
+      if (!prev || nextTime >= prevTime) {
+        map.set(key, item as StoredSubmission);
+      }
+    }
+  }
+  const merged = Array.from(map.values());
+  merged.sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime());
+  writeLocalSubmissions(merged);
+  return merged;
+}
 
 const GOOGLE_SCRIPT_URL =
   process.env.GOOGLE_SCRIPT_URL ||
@@ -255,13 +447,16 @@ app.post(['/api/submit-onboarding', '/submit-onboarding'], async (req: Request, 
 
   const now = new Date().toISOString();
 
+  // Refresh local cache from Firestore first so client codes never collide across serverless cold starts
+  await getMergedSubmissions();
+
   // 1. Determine unique client code with strict deduplication
   const { clientCode, isExistingClient, existingIndex } = getOrCreateClientCode(payload.rowData);
   payload.rowData['Código do cliente'] = clientCode;
   payload.rowData['Status do Onboarding'] = 'Finalizado';
   payload.rowData['Data de finalização'] = new Date().toLocaleString('pt-BR');
 
-  // 2. Save local persistent backup FIRST (Requirement 2 & 6: Data Protection)
+  // 2. Save local & Firestore persistent backup FIRST (Data Protection)
   const list = readLocalSubmissions();
   const newRecord: StoredSubmission = {
     timestamp: (isExistingClient && existingIndex >= 0 && list[existingIndex]?.timestamp) || now,
@@ -280,6 +475,7 @@ app.post(['/api/submit-onboarding', '/submit-onboarding'], async (req: Request, 
     list.push(newRecord);
   }
   writeLocalSubmissions(list);
+  await firestoreSetDoc('onboarding_submissions', clientCode, toFirestoreSubmissionPayload(newRecord));
 
   // 3. Dispatch to Google Apps Script Web App
   let targetScriptUrl = GOOGLE_SCRIPT_URL;
@@ -351,6 +547,11 @@ app.post(['/api/submit-onboarding', '/submit-onboarding'], async (req: Request, 
         ? undefined
         : (responseJson?.mensagem || responseJson?.error || `HTTP ${response.status}`);
       writeLocalSubmissions(updatedList);
+      await firestoreSetDoc(
+        'onboarding_submissions',
+        clientCode,
+        toFirestoreSubmissionPayload(updatedList[recIdx])
+      );
     }
 
     if (isSheetsSuccess) {
@@ -385,6 +586,11 @@ app.post(['/api/submit-onboarding', '/submit-onboarding'], async (req: Request, 
       updatedList[recIdx].sheetSyncStatus = 'error';
       updatedList[recIdx].sheetSyncError = err instanceof Error ? err.message : String(err);
       writeLocalSubmissions(updatedList);
+      await firestoreSetDoc(
+        'onboarding_submissions',
+        clientCode,
+        toFirestoreSubmissionPayload(updatedList[recIdx])
+      );
     }
 
     return res.json({
@@ -401,9 +607,9 @@ app.post(['/api/submit-onboarding', '/submit-onboarding'], async (req: Request, 
 });
 
 // API: Get all submissions for Admin Panel
-app.get(['/api/submissions', '/submissions'], (req: Request, res: Response) => {
+app.get(['/api/submissions', '/submissions'], async (req: Request, res: Response) => {
   try {
-    const list = readLocalSubmissions();
+    const list = await getMergedSubmissions();
     return res.json({ success: true, submissions: list });
   } catch (err) {
     console.error('Failed to read submissions:', err);
@@ -412,10 +618,10 @@ app.get(['/api/submissions', '/submissions'], (req: Request, res: Response) => {
 });
 
 // API: Delete submission by index or code
-app.delete(['/api/submissions/:index', '/submissions/:index'], (req: Request, res: Response) => {
+app.delete(['/api/submissions/:index', '/submissions/:index'], async (req: Request, res: Response) => {
   try {
     const param = req.params.index;
-    const list = readLocalSubmissions();
+    const list = await getMergedSubmissions();
     let idx = -1;
 
     idx = list.findIndex(
@@ -430,8 +636,12 @@ app.delete(['/api/submissions/:index', '/submissions/:index'], (req: Request, re
     }
 
     if (idx >= 0 && idx < list.length) {
-      list.splice(idx, 1);
+      const removed = list.splice(idx, 1)[0];
       writeLocalSubmissions(list);
+      const code = removed?.codigoCliente || removed?.payload?.rowData?.['Código do cliente'];
+      if (code && /^LW-\d{1,6}$/i.test(code)) {
+        await firestoreDeleteDoc('onboarding_submissions', code.toUpperCase());
+      }
       return res.json({ success: true, message: 'Submissão excluída com sucesso' });
     }
     return res.status(404).json({ success: false, error: 'Submissão não encontrada' });
@@ -441,7 +651,7 @@ app.delete(['/api/submissions/:index', '/submissions/:index'], (req: Request, re
 });
 
 // API: Update submission by index or client code
-app.put(['/api/submissions/:index', '/submissions/:index'], (req: Request, res: Response) => {
+app.put(['/api/submissions/:index', '/submissions/:index'], async (req: Request, res: Response) => {
   try {
     const param = req.params.index;
     const updatedData = req.body;
@@ -449,7 +659,7 @@ app.put(['/api/submissions/:index', '/submissions/:index'], (req: Request, res: 
       return res.status(400).json({ success: false, error: 'Dados ausentes para atualização' });
     }
 
-    const list = readLocalSubmissions();
+    const list = await getMergedSubmissions();
     let idx = -1;
 
     idx = list.findIndex(
@@ -470,6 +680,14 @@ app.put(['/api/submissions/:index', '/submissions/:index'], (req: Request, res: 
         lastModified: new Date().toISOString(),
       };
       writeLocalSubmissions(list);
+      const code = list[idx]?.codigoCliente || list[idx]?.payload?.rowData?.['Código do cliente'];
+      if (code && /^LW-\d{1,6}$/i.test(code)) {
+        await firestoreSetDoc(
+          'onboarding_submissions',
+          code.toUpperCase(),
+          toFirestoreSubmissionPayload(list[idx])
+        );
+      }
       return res.json({
         success: true,
         message: 'Dados da empresa atualizados com sucesso',
@@ -974,8 +1192,18 @@ COMANDO DO ADMINISTRADOR LOCALWAY:
 });
 
 // API: Admin Settings
-app.get(['/api/admin/settings', '/admin/settings'], (req: Request, res: Response) => {
+app.get(['/api/admin/settings', '/admin/settings'], async (req: Request, res: Response) => {
   try {
+    const remoteDoc = await firestoreGetDoc('app_config', 'admin_settings');
+    if (remoteDoc && (remoteDoc.settings || remoteDoc.googleScriptUrl)) {
+      const mergedSettings = {
+        googleScriptUrl: remoteDoc.googleScriptUrl || GOOGLE_SCRIPT_URL,
+        transferNowUrl: remoteDoc.transferNowUrl || 'https://www.transfernow.net',
+        ...(remoteDoc.settings || {}),
+      };
+      inMemorySettings = mergedSettings;
+      return res.json({ success: true, settings: mergedSettings });
+    }
     if (fs.existsSync(SETTINGS_FILE)) {
       const content = fs.readFileSync(SETTINGS_FILE, 'utf-8');
       inMemorySettings = JSON.parse(content || '{}');
@@ -998,9 +1226,9 @@ app.get(['/api/admin/settings', '/admin/settings'], (req: Request, res: Response
   }
 });
 
-app.post(['/api/admin/settings', '/admin/settings'], (req: Request, res: Response) => {
+app.post(['/api/admin/settings', '/admin/settings'], async (req: Request, res: Response) => {
   try {
-    const settings = req.body;
+    const settings = req.body || {};
     inMemorySettings = settings;
     try {
       ensureDataDir();
@@ -1008,6 +1236,13 @@ app.post(['/api/admin/settings', '/admin/settings'], (req: Request, res: Respons
     } catch {
       // ignore
     }
+    await firestoreSetDoc('app_config', 'admin_settings', {
+      settings,
+      googleScriptUrl: String(settings.googleScriptUrl || '').slice(0, 500),
+      transferNowUrl: String(settings.transferNowUrl || 'https://www.transfernow.net').slice(0, 500),
+      updatedAt: new Date().toISOString(),
+      updatedBy: 'Localway Admin API',
+    });
     return res.json({ success: true, message: 'Configurações salvas com sucesso' });
   } catch (err) {
     return res.status(500).json({ success: false, error: String(err) });
@@ -1015,8 +1250,13 @@ app.post(['/api/admin/settings', '/admin/settings'], (req: Request, res: Respons
 });
 
 // API: Admin Schema
-app.get(['/api/admin/schema', '/admin/schema'], (req: Request, res: Response) => {
+app.get(['/api/admin/schema', '/admin/schema'], async (req: Request, res: Response) => {
   try {
+    const remoteDoc = await firestoreGetDoc('app_config', 'onboarding_schema');
+    if (remoteDoc && (remoteDoc.onboardingFields || remoteDoc.servicesConfig)) {
+      inMemorySchema = remoteDoc;
+      return res.json({ success: true, schema: remoteDoc });
+    }
     if (fs.existsSync(SCHEMA_FILE)) {
       const content = fs.readFileSync(SCHEMA_FILE, 'utf-8');
       inMemorySchema = JSON.parse(content || '{}');
@@ -1031,9 +1271,9 @@ app.get(['/api/admin/schema', '/admin/schema'], (req: Request, res: Response) =>
   }
 });
 
-app.post(['/api/admin/schema', '/admin/schema'], (req: Request, res: Response) => {
+app.post(['/api/admin/schema', '/admin/schema'], async (req: Request, res: Response) => {
   try {
-    const schema = req.body;
+    const schema = req.body || {};
     inMemorySchema = schema;
     try {
       ensureDataDir();
@@ -1041,7 +1281,28 @@ app.post(['/api/admin/schema', '/admin/schema'], (req: Request, res: Response) =
     } catch {
       // ignore
     }
-    return res.json({ success: true, message: 'Esquema de formulário salvo com sucesso' });
+
+    const allowlistedSchema = {
+      schemaVersion: Number(schema.schemaVersion || 2),
+      companyFields: Array.isArray(schema.companyFields) ? schema.companyFields : [],
+      onboardingFields: Array.isArray(schema.onboardingFields) ? schema.onboardingFields : [],
+      categoriesConfig: Array.isArray(schema.categoriesConfig) ? schema.categoriesConfig : [],
+      segmentsConfig: schema.segmentsConfig && typeof schema.segmentsConfig === 'object' ? schema.segmentsConfig : {},
+      servicesConfig: schema.servicesConfig && typeof schema.servicesConfig === 'object' ? schema.servicesConfig : {},
+      settings: schema.settings && typeof schema.settings === 'object' ? schema.settings : {},
+      updatedAt: new Date().toISOString(),
+      updatedBy: 'Localway Admin API',
+    };
+
+    const persistedRemote = await firestoreSetDoc('app_config', 'onboarding_schema', allowlistedSchema);
+
+    return res.json({
+      success: true,
+      firestoreSaved: persistedRemote,
+      message: persistedRemote
+        ? 'Esquema de formulário salvo no Firebase e no servidor!'
+        : 'Esquema de formulário salvo no servidor.',
+    });
   } catch (err) {
     return res.status(500).json({ success: false, error: String(err) });
   }
@@ -1116,6 +1377,7 @@ app.post(['/api/admin/sync-submission', '/admin/sync-submission'], async (req: R
         : (responseJson?.mensagem || responseJson?.error || `HTTP ${response.status}`);
       list[idx].lastModified = new Date().toISOString();
       writeLocalSubmissions(list);
+      await firestoreSetDoc('onboarding_submissions', clientCode, toFirestoreSubmissionPayload(list[idx]));
     }
 
     return res.json({

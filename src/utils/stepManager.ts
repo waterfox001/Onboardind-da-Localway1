@@ -1,67 +1,73 @@
 import { StepDefinition, StepType, ServiceId } from '../types';
 
+export function normalizeStepId(stepId: string | null | undefined): StepType {
+  if (!stepId) return 'services';
+  if (
+    stepId === 'company' ||
+    stepId === 'address' ||
+    stepId === 'hours' ||
+    stepId === 'segment_details'
+  ) {
+    return 'general_company';
+  }
+  if (
+    stepId === 'structure' ||
+    stepId === 'manager' ||
+    stepId === 'materials' ||
+    stepId === 'final_notes'
+  ) {
+    return 'general_structure';
+  }
+  return stepId as StepType;
+}
+
 export function getActiveSteps(selectedServices: ServiceId[]): StepDefinition[] {
   const steps: StepDefinition[] = [
     {
-      id: 'company',
-      title: 'Dados da Empresa',
-      subtitle: 'Informações cadastrais e perfil do seu negócio',
-      categoryName: '1. Empresa',
-    },
-    {
-      id: 'segment_details',
-      title: 'Detalhes do Segmento',
-      subtitle: 'Perguntas e especificações da sua área de atuação',
-      categoryName: '2. Segmento',
-    },
-    {
-      id: 'address',
-      title: 'Endereço Comercial',
-      subtitle: 'Localização da sede ou ponto de atendimento',
-      categoryName: '3. Localização',
-    },
-    {
-      id: 'hours',
-      title: 'Horário de Funcionamento',
-      subtitle: 'Dias, horários de atendimento e agendamento',
-      categoryName: '4. Horários',
-    },
-    {
-      id: 'structure',
-      title: 'Estrutura e Pagamento',
-      subtitle: 'Estacionamento, idiomas e formas de pagamento aceitas',
-      categoryName: '5. Estrutura',
-    },
-    {
-      id: 'manager',
-      title: 'Responsável pelo Projeto',
-      subtitle: 'Quem acompanhará as etapas e aprovações com a Localway',
-      categoryName: '6. Responsável',
-    },
-    {
       id: 'services',
       title: 'Serviços Contratados',
-      subtitle: 'Selecione todos os serviços incluídos no seu contrato',
-      categoryName: '7. Serviços',
+      subtitle: 'Selecione os serviços incluídos no seu projeto com a Localway',
+      categoryName: '1. Serviços',
+    },
+    {
+      id: 'general_company',
+      title: 'Onboarding Geral — Página 1',
+      subtitle: 'Dados da empresa, segmento, endereço comercial e horários de funcionamento',
+      categoryName: '2. Dados da Empresa',
+    },
+    {
+      id: 'general_structure',
+      title: 'Onboarding Geral — Página 2',
+      subtitle: 'Estrutura, formas de pagamento, responsável, produtos/serviços e materiais',
+      categoryName: '3. Estrutura & Materiais',
     },
   ];
 
-  // Dynamic modules based on contracted services
+  // Dynamic modules based strictly on contracted services
   if (selectedServices.includes('google')) {
     steps.push({
       id: 'module_google',
       title: 'Perfil da Empresa no Google',
-      subtitle: 'Informações para otimizar ou criar sua presença no Google e Google Maps',
-      categoryName: 'Google Meu Negócio',
+      subtitle: 'Informações específicas para criar ou otimizar sua presença no Google e Google Maps',
+      categoryName: 'Perfil no Google',
     });
   }
 
   if (selectedServices.includes('site')) {
     steps.push({
       id: 'module_site',
-      title: 'Site Profissional',
-      subtitle: 'Objetivos, páginas, referências e estrutura do seu novo site',
-      categoryName: 'Site Profissional',
+      title: 'Site Institucional',
+      subtitle: 'História, serviços, produtos, diferenciais e estrutura do seu site institucional',
+      categoryName: 'Site Institucional',
+    });
+  }
+
+  if (selectedServices.includes('minisite')) {
+    steps.push({
+      id: 'module_minisite',
+      title: 'Mini Site',
+      subtitle: 'Links prioritários, destaques, identidade visual e recursos do seu mini site',
+      categoryName: 'Mini Site',
     });
   }
 
@@ -89,15 +95,6 @@ export function getActiveSteps(selectedServices: ServiceId[]): StepDefinition[] 
       title: 'Identidade Visual',
       subtitle: 'Estilo visual, preferências de cores e posicionamento de marca',
       categoryName: 'Identidade Visual',
-    });
-  }
-
-  if (selectedServices.includes('minisite')) {
-    steps.push({
-      id: 'module_minisite',
-      title: 'Mini Site',
-      subtitle: 'Links prioritários, contatos e informações para acesso rápido',
-      categoryName: 'Mini Site',
     });
   }
 
@@ -181,22 +178,6 @@ export function getActiveSteps(selectedServices: ServiceId[]): StepDefinition[] 
       categoryName: 'Catálogo Digital',
     });
   }
-
-  // Materials
-  steps.push({
-    id: 'materials',
-    title: 'Materiais do Projeto',
-    subtitle: 'Envio de logotipo, fotos, vídeos, cardápios e arquivos',
-    categoryName: 'Materiais',
-  });
-
-  // Final notes
-  steps.push({
-    id: 'final_notes',
-    title: 'Observações Finais',
-    subtitle: 'Mensagem adicional ou orientações especiais para nossa equipe',
-    categoryName: 'Observações',
-  });
 
   // Summary
   steps.push({
