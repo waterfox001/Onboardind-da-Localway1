@@ -29,15 +29,20 @@ let inMemorySubmissions: StoredSubmission[] = Array.isArray(seedSubmissions)
 let inMemorySettings: any = null;
 let inMemorySchema: any = null;
 
-// Initialize Gemini API client on the server (never exposed to browser)
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
+// Helper to get Gemini API client on the server (never exposed to browser)
+function getGeminiClient(): GoogleGenAI | null {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey.trim() === '') return null;
+  return new GoogleGenAI({
+    apiKey: apiKey.trim(),
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build',
+      },
     },
-  },
-});
+  });
+}
+
 
 export interface StoredSubmission {
   timestamp: string;
@@ -527,17 +532,22 @@ DIRETRIZES E REGRAS INEGOCIÁVEIS:
     let generatedList: any[] = [];
     let detectedSegment = segmentName || 'Geral';
 
-    if (process.env.GEMINI_API_KEY) {
+    const geminiClient = getGeminiClient();
+    if (geminiClient) {
       try {
         const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout na API Gemini')), 18000)
+          setTimeout(() => reject(new Error('Timeout na API Gemini')), 20000)
         );
 
-        const aiPromise = ai.models.generateContent({
-          model: 'gemini-2.5-flash',
+        const aiPromise = geminiClient.models.generateContent({
+          model: 'gemini-3.8-flash',
           contents: prompt,
           config: {
+            thinkingConfig: {
+              thinkingLevel: ThinkingLevel.LOW,
+            },
             responseMimeType: 'application/json',
+
             responseSchema: {
               type: Type.OBJECT,
               properties: {
@@ -789,15 +799,17 @@ COMANDO DO ADMINISTRADOR LOCALWAY:
 
     let aiResult: any = null;
 
-    if (process.env.GEMINI_API_KEY) {
+    const geminiClient = getGeminiClient();
+    if (geminiClient) {
       try {
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('Timeout de 30 segundos na API Gemini')), 30000)
         );
 
-        const aiPromise = ai.models.generateContent({
+        const aiPromise = geminiClient.models.generateContent({
           model: 'gemini-3.8-flash',
           contents: fullPrompt,
+
           config: {
             thinkingConfig: {
               thinkingLevel: ThinkingLevel.LOW,
