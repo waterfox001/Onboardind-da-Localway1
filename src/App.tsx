@@ -28,6 +28,7 @@ import { ModuleBrandRegistry } from './components/steps/modules/ModuleBrandRegis
 import { ModuleDomain } from './components/steps/modules/ModuleDomain';
 import { ModuleSmartCard } from './components/steps/modules/ModuleSmartCard';
 import { ModuleCatalog } from './components/steps/modules/ModuleCatalog';
+import { DynamicExtraQuestions } from './components/steps/DynamicExtraQuestions';
 
 import { StepSegmentDetails } from './components/steps/StepSegmentDetails';
 import { StepSummary } from './components/steps/StepSummary';
@@ -59,31 +60,8 @@ const ADMIN_CACHE_KEY = 'localway_admin_submissions_v1';
 
 export default function App() {
   const [viewMode, setViewMode] = useState<'form' | 'manage-questions'>('form');
-  const [hasStarted, setHasStarted] = useState<boolean>(() => {
-    try {
-      const started = localStorage.getItem(STARTED_KEY);
-      if (started === 'true') return true;
-      const savedStep = localStorage.getItem(STEP_KEY);
-      const normalized = normalizeStepId(savedStep);
-      if (savedStep && normalized !== 'general_company') return true;
-      const draft = localStorage.getItem(DRAFT_KEY);
-      if (draft) {
-        const parsed = JSON.parse(draft);
-        if (
-          parsed.nomeFantasia ||
-          parsed.whatsapp ||
-          parsed.razaoSocial ||
-          parsed.email ||
-          (parsed.servicosContratados && parsed.servicosContratados.length > 0)
-        ) {
-          return true;
-        }
-      }
-    } catch {
-      // ignore
-    }
-    return false;
-  });
+  // Capa inicial sempre exibida ao abrir o onboarding antes de qualquer pergunta
+  const [hasStarted, setHasStarted] = useState<boolean>(false);
 
   const [adminPageTab, setAdminPageTab] = useState<
     'services' | 'questions' | 'local-ai' | 'fields' | 'segments' | 'submissions' | 'settings'
@@ -121,7 +99,20 @@ export default function App() {
   const [currentStepId, setCurrentStepId] = useState<StepType>(() => {
     try {
       const savedStep = localStorage.getItem(STEP_KEY);
-      return normalizeStepId(savedStep);
+      const normalized = normalizeStepId(savedStep);
+      const draftRaw = localStorage.getItem(DRAFT_KEY);
+      const draft = draftRaw ? JSON.parse(draftRaw) : null;
+      const hasCompanyData = Boolean(
+        draft &&
+          (draft.nomeFantasia?.trim() ||
+            draft.whatsapp?.trim() ||
+            draft.razaoSocial?.trim() ||
+            draft.email?.trim())
+      );
+      if (normalized !== 'general_company' && !hasCompanyData) {
+        return 'general_company';
+      }
+      return normalized;
     } catch {
       // ignore
     }
@@ -229,6 +220,13 @@ export default function App() {
   }, [activeSteps, currentStepId]);
 
   const currentStep = activeSteps[currentStepIndex] || activeSteps[0];
+
+  // Ensure currentStepId remains valid if services or schema change
+  useEffect(() => {
+    if (activeSteps.length > 0 && !activeSteps.some((s) => s.id === currentStepId)) {
+      setCurrentStepId('general_company');
+    }
+  }, [activeSteps, currentStepId]);
 
   // Auto-save draft on data changes
   useEffect(() => {
@@ -892,12 +890,10 @@ export default function App() {
 
   if (!hasStarted) {
     const hasExistingDraft = Boolean(
-      formData.nomeFantasia ||
-        formData.whatsapp ||
-        formData.razaoSocial ||
-        formData.email ||
-        (formData.servicosContratados && formData.servicosContratados.length > 0) ||
-        currentStepId !== 'general_company'
+      formData.nomeFantasia?.trim() ||
+        formData.whatsapp?.trim() ||
+        formData.razaoSocial?.trim() ||
+        formData.email?.trim()
     );
     return (
       <>
@@ -1123,6 +1119,19 @@ export default function App() {
                     errors={errors}
                   />
                 )}
+
+                {currentStepId.startsWith('module_') &&
+                  !['module_google', 'module_site', 'module_minisite'].includes(currentStepId) && (
+                    <DynamicExtraQuestions
+                      questions={(
+                        schema.servicesConfig?.[currentStepId.replace('module_', '') as ServiceId]
+                          ?.questions || []
+                      ).filter((q) => q.id.startsWith('q_svc_') || Boolean(q.storageKey))}
+                      data={formData}
+                      onChange={updateField}
+                      errors={errors}
+                    />
+                  )}
 
                 {currentStepId === 'segment_details' && (
                   <StepSegmentDetails
