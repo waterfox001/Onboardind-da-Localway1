@@ -70,7 +70,7 @@ export type CompanyFieldConfig = OnboardingFieldConfig;
 export const DEFAULT_CATEGORIES_CONFIG: FormCategoryConfig[] = [
   {
     id: 'cat_company',
-    title: 'A. Empresa',
+    title: 'Empresa',
     subtitle: 'Dados cadastrais e canais principais de contato',
     pageId: 'general_company',
     order: 1,
@@ -78,7 +78,7 @@ export const DEFAULT_CATEGORIES_CONFIG: FormCategoryConfig[] = [
   },
   {
     id: 'cat_address',
-    title: 'B. Endereço',
+    title: 'Endereço',
     subtitle: 'Localização do negócio ou atendimento em região dos clientes',
     pageId: 'general_company',
     order: 2,
@@ -86,7 +86,7 @@ export const DEFAULT_CATEGORIES_CONFIG: FormCategoryConfig[] = [
   },
   {
     id: 'cat_hours',
-    title: 'C. Horários de Funcionamento e Agendamento',
+    title: 'Horários de Funcionamento e Agendamento',
     subtitle: 'Dias, horários de atendimento e política de agendamento prévio',
     pageId: 'general_company',
     order: 3,
@@ -94,7 +94,7 @@ export const DEFAULT_CATEGORIES_CONFIG: FormCategoryConfig[] = [
   },
   {
     id: 'cat_structure',
-    title: 'A. Estrutura e Atendimento',
+    title: 'Estrutura e Atendimento',
     subtitle: 'Formato de operação, acessibilidade e idiomas',
     pageId: 'general_structure',
     order: 4,
@@ -102,7 +102,7 @@ export const DEFAULT_CATEGORIES_CONFIG: FormCategoryConfig[] = [
   },
   {
     id: 'cat_payment',
-    title: 'B. Formas de Pagamento',
+    title: 'Formas de Pagamento',
     subtitle: 'Modalidades aceitas e bandeiras de cartão',
     pageId: 'general_structure',
     order: 5,
@@ -110,7 +110,7 @@ export const DEFAULT_CATEGORIES_CONFIG: FormCategoryConfig[] = [
   },
   {
     id: 'cat_manager',
-    title: 'C. Responsável pelo Projeto',
+    title: 'Responsável pelo Projeto',
     subtitle: 'Pessoa de contato principal para aprovações com a Localway',
     pageId: 'general_structure',
     order: 6,
@@ -118,7 +118,7 @@ export const DEFAULT_CATEGORIES_CONFIG: FormCategoryConfig[] = [
   },
   {
     id: 'cat_catalog',
-    title: 'D. Cadastro Compartilhado de Produtos e Serviços (Opcional)',
+    title: 'Cadastro Compartilhado de Produtos e Serviços (Opcional)',
     subtitle: 'Cadastre seus itens uma única vez para reaproveitar em Google, Site e Mini Site',
     pageId: 'general_structure',
     order: 7,
@@ -126,7 +126,7 @@ export const DEFAULT_CATEGORIES_CONFIG: FormCategoryConfig[] = [
   },
   {
     id: 'cat_materials',
-    title: 'E. Arquivos e Materiais Digitais',
+    title: 'Arquivos e Materiais Digitais',
     subtitle: 'Logotipo, fotos e links de pastas na nuvem',
     pageId: 'general_structure',
     order: 8,
@@ -134,7 +134,7 @@ export const DEFAULT_CATEGORIES_CONFIG: FormCategoryConfig[] = [
   },
   {
     id: 'cat_final_notes',
-    title: 'F. Observações Finais',
+    title: 'Observações Finais',
     subtitle: 'Orientações ou prioridades adicionais para nossa equipe',
     pageId: 'general_structure',
     order: 9,
@@ -157,7 +157,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'company',
     pageId: 'general_company',
     categoryId: 'cat_company',
-    category: 'A. Empresa',
+    category: 'Empresa',
   },
   {
     id: 'razaoSocial',
@@ -172,7 +172,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'company',
     pageId: 'general_company',
     categoryId: 'cat_company',
-    category: 'A. Empresa',
+    category: 'Empresa',
   },
   {
     id: 'cnpj',
@@ -187,7 +187,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'company',
     pageId: 'general_company',
     categoryId: 'cat_company',
-    category: 'A. Empresa',
+    category: 'Empresa',
   },
   {
     id: 'dataAbertura',
@@ -202,7 +202,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'company',
     pageId: 'general_company',
     categoryId: 'cat_company',
-    category: 'A. Empresa',
+    category: 'Empresa',
   },
   {
     id: 'segmento',
@@ -216,7 +216,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'company',
     pageId: 'general_company',
     categoryId: 'cat_company',
-    category: 'A. Empresa',
+    category: 'Empresa',
   },
   {
     id: 'descricaoEmpresa',
@@ -231,7 +231,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'company',
     pageId: 'general_company',
     categoryId: 'cat_company',
-    category: 'A. Empresa',
+    category: 'Empresa',
   },
   {
     id: 'whatsapp',
@@ -246,7 +246,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'company',
     pageId: 'general_company',
     categoryId: 'cat_company',
-    category: 'A. Empresa',
+    category: 'Empresa',
     colSpan: 1,
   },
   {
@@ -261,7 +261,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'company',
     pageId: 'general_company',
     categoryId: 'cat_company',
-    category: 'A. Empresa',
+    category: 'Empresa',
     colSpan: 1,
   },
   {
@@ -276,7 +276,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'company',
     pageId: 'general_company',
     categoryId: 'cat_company',
-    category: 'A. Empresa',
+    category: 'Empresa',
     colSpan: 1,
   },
   {
@@ -291,7 +291,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'company',
     pageId: 'general_company',
     categoryId: 'cat_company',
-    category: 'A. Empresa',
+    category: 'Empresa',
     colSpan: 1,
   },
   {
@@ -306,7 +306,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'company',
     pageId: 'general_company',
     categoryId: 'cat_company',
-    category: 'A. Empresa',
+    category: 'Empresa',
     colSpan: 1,
   },
   {
@@ -321,7 +321,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'company',
     pageId: 'general_company',
     categoryId: 'cat_company',
-    category: 'A. Empresa',
+    category: 'Empresa',
     colSpan: 1,
   },
 
@@ -338,7 +338,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'address',
     pageId: 'general_company',
     categoryId: 'cat_address',
-    category: 'B. Endereço',
+    category: 'Endereço',
   },
   {
     id: 'cep',
@@ -353,7 +353,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'address',
     pageId: 'general_company',
     categoryId: 'cat_address',
-    category: 'B. Endereço',
+    category: 'Endereço',
     conditional: {
       dependsOn: 'enderecoSemLocalFisico',
       operator: 'not_equals',
@@ -373,7 +373,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'address',
     pageId: 'general_company',
     categoryId: 'cat_address',
-    category: 'B. Endereço',
+    category: 'Endereço',
     conditional: {
       dependsOn: 'enderecoSemLocalFisico',
       operator: 'not_equals',
@@ -393,7 +393,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'address',
     pageId: 'general_company',
     categoryId: 'cat_address',
-    category: 'B. Endereço',
+    category: 'Endereço',
     conditional: {
       dependsOn: 'enderecoSemLocalFisico',
       operator: 'not_equals',
@@ -413,7 +413,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'address',
     pageId: 'general_company',
     categoryId: 'cat_address',
-    category: 'B. Endereço',
+    category: 'Endereço',
     conditional: {
       dependsOn: 'enderecoSemLocalFisico',
       operator: 'not_equals',
@@ -433,7 +433,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'address',
     pageId: 'general_company',
     categoryId: 'cat_address',
-    category: 'B. Endereço',
+    category: 'Endereço',
     conditional: {
       dependsOn: 'enderecoSemLocalFisico',
       operator: 'not_equals',
@@ -453,7 +453,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'address',
     pageId: 'general_company',
     categoryId: 'cat_address',
-    category: 'B. Endereço',
+    category: 'Endereço',
     colSpan: 1,
   },
   {
@@ -467,7 +467,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'address',
     pageId: 'general_company',
     categoryId: 'cat_address',
-    category: 'B. Endereço',
+    category: 'Endereço',
     options: [
       'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
       'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
@@ -489,7 +489,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'hours',
     pageId: 'general_company',
     categoryId: 'cat_hours',
-    category: 'C. Horários de Funcionamento e Agendamento',
+    category: 'Horários de Funcionamento e Agendamento',
   },
   {
     id: 'trabalhaAgendamento',
@@ -503,7 +503,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'hours',
     pageId: 'general_company',
     categoryId: 'cat_hours',
-    category: 'C. Horários de Funcionamento e Agendamento',
+    category: 'Horários de Funcionamento e Agendamento',
     options: ['Sim', 'Não'],
   },
   {
@@ -517,7 +517,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'hours',
     pageId: 'general_company',
     categoryId: 'cat_hours',
-    category: 'C. Horários de Funcionamento e Agendamento',
+    category: 'Horários de Funcionamento e Agendamento',
     options: ['WhatsApp', 'Telefone', 'Direct do Instagram', 'Site / Plataforma online', 'Presencialmente', 'Outro'],
     allowOther: true,
     conditional: {
@@ -537,7 +537,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'hours',
     pageId: 'general_company',
     categoryId: 'cat_hours',
-    category: 'C. Horários de Funcionamento e Agendamento',
+    category: 'Horários de Funcionamento e Agendamento',
     options: ['Sim', 'Não'],
     conditional: {
       dependsOn: 'trabalhaAgendamento',
@@ -557,7 +557,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'hours',
     pageId: 'general_company',
     categoryId: 'cat_hours',
-    category: 'C. Horários de Funcionamento e Agendamento',
+    category: 'Horários de Funcionamento e Agendamento',
     conditional: {
       dependsOn: 'possuiLinkAgendamento',
       operator: 'equals',
@@ -578,7 +578,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'structure',
     pageId: 'general_structure',
     categoryId: 'cat_structure',
-    category: 'A. Estrutura e Atendimento',
+    category: 'Estrutura e Atendimento',
     options: [
       'Loja de rua / Ponto comercial próprio',
       'Sala comercial / Consultório / Escritório',
@@ -599,7 +599,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'structure',
     pageId: 'general_structure',
     categoryId: 'cat_structure',
-    category: 'A. Estrutura e Atendimento',
+    category: 'Estrutura e Atendimento',
     options: [
       'Atendemos clientes em nosso estabelecimento',
       'Atendemos somente na região dos clientes',
@@ -618,7 +618,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'structure',
     pageId: 'general_structure',
     categoryId: 'cat_structure',
-    category: 'A. Estrutura e Atendimento',
+    category: 'Estrutura e Atendimento',
     options: [
       'Estacionamento próprio gratuito no local',
       'Estacionamento próprio pago',
@@ -645,7 +645,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'structure',
     pageId: 'general_structure',
     categoryId: 'cat_structure',
-    category: 'A. Estrutura e Atendimento',
+    category: 'Estrutura e Atendimento',
     options: ['Português', 'Inglês', 'Espanhol', 'LIBRAS (Língua Brasileira de Sinais)'],
   },
 
@@ -661,7 +661,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'structure',
     pageId: 'general_structure',
     categoryId: 'cat_payment',
-    category: 'B. Formas de Pagamento',
+    category: 'Formas de Pagamento',
     options: [
       'Pix',
       'Dinheiro',
@@ -684,7 +684,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'structure',
     pageId: 'general_structure',
     categoryId: 'cat_payment',
-    category: 'B. Formas de Pagamento',
+    category: 'Formas de Pagamento',
     options: ['Visa', 'Mastercard', 'Elo', 'Hipercard', 'American Express (Amex)', 'Outra'],
     allowOther: true,
     conditional: {
@@ -707,7 +707,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'manager',
     pageId: 'general_structure',
     categoryId: 'cat_manager',
-    category: 'C. Responsável pelo Projeto',
+    category: 'Responsável pelo Projeto',
     colSpan: 1,
   },
   {
@@ -722,7 +722,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'manager',
     pageId: 'general_structure',
     categoryId: 'cat_manager',
-    category: 'C. Responsável pelo Projeto',
+    category: 'Responsável pelo Projeto',
     colSpan: 1,
   },
   {
@@ -737,7 +737,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'manager',
     pageId: 'general_structure',
     categoryId: 'cat_manager',
-    category: 'C. Responsável pelo Projeto',
+    category: 'Responsável pelo Projeto',
     colSpan: 1,
   },
   {
@@ -752,7 +752,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'manager',
     pageId: 'general_structure',
     categoryId: 'cat_manager',
-    category: 'C. Responsável pelo Projeto',
+    category: 'Responsável pelo Projeto',
     colSpan: 1,
   },
 
@@ -769,7 +769,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'general_structure',
     pageId: 'general_structure',
     categoryId: 'cat_catalog',
-    category: 'D. Cadastro Compartilhado de Produtos e Serviços (Opcional)',
+    category: 'Cadastro Compartilhado de Produtos e Serviços (Opcional)',
   },
 
   // ================= PÁGINA 2E: ARQUIVOS E MATERIAIS DIGITAIS =================
@@ -785,7 +785,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'materials',
     pageId: 'general_structure',
     categoryId: 'cat_materials',
-    category: 'E. Arquivos e Materiais Digitais',
+    category: 'Arquivos e Materiais Digitais',
     options: ['Sim', 'Não possuo materiais no momento'],
   },
   {
@@ -799,7 +799,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'materials',
     pageId: 'general_structure',
     categoryId: 'cat_materials',
-    category: 'E. Arquivos e Materiais Digitais',
+    category: 'Arquivos e Materiais Digitais',
     options: [
       'Logotipo',
       'Fotos do estabelecimento',
@@ -825,7 +825,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'materials',
     pageId: 'general_structure',
     categoryId: 'cat_materials',
-    category: 'E. Arquivos e Materiais Digitais',
+    category: 'Arquivos e Materiais Digitais',
     conditional: {
       dependsOn: 'possuiMateriais',
       operator: 'equals',
@@ -845,7 +845,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'materials',
     pageId: 'general_structure',
     categoryId: 'cat_materials',
-    category: 'E. Arquivos e Materiais Digitais',
+    category: 'Arquivos e Materiais Digitais',
     conditional: {
       dependsOn: 'possuiMateriais',
       operator: 'equals',
@@ -865,7 +865,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'materials',
     pageId: 'general_structure',
     categoryId: 'cat_materials',
-    category: 'E. Arquivos e Materiais Digitais',
+    category: 'Arquivos e Materiais Digitais',
   },
 
   // ================= PÁGINA 2F: OBSERVAÇÕES FINAIS =================
@@ -882,7 +882,7 @@ export const DEFAULT_ONBOARDING_FIELDS: OnboardingFieldConfig[] = [
     stepId: 'final_notes',
     pageId: 'general_structure',
     categoryId: 'cat_final_notes',
-    category: 'F. Observações Finais',
+    category: 'Observações Finais',
   },
 ];
 
@@ -958,6 +958,11 @@ export function evaluateCondition(
   }
 }
 
+const stripLeadingIndexPrefix = (text?: string): string | undefined => {
+  if (!text) return text;
+  return text.replace(/^(?:[A-Fa-f]|\d+)\.\s+/, '').trim();
+};
+
 /**
  * Safely upgrades any v1 schema loaded from localStorage/Firestore/server into v2
  * without losing user-created questions, segments, or settings.
@@ -967,11 +972,15 @@ export function migrateSchema(incoming: Partial<FormSchemaState> | null | undefi
 
   const isAlreadyV2 = Number(incoming.schemaVersion || 1) >= 2;
 
-  // Categories config
-  const categoriesConfig =
+  // Categories config (strip legacy A./B./1. prefixes if still present from saved schemas)
+  const rawCategories =
     Array.isArray(incoming.categoriesConfig) && incoming.categoriesConfig.length > 0
       ? incoming.categoriesConfig
       : DEFAULT_CATEGORIES_CONFIG;
+  const categoriesConfig = rawCategories.map((c) => ({
+    ...c,
+    title: stripLeadingIndexPrefix(c.title) || c.title,
+  }));
 
   // Merge onboardingFields: if migrating from v1, enrich existing fields with pageId/categoryId and append missing new fields
   const defaultMap = new Map(DEFAULT_ONBOARDING_FIELDS.map((f) => [f.id, f]));
@@ -986,6 +995,7 @@ export function migrateSchema(incoming: Partial<FormSchemaState> | null | undefi
       return {
         ...def,
         ...f,
+        category: stripLeadingIndexPrefix(f.category || def?.category),
         pageId: f.pageId || def?.pageId || 'general_company',
         categoryId: f.categoryId || def?.categoryId || 'cat_company',
       };
@@ -1000,6 +1010,7 @@ export function migrateSchema(incoming: Partial<FormSchemaState> | null | undefi
       return {
         ...def,
         ...f,
+        category: stripLeadingIndexPrefix(f.category || def?.category),
         enabled: disabledInV2.has(f.id) ? false : f.enabled,
         required: disabledInV2.has(f.id) ? false : f.required,
         pageId: def?.pageId || (['structure', 'manager', 'materials', 'final_notes'].includes(f.stepId) ? 'general_structure' : 'general_company'),
@@ -1028,17 +1039,22 @@ export function migrateSchema(incoming: Partial<FormSchemaState> | null | undefi
     Object.entries(incoming.servicesConfig).forEach(([id, svc]) => {
       const def = DEFAULT_SERVICES_CONFIG[id];
       if (!svc) return;
+      const rawQuestions =
+        !isAlreadyV2 && activeV2Defaults.has(id) && def?.questions
+          ? def.questions
+          : Array.isArray(svc.questions) && svc.questions.length > 0
+          ? svc.questions
+          : def?.questions || [];
+
       mergedServices[id] = {
         ...def,
         ...svc,
         // On v1 -> v2 upgrade, align active services to the 3 core services unless already v2
         enabled: isAlreadyV2 ? svc.enabled : activeV2Defaults.has(id),
-        questions:
-          !isAlreadyV2 && activeV2Defaults.has(id) && def?.questions
-            ? def.questions
-            : Array.isArray(svc.questions) && svc.questions.length > 0
-            ? svc.questions
-            : def?.questions || [],
+        questions: rawQuestions.map((q) => ({
+          ...q,
+          category: stripLeadingIndexPrefix(q.category),
+        })),
       };
     });
   }

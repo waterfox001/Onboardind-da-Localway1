@@ -126,7 +126,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 1,
-        category: 'A. História e Apresentação',
+        category: 'História e Apresentação',
       },
       {
         id: 'site_apresentar_responsavel',
@@ -137,7 +137,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 2,
-        category: 'A. História e Apresentação',
+        category: 'História e Apresentação',
       },
       {
         id: 'site_diferenciais',
@@ -159,7 +159,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 3,
-        category: 'A. História e Apresentação',
+        category: 'História e Apresentação',
       },
       {
         id: 'site_publico_alvo',
@@ -180,7 +180,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 4,
-        category: 'A. História e Apresentação',
+        category: 'História e Apresentação',
       },
       {
         id: 'site_servicos_lista',
@@ -191,7 +191,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 5,
-        category: 'B. Serviços',
+        category: 'Serviços',
       },
       {
         id: 'site_comercializa_produtos',
@@ -202,7 +202,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 6,
-        category: 'C. Produtos',
+        category: 'Produtos',
       },
       {
         id: 'site_produtos_lista',
@@ -213,7 +213,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 7,
-        category: 'C. Produtos',
+        category: 'Produtos',
         conditional: {
           dependsOn: 'siteComercializaProdutos',
           operator: 'equals',
@@ -238,7 +238,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 8,
-        category: 'D. Atendimento e Contratação',
+        category: 'Atendimento e Contratação',
       },
       {
         id: 'site_orientacao_pre_contratacao',
@@ -249,7 +249,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 9,
-        category: 'D. Atendimento e Contratação',
+        category: 'Atendimento e Contratação',
       },
       {
         id: 'site_apresentar_equipe',
@@ -265,7 +265,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 10,
-        category: 'E. Materiais e Apresentação',
+        category: 'Materiais e Apresentação',
       },
       {
         id: 'site_possui_videos',
@@ -280,7 +280,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 11,
-        category: 'E. Materiais e Apresentação',
+        category: 'Materiais e Apresentação',
       },
       {
         id: 'site_secoes_adicionais',
@@ -301,7 +301,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 12,
-        category: 'F. Seções Complementares',
+        category: 'Seções Complementares',
       },
       {
         id: 'site_duvidas_frequentes',
@@ -312,7 +312,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 13,
-        category: 'F. Seções Complementares',
+        category: 'Seções Complementares',
       },
       {
         id: 'site_objetivo_principal',
@@ -330,7 +330,7 @@ export const DEFAULT_SERVICES_CONFIG: Record<string, ManagedServiceConfig> = {
         required: false,
         enabled: true,
         order: 14,
-        category: 'F. Seções Complementares',
+        category: 'Seções Complementares',
       },
     ],
   },

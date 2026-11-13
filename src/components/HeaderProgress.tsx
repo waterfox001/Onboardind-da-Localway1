@@ -48,14 +48,16 @@ export const HeaderProgress: React.FC<HeaderProgressProps> = ({
           <div className="flex items-center gap-4">
             <div className="text-right">
               <div className="flex items-center justify-end gap-2 text-xs font-semibold text-slate-800">
-                <span className="text-blue-600 font-bold">
-                  Etapa {currentStepIndex + 1} de {totalSteps}
+                <span className="text-blue-600 font-bold truncate max-w-[180px] sm:max-w-[240px]">
+                  {currentStep.categoryName || currentStep.title}
                 </span>
                 <span className="text-slate-300">•</span>
                 <span className="text-slate-500 font-medium">{percentage}%</span>
               </div>
-              <p className="text-[11px] text-slate-500 hidden sm:block truncate max-w-[200px]">
-                {currentStep.title}
+              <p className="text-[11px] text-slate-500 hidden sm:block truncate max-w-[240px]">
+                {currentStep.title !== currentStep.categoryName
+                  ? currentStep.title
+                  : currentStep.subtitle}
               </p>
             </div>
 

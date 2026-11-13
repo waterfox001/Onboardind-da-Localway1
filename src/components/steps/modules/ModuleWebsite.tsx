@@ -118,7 +118,7 @@ export const ModuleWebsite: React.FC<ModuleWebsiteProps> = ({
       {/* A. HISTÓRIA E APRESENTAÇÃO */}
       <section className="space-y-4 p-4 sm:p-5 rounded-2xl border border-slate-200/80 bg-slate-50/40">
         <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide border-b border-slate-200/70 pb-2">
-          A. História e Apresentação
+          História e Apresentação
         </h3>
 
         {isEnabled('siteHistoria') && (
@@ -311,7 +311,7 @@ export const ModuleWebsite: React.FC<ModuleWebsiteProps> = ({
       {isEnabled('siteServicosSelecionadosIds') && (
         <section className="space-y-3 p-4 sm:p-5 rounded-2xl border border-slate-200/80 bg-white">
           <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide border-b border-slate-100 pb-2">
-            B. Serviços Apresentados no Site
+            Serviços Apresentados no Site
           </h3>
           <SharedCatalogSection
             data={data}
@@ -333,7 +333,7 @@ export const ModuleWebsite: React.FC<ModuleWebsiteProps> = ({
       {isEnabled('siteComercializaProdutos') && (
         <section className="space-y-4 p-4 sm:p-5 rounded-2xl border border-slate-200/80 bg-white">
           <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide border-b border-slate-100 pb-2">
-            C. Produtos (Apresentação Institucional)
+            Produtos (Apresentação Institucional)
           </h3>
 
           <RadioGroup
@@ -372,7 +372,7 @@ export const ModuleWebsite: React.FC<ModuleWebsiteProps> = ({
       {/* D. ATENDIMENTO E CONTRATAÇÃO */}
       <section className="space-y-4 p-4 sm:p-5 rounded-2xl border border-slate-200/80 bg-slate-50/40">
         <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide border-b border-slate-200/70 pb-2">
-          D. Atendimento e Contratação
+          Atendimento e Contratação
         </h3>
 
         {isEnabled('siteProcessoAtendimento') && (
@@ -432,7 +432,7 @@ export const ModuleWebsite: React.FC<ModuleWebsiteProps> = ({
       {/* E. MATERIAIS E APRESENTAÇÃO */}
       <section className="space-y-4 p-4 sm:p-5 rounded-2xl border border-slate-200/80 bg-slate-50/40">
         <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide border-b border-slate-200/70 pb-2">
-          E. Materiais, Equipe e Vídeos
+          Materiais, Equipe e Vídeos
         </h3>
 
         {isEnabled('siteApresentarEquipeTipo') && (
@@ -484,14 +484,14 @@ export const ModuleWebsite: React.FC<ModuleWebsiteProps> = ({
                     </div>
                   )}
 
-                  {teamList.map((person, idx) => (
+                  {teamList.map((person) => (
                     <div
                       key={person.id}
                       className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-slate-600">
-                          Pessoa #{idx + 1}
+                          Profissional / Responsável
                         </span>
                         <button
                           type="button"
@@ -610,7 +610,7 @@ export const ModuleWebsite: React.FC<ModuleWebsiteProps> = ({
       {/* F. SEÇÕES COMPLEMENTARES */}
       <section className="space-y-4 p-4 sm:p-5 rounded-2xl border border-slate-200/80 bg-slate-50/40">
         <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide border-b border-slate-200/70 pb-2">
-          F. Seções Complementares e Objetivo
+          Seções Complementares e Objetivo
         </h3>
 
         {isEnabled('siteSecoesAdicionais') && (

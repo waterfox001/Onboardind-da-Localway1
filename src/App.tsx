@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, CheckCircle2, X } from 'lucide-react';
 import { OnboardingData, ServiceId, StepType } from './types';
 import { INITIAL_ONBOARDING_DATA } from './constants/initialData';
 import { getActiveSteps, normalizeStepId } from './utils/stepManager';
@@ -65,7 +65,7 @@ export default function App() {
       if (started === 'true') return true;
       const savedStep = localStorage.getItem(STEP_KEY);
       const normalized = normalizeStepId(savedStep);
-      if (savedStep && normalized !== 'services') return true;
+      if (savedStep && normalized !== 'general_company') return true;
       const draft = localStorage.getItem(DRAFT_KEY);
       if (draft) {
         const parsed = JSON.parse(draft);
@@ -125,8 +125,10 @@ export default function App() {
     } catch {
       // ignore
     }
-    return 'services';
+    return 'general_company';
   });
+
+  const [moduleNotice, setModuleNotice] = useState<string | null>(null);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -215,10 +217,10 @@ export default function App() {
     loadRemoteConfig();
   }, []);
 
-  // Active dynamic steps: Serviços -> Onboarding Geral Pág 1 -> Onboarding Geral Pág 2 -> Módulos -> Resumo
+  // Active dynamic steps: Dados da empresa -> Serviços contratados -> Módulos sequenciais -> Estrutura, catálogo e materiais -> Resumo
   const activeSteps = useMemo(() => {
-    return getActiveSteps(formData.servicosContratados);
-  }, [formData.servicosContratados]);
+    return getActiveSteps(formData.servicosContratados, schema.servicesConfig);
+  }, [formData.servicosContratados, schema.servicesConfig]);
 
   // Current step index
   const currentStepIndex = useMemo(() => {
@@ -443,12 +445,29 @@ export default function App() {
 
     const nextIndex = currentStepIndex + 1;
     if (nextIndex < activeSteps.length) {
-      setCurrentStepId(activeSteps[nextIndex].id);
+      const nextStep = activeSteps[nextIndex];
+      if (currentStepId.startsWith('module_')) {
+        if (nextStep.id.startsWith('module_')) {
+          setModuleNotice(
+            `${currentStep.title} concluído! Preencha agora as informações do próximo serviço selecionado: ${nextStep.title}.`
+          );
+        } else if (nextStep.id === 'general_structure') {
+          setModuleNotice(
+            `${currentStep.title} concluído! Agora finalize informando a estrutura, catálogo e materiais.`
+          );
+        } else {
+          setModuleNotice(null);
+        }
+      } else {
+        setModuleNotice(null);
+      }
+      setCurrentStepId(nextStep.id);
       scrollToTop();
     }
   };
 
   const handleBack = () => {
+    setModuleNotice(null);
     const prevIndex = currentStepIndex - 1;
     if (prevIndex >= 0) {
       setCurrentStepId(activeSteps[prevIndex].id);
@@ -457,6 +476,7 @@ export default function App() {
   };
 
   const handleJumpToStep = (stepId: StepType) => {
+    setModuleNotice(null);
     setCurrentStepId(normalizeStepId(stepId));
     scrollToTop();
   };
@@ -805,7 +825,8 @@ export default function App() {
             setFormData(INITIAL_ONBOARDING_DATA);
             setIsSuccess(false);
             setHasStarted(false);
-            setCurrentStepId('services');
+            setModuleNotice(null);
+            setCurrentStepId('general_company');
           }}
         />
       </div>
@@ -876,7 +897,7 @@ export default function App() {
         formData.razaoSocial ||
         formData.email ||
         (formData.servicosContratados && formData.servicosContratados.length > 0) ||
-        currentStepId !== 'services'
+        currentStepId !== 'general_company'
     );
     return (
       <>
@@ -924,6 +945,23 @@ export default function App() {
                 {saveIndicator ? 'Salvando...' : 'Salvo'}
               </span>
             </div>
+
+            {moduleNotice && (
+              <div className="mb-5 px-4 py-3 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-900 flex items-center justify-between gap-3 text-xs font-medium">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{moduleNotice}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setModuleNotice(null)}
+                  className="p-1 text-emerald-600 hover:text-emerald-800 rounded-lg cursor-pointer"
+                  aria-label="Fechar aviso"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
 
             <AnimatePresence mode="wait">
               <motion.div

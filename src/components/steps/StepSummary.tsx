@@ -65,7 +65,10 @@ export const StepSummary: React.FC<StepSummaryProps> = ({
   const siteProducts = resolveCatalogNames(data.siteProdutosSelecionadosIds);
 
   const customAnswersEntries = Object.entries(data.respostasPersonalizadas || {}).filter(
-    ([, val]) => val !== undefined && val !== null && (!Array.isArray(val) ? String(val).trim() !== '' : val.length > 0)
+    ([, val]) =>
+      val !== undefined &&
+      val !== null &&
+      (!Array.isArray(val) ? String(val).trim() !== '' : val.length > 0)
   );
 
   const getCustomFieldLabel = (fieldId: string): string => {
@@ -86,7 +89,7 @@ export const StepSummary: React.FC<StepSummaryProps> = ({
         </div>
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-slate-900">
-            Resumo das suas Informações
+            Resumo final
           </h2>
           <p className="text-xs sm:text-sm text-slate-500">
             Revise todos os dados antes de finalizar. Clique em &ldquo;Editar&rdquo; em qualquer bloco para ajustar.
@@ -94,41 +97,12 @@ export const StepSummary: React.FC<StepSummaryProps> = ({
         </div>
       </div>
 
-      {/* 1. Serviços Contratados */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-          <div className="flex items-center gap-2 font-bold text-sm text-slate-800">
-            <Sparkles className="w-4 h-4 text-blue-600" />
-            <span>1. Serviços Contratados ({selectedServicesObjects.length})</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => onJumpToStep('services')}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-          >
-            <Edit3 className="w-3 h-3" />
-            <span>Editar</span>
-          </button>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {selectedServicesObjects.map((s) => (
-            <span
-              key={s.id}
-              className={`px-3 py-1.5 rounded-xl border font-semibold text-xs ${s.bgLight} ${s.textColor} ${s.borderLight}`}
-            >
-              {s.title}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* 2. Onboarding Geral — Página 1 (Empresa, Segmento, Endereço e Horários) */}
+      {/* Bloco: Dados da empresa */}
       <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
           <div className="flex items-center gap-2 font-bold text-sm text-slate-800">
             <Building2 className="w-4 h-4 text-blue-600" />
-            <span>2. Empresa, Segmento, Endereço e Horários</span>
+            <span>Dados da empresa</span>
           </div>
           <button
             type="button"
@@ -245,7 +219,7 @@ export const StepSummary: React.FC<StepSummaryProps> = ({
         <div className="pt-3 border-t border-slate-100 space-y-2">
           <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
             <Clock className="w-3.5 h-3.5 text-blue-600" />
-            <span>Horários & Agendamento</span>
+            <span>Horário de funcionamento</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-slate-700">
             <span>{formatDay('segunda', 'Seg')}</span>
@@ -269,16 +243,16 @@ export const StepSummary: React.FC<StepSummaryProps> = ({
         </div>
       </div>
 
-      {/* 3. Onboarding Geral — Página 2 (Estrutura, Pagamentos, Responsável, Catálogo, Materiais) */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
+      {/* Bloco: Serviços contratados */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-3">
         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
           <div className="flex items-center gap-2 font-bold text-sm text-slate-800">
-            <Layers className="w-4 h-4 text-blue-600" />
-            <span>3. Estrutura, Pagamentos, Responsável e Materiais</span>
+            <Sparkles className="w-4 h-4 text-blue-600" />
+            <span>Serviços contratados ({selectedServicesObjects.length})</span>
           </div>
           <button
             type="button"
-            onClick={() => onJumpToStep('general_structure')}
+            onClick={() => onJumpToStep('services')}
             className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
           >
             <Edit3 className="w-3 h-3" />
@@ -286,128 +260,19 @@ export const StepSummary: React.FC<StepSummaryProps> = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div>
-            <span className="text-slate-400 block">Tipo de Estabelecimento:</span>
-            <span className="font-semibold text-slate-900">{data.tipoEstabelecimento || '-'}</span>
-          </div>
-          <div>
-            <span className="text-slate-400 block">Forma de Atendimento:</span>
-            <span className="font-semibold text-slate-900">{data.formaAtendimento || '-'}</span>
-          </div>
-          <div>
-            <span className="text-slate-400 block">Estacionamento:</span>
-            <span className="font-semibold text-slate-900">
-              {data.estacionamento || (data.formaAtendimento === 'Atendimento 100% online' ? 'Não se aplica (Online)' : '-')}
+        <div className="flex flex-wrap gap-2">
+          {selectedServicesObjects.map((s) => (
+            <span
+              key={s.id}
+              className={`px-3 py-1.5 rounded-xl border font-semibold text-xs ${s.bgLight} ${s.textColor} ${s.borderLight}`}
+            >
+              {s.title}
             </span>
-          </div>
-          <div>
-            <span className="text-slate-400 block">Formas de Pagamento:</span>
-            <span className="font-semibold text-slate-900">
-              {data.formasPagamento.length > 0 ? data.formasPagamento.join(', ') : 'Não informado'}
-              {data.bandeirasCartao && data.bandeirasCartao.length > 0 && (
-                <span className="text-slate-500 font-normal block mt-0.5">
-                  Bandeiras: {data.bandeirasCartao.join(', ')}
-                </span>
-              )}
-            </span>
-          </div>
-        </div>
-
-        {/* Responsável */}
-        <div className="pt-3 border-t border-slate-100 space-y-2">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-            <UserCheck className="w-3.5 h-3.5 text-blue-600" />
-            <span>Responsável pelo Projeto</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div>
-              <span className="text-slate-400 block">Nome:</span>
-              <span className="font-semibold text-slate-900">{data.responsavelNome || '-'}</span>
-            </div>
-            <div>
-              <span className="text-slate-400 block">Cargo:</span>
-              <span className="font-semibold text-slate-900">{data.responsavelCargo || '-'}</span>
-            </div>
-            <div>
-              <span className="text-slate-400 block">Contato:</span>
-              <span className="font-semibold text-slate-900">
-                {[data.responsavelWhatsapp, data.responsavelEmail].filter(Boolean).join(' • ') || '-'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Cadastro Compartilhado */}
-        {catalogItems.length > 0 && (
-          <div className="pt-3 border-t border-slate-100 space-y-2">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-              <PackagePlus className="w-3.5 h-3.5 text-blue-600" />
-              <span>Cadastro Compartilhado de Produtos e Serviços ({catalogItems.length})</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {catalogItems.map((item) => (
-                <div key={item.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-bold text-slate-800">{item.nome}</span>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-white border border-slate-200 text-slate-600 uppercase">
-                      {item.tipo === 'produto' ? 'Produto' : 'Serviço'}
-                    </span>
-                  </div>
-                  {item.preco && <span className="text-emerald-700 font-semibold block mt-0.5">{item.preco}</span>}
-                  {item.descricao && <p className="text-slate-500 mt-0.5 line-clamp-2">{item.descricao}</p>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Materiais & Observações */}
-        <div className="pt-3 border-t border-slate-100 space-y-1.5 text-xs">
-          <div className="flex items-center gap-1.5 font-bold text-slate-700 mb-1">
-            <FileText className="w-3.5 h-3.5 text-blue-600" />
-            <span>Materiais & Observações Finais</span>
-          </div>
-          <p>
-            <span className="text-slate-400">Possui materiais agora:</span>{' '}
-            <span className="font-semibold text-slate-800">{data.possuiMateriais || 'Não informado'}</span>
-            {data.tiposMateriais?.length > 0 && ` (${data.tiposMateriais.join(', ')})`}
-          </p>
-          {data.linkTransferNow && (
-            <p>
-              <span className="text-slate-400">Link TransferNow:</span>{' '}
-              <a
-                href={data.linkTransferNow}
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue-600 underline font-medium break-all"
-              >
-                {data.linkTransferNow}
-              </a>
-            </p>
-          )}
-          {data.linksMateriais && (
-            <p>
-              <span className="text-slate-400">Link Nuvem:</span>{' '}
-              <span className="text-slate-700 break-all">{data.linksMateriais}</span>
-            </p>
-          )}
-          {data.observacoesMateriais && (
-            <p>
-              <span className="text-slate-400">Observações de materiais:</span>{' '}
-              <span className="text-slate-700">{data.observacoesMateriais}</span>
-            </p>
-          )}
-          {data.observacoesFinais && (
-            <p>
-              <span className="text-slate-400">Observações finais:</span>{' '}
-              <span className="text-slate-700 italic">{data.observacoesFinais}</span>
-            </p>
-          )}
+          ))}
         </div>
       </div>
 
-      {/* 4. Detalhes dos Módulos Selecionados */}
+      {/* Blocos dos serviços selecionados */}
       {data.servicosContratados.includes('google') && (
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-2.5">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -555,6 +420,144 @@ export const StepSummary: React.FC<StepSummaryProps> = ({
           </div>
         </div>
       )}
+
+      {/* Bloco: Estrutura, catálogo e materiais */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div className="flex items-center gap-2 font-bold text-sm text-slate-800">
+            <Layers className="w-4 h-4 text-blue-600" />
+            <span>Estrutura, catálogo e materiais</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => onJumpToStep('general_structure')}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+          >
+            <Edit3 className="w-3 h-3" />
+            <span>Editar</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div>
+            <span className="text-slate-400 block">Tipo de Estabelecimento:</span>
+            <span className="font-semibold text-slate-900">{data.tipoEstabelecimento || '-'}</span>
+          </div>
+          <div>
+            <span className="text-slate-400 block">Forma de Atendimento:</span>
+            <span className="font-semibold text-slate-900">{data.formaAtendimento || '-'}</span>
+          </div>
+          <div>
+            <span className="text-slate-400 block">Estacionamento:</span>
+            <span className="font-semibold text-slate-900">
+              {data.estacionamento || (data.formaAtendimento === 'Atendimento 100% online' ? 'Não se aplica (Online)' : '-')}
+            </span>
+          </div>
+          <div>
+            <span className="text-slate-400 block">Formas de Pagamento:</span>
+            <span className="font-semibold text-slate-900">
+              {data.formasPagamento.length > 0 ? data.formasPagamento.join(', ') : 'Não informado'}
+              {data.bandeirasCartao && data.bandeirasCartao.length > 0 && (
+                <span className="text-slate-500 font-normal block mt-0.5">
+                  Bandeiras: {data.bandeirasCartao.join(', ')}
+                </span>
+              )}
+            </span>
+          </div>
+        </div>
+
+        {/* Responsável */}
+        <div className="pt-3 border-t border-slate-100 space-y-2">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+            <UserCheck className="w-3.5 h-3.5 text-blue-600" />
+            <span>Responsável pelo Projeto</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <span className="text-slate-400 block">Nome:</span>
+              <span className="font-semibold text-slate-900">{data.responsavelNome || '-'}</span>
+            </div>
+            <div>
+              <span className="text-slate-400 block">Cargo:</span>
+              <span className="font-semibold text-slate-900">{data.responsavelCargo || '-'}</span>
+            </div>
+            <div>
+              <span className="text-slate-400 block">Contato:</span>
+              <span className="font-semibold text-slate-900">
+                {[data.responsavelWhatsapp, data.responsavelEmail].filter(Boolean).join(' • ') || '-'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Cadastro Compartilhado */}
+        {catalogItems.length > 0 && (
+          <div className="pt-3 border-t border-slate-100 space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+              <PackagePlus className="w-3.5 h-3.5 text-blue-600" />
+              <span>Cadastro Compartilhado de Produtos e Serviços ({catalogItems.length})</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {catalogItems.map((item) => (
+                <div key={item.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-slate-800">{item.nome}</span>
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-white border border-slate-200 text-slate-600 uppercase">
+                      {item.tipo === 'produto' ? 'Produto' : 'Serviço'}
+                    </span>
+                  </div>
+                  {item.preco && <span className="text-emerald-700 font-semibold block mt-0.5">{item.preco}</span>}
+                  {item.descricao && <p className="text-slate-500 mt-0.5 line-clamp-2">{item.descricao}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Materiais & Observações */}
+        <div className="pt-3 border-t border-slate-100 space-y-1.5 text-xs">
+          <div className="flex items-center gap-1.5 font-bold text-slate-700 mb-1">
+            <FileText className="w-3.5 h-3.5 text-blue-600" />
+            <span>Materiais & Observações Finais</span>
+          </div>
+          <p>
+            <span className="text-slate-400">Possui materiais agora:</span>{' '}
+            <span className="font-semibold text-slate-800">{data.possuiMateriais || 'Não informado'}</span>
+            {data.tiposMateriais?.length > 0 && ` (${data.tiposMateriais.join(', ')})`}
+          </p>
+          {data.linkTransferNow && (
+            <p>
+              <span className="text-slate-400">Link TransferNow:</span>{' '}
+              <a
+                href={data.linkTransferNow}
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-600 underline font-medium break-all"
+              >
+                {data.linkTransferNow}
+              </a>
+            </p>
+          )}
+          {data.linksMateriais && (
+            <p>
+              <span className="text-slate-400">Link Nuvem:</span>{' '}
+              <span className="text-slate-700 break-all">{data.linksMateriais}</span>
+            </p>
+          )}
+          {data.observacoesMateriais && (
+            <p>
+              <span className="text-slate-400">Observações de materiais:</span>{' '}
+              <span className="text-slate-700">{data.observacoesMateriais}</span>
+            </p>
+          )}
+          {data.observacoesFinais && (
+            <p>
+              <span className="text-slate-400">Observações finais:</span>{' '}
+              <span className="text-slate-700 italic">{data.observacoesFinais}</span>
+            </p>
+          )}
+        </div>
+      </div>
 
       {/* Perguntas personalizadas adicionadas pelo Admin */}
       {customAnswersEntries.length > 0 && (

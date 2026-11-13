@@ -30,6 +30,7 @@ import {
   CloudUpload,
   Trash2,
   Upload,
+  Info,
 } from 'lucide-react';
 
 interface StepGeneralPageProps {
@@ -542,9 +543,17 @@ export const StepGeneralPage: React.FC<StepGeneralPageProps> = ({
       const opts = field.type === 'yes_no' ? ['Sim', 'Não'] : field.options || [];
       const showEstacionamentoOutro =
         fieldKey === 'estacionamento' && String(val) === 'Outro';
+      const showReusedNotice =
+        pageId === 'general_structure' && fieldKey === 'formaAtendimento' && Boolean(val);
 
       return (
         <div key={field.id} className="sm:col-span-2 space-y-3">
+          {showReusedNotice && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200/70 text-[11px] font-semibold">
+              <Info className="w-3.5 h-3.5 shrink-0" />
+              <span>Já informado anteriormente — confirme ou ajuste se necessário</span>
+            </div>
+          )}
           <RadioGroup
             label={field.label}
             name={`radio-${field.id}`}
@@ -637,18 +646,30 @@ export const StepGeneralPage: React.FC<StepGeneralPageProps> = ({
               placeholder={field.placeholder || 'Cole o link do arquivo ou anexe ao lado'}
               className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900"
             />
-            <label className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs font-semibold text-slate-700 cursor-pointer shrink-0">
-              <Upload className="w-3.5 h-3.5 text-blue-600" />
-              <span>Selecionar arquivo</span>
-              <input
-                type="file"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) setFieldValue(field, `Arquivo selecionado: ${f.name}`);
-                }}
-              />
-            </label>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <label className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs font-semibold text-slate-700 cursor-pointer">
+                <Upload className="w-3.5 h-3.5 text-blue-600" />
+                <span>Selecionar arquivo</span>
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) setFieldValue(field, `Arquivo selecionado: ${f.name}`);
+                  }}
+                />
+              </label>
+              {Boolean(val) && (
+                <button
+                  type="button"
+                  onClick={() => setFieldValue(field, '')}
+                  title="Remover anexo"
+                  className="p-2.5 rounded-xl bg-white border border-slate-200 hover:bg-red-50 text-slate-400 hover:text-red-600 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
           {err && <span className="text-xs font-medium text-red-600">{err}</span>}
         </div>
@@ -684,7 +705,7 @@ export const StepGeneralPage: React.FC<StepGeneralPageProps> = ({
                     copy[idx] = e.target.value;
                     setFieldValue(field, copy);
                   }}
-                  placeholder={field.placeholder || `Item ${idx + 1}...`}
+                  placeholder={field.placeholder || 'Digite uma resposta...'}
                   className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900"
                 />
                 {items.length > 1 && (
@@ -761,13 +782,13 @@ export const StepGeneralPage: React.FC<StepGeneralPageProps> = ({
     pageId === 'general_company'
       ? {
           icon: <Building2 className="w-5 h-5" />,
-          title: 'Dados da Empresa, Endereço e Horários',
-          subtitle: 'Página 1 de 2 do Onboarding Geral — informe os dados base uma única vez para todos os serviços.',
+          title: 'Dados da empresa',
+          subtitle: 'Informe os dados principais da empresa, segmento, endereço comercial e horários de funcionamento.',
         }
       : {
           icon: <Layers className="w-5 h-5" />,
-          title: 'Estrutura, Pagamento, Responsável e Materiais',
-          subtitle: 'Página 2 de 2 do Onboarding Geral — complete a estrutura, produtos/serviços compartilhados e arquivos.',
+          title: 'Estrutura, catálogo e materiais',
+          subtitle: 'Complete a estrutura de atendimento, formas de pagamento, responsável, produtos/serviços e materiais digitais.',
         };
 
   return (

@@ -204,7 +204,7 @@ export const DynamicExtraQuestions: React.FC<DynamicExtraQuestionsProps> = ({
                         copy[idx] = e.target.value;
                         setVal(q, copy);
                       }}
-                      placeholder={q.placeholder || `Item ${idx + 1}...`}
+                      placeholder={q.placeholder || 'Digite uma resposta...'}
                       className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
                     />
                     {items.length > 1 && (

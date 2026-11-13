@@ -65,7 +65,7 @@ export const ModuleWhatsAppBusiness: React.FC<ModuleWhatsAppBusinessProps> = ({
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500" />
           <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
-            1. Dados do Perfil Comercial
+            Dados do Perfil Comercial
           </h3>
         </div>
 
@@ -229,7 +229,7 @@ export const ModuleWhatsAppBusiness: React.FC<ModuleWhatsAppBusinessProps> = ({
         <div className="flex items-center gap-2">
           <ShoppingBag className="w-4 h-4 text-emerald-600" />
           <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
-            2. Catálogo de Produtos e Serviços
+            Catálogo de Produtos e Serviços
           </h3>
         </div>
 
@@ -273,14 +273,14 @@ export const ModuleWhatsAppBusiness: React.FC<ModuleWhatsAppBusinessProps> = ({
                   </button>
                 </div>
               ) : (
-                catalogItems.map((item, index) => (
+                catalogItems.map((item) => (
                   <div
                     key={item.id}
                     className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-xs space-y-3"
                   >
                     <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                       <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                        Item #{index + 1}
+                        Item do Catálogo
                       </span>
                       <button
                         type="button"
