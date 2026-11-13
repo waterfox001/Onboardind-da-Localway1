@@ -56,6 +56,7 @@ const DRAFT_KEY = 'localway_onboarding_draft_v1';
 const SCHEMA_KEY = 'localway_form_schema_v1';
 const STEP_KEY = 'localway_onboarding_step_v1';
 const STARTED_KEY = 'localway_onboarding_started_v1';
+const FLOW_VERSION_KEY = 'localway_onboarding_flow_v3';
 const ADMIN_CACHE_KEY = 'localway_admin_submissions_v1';
 
 export default function App() {
@@ -98,18 +99,27 @@ export default function App() {
 
   const [currentStepId, setCurrentStepId] = useState<StepType>(() => {
     try {
+      const flowVersion = localStorage.getItem(FLOW_VERSION_KEY);
+      if (flowVersion !== 'v3') {
+        localStorage.setItem(FLOW_VERSION_KEY, 'v3');
+        localStorage.removeItem(STARTED_KEY);
+        localStorage.setItem(STEP_KEY, 'general_company');
+        return 'general_company';
+      }
+
       const savedStep = localStorage.getItem(STEP_KEY);
       const normalized = normalizeStepId(savedStep);
       const draftRaw = localStorage.getItem(DRAFT_KEY);
       const draft = draftRaw ? JSON.parse(draftRaw) : null;
-      const hasCompanyData = Boolean(
+      const hasCompletedCompanyBasics = Boolean(
         draft &&
-          (draft.nomeFantasia?.trim() ||
-            draft.whatsapp?.trim() ||
-            draft.razaoSocial?.trim() ||
-            draft.email?.trim())
+          draft.nomeFantasia?.trim() &&
+          draft.segmento?.trim() &&
+          draft.descricaoEmpresa?.trim() &&
+          draft.whatsapp?.trim() &&
+          draft.email?.trim()
       );
-      if (normalized !== 'general_company' && !hasCompanyData) {
+      if (normalized !== 'general_company' && !hasCompletedCompanyBasics) {
         return 'general_company';
       }
       return normalized;
@@ -899,6 +909,22 @@ export default function App() {
       <>
         <WelcomeCover
           onStart={() => {
+            setHasStarted(true);
+            scrollToTop();
+          }}
+          onStartFresh={() => {
+            try {
+              localStorage.removeItem(DRAFT_KEY);
+              localStorage.removeItem(STEP_KEY);
+              localStorage.removeItem(STARTED_KEY);
+              localStorage.setItem(FLOW_VERSION_KEY, 'v3');
+            } catch {
+              // ignore
+            }
+            setFormData(INITIAL_ONBOARDING_DATA);
+            setErrors({});
+            setModuleNotice(null);
+            setCurrentStepId('general_company');
             setHasStarted(true);
             scrollToTop();
           }}

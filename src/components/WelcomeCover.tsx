@@ -6,6 +6,7 @@ import { UserProfileMenu } from './UserProfileMenu';
 
 interface WelcomeCoverProps {
   onStart: () => void;
+  onStartFresh?: () => void;
   onOpenAdmin: (tab?: 'submissions' | 'fields' | 'segments' | 'settings') => void;
   onOpenManageQuestions: () => void;
   isAuthenticated: boolean;
@@ -14,6 +15,7 @@ interface WelcomeCoverProps {
 
 export const WelcomeCover: React.FC<WelcomeCoverProps> = ({
   onStart,
+  onStartFresh,
   onOpenAdmin,
   onOpenManageQuestions,
   isAuthenticated,
@@ -138,9 +140,19 @@ export const WelcomeCover: React.FC<WelcomeCoverProps> = ({
           </button>
 
           {hasDraft && (
-            <span className="text-xs text-slate-400">
-              Detectamos rascunho salvo anteriormente.
-            </span>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+              <span>Detectamos rascunho salvo anteriormente.</span>
+              {onStartFresh && (
+                <button
+                  type="button"
+                  onClick={onStartFresh}
+                  id="start-fresh-btn"
+                  className="text-slate-600 hover:text-slate-900 underline font-medium cursor-pointer"
+                >
+                  Começar do zero
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
